@@ -1,6 +1,7 @@
 import type { Client } from 'xrpl';
 import { createPayeeDirectory } from '../../src/agent/payee-directory.ts';
 import { createPayoutAgent, type AgentEvent, type PayoutAgent } from '../../src/agent/payout-agent.ts';
+import { createDailyCallBudget, DAILY_MODEL_CALL_LIMIT, withCallBudget } from '../../src/agent/call-budget.ts';
 import { createClaudePayoutParser, type PayoutParser } from '../../src/agent/payout-parser.ts';
 import { printLine } from '../../src/cli/output.ts';
 import { DEMO_BUSINESS, DEMO_PAYEES, demoMandate } from '../../src/config/demo.ts';
@@ -23,7 +24,7 @@ export interface DemoContext {
   exchange: ExchangeVerifier;
   registry: Registry;
   agentStore: DocumentStore;
-  /** Uses Claude to read payout lists unless another parser is given. */
+  /** Uses Claude, capped at 50 calls a day, to read payout lists unless another parser is given. */
   createAgent(onEvent: (event: AgentEvent) => void, parser?: PayoutParser): PayoutAgent;
 }
 
@@ -72,7 +73,7 @@ export function createDemoContext(client: Client): DemoContext {
     exchange,
     registry,
     agentStore,
-    createAgent: (onEvent, parser = createClaudePayoutParser()) =>
+    createAgent: (onEvent, parser = withCallBudget(createClaudePayoutParser(), createDailyCallBudget(agentStore, DAILY_MODEL_CALL_LIMIT))) =>
       createPayoutAgent({
         client,
         agentAddress: wallets.agent.address,
