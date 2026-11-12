@@ -1,5 +1,6 @@
 import { unixTimeToRippleTime, type Payment, type Wallet } from 'xrpl';
 import { SignedAdminActionSchema, verifyAdminAction } from '../domain/admin-action.ts';
+import { formatUnits, toUnits } from '../domain/amount.ts';
 import { AGENT_MANDATE_CREDENTIAL_TYPE, checkCredential, type CredentialCheck } from '../domain/credential-check.ts';
 import { decide, utcDay } from '../domain/decision.ts';
 import { fingerprintOf, JsonSchema, mandateFingerprint } from '../domain/fingerprint.ts';
@@ -44,6 +45,8 @@ export interface PolicyService {
   review(request: ReviewRequest): Promise<ReviewResult>;
   applyAdminAction(signed: unknown): Promise<AdminResult>;
   currentMandate(agent: string): Promise<Mandate | undefined>;
+  /** The RLUSD co-signed for this agent today (UTC), as a decimal string. */
+  todaysTotal(agent: string): Promise<string>;
   readLog(): Promise<PolicyLogEntry[]>;
   /** Demo only: forget today's co-signed totals. Logged like any other change. */
   clearDailyTotalsForDemo(): Promise<void>;
@@ -218,6 +221,11 @@ export function createPolicyService(deps: PolicyServiceDeps): PolicyService {
     applyAdminAction,
     async currentMandate(agent) {
       return (await mandates.get(agent))?.mandate;
+    },
+    async todaysTotal(agent) {
+      const day = utcDay(clock());
+      const today = (await approvals.list()).filter((approval) => approval.agent === agent && approval.day === day);
+      return formatUnits(today.reduce((total, approval) => total + toUnits(approval.amount), 0n));
     },
     readLog: () => log.readAll(),
     async clearDailyTotalsForDemo() {

@@ -142,6 +142,13 @@ describe('review', () => {
     });
   });
 
+  it("reports today's co-signed total", async () => {
+    expect(await policy.todaysTotal(parties.agent.address)).toBe('0');
+    await policy.review({ payment: payment(1), purpose: 'x' });
+    await policy.review({ payment: payment(2, { Amount: rlusd('1.5') }), purpose: 'x' });
+    expect(await policy.todaysTotal(parties.agent.address)).toBe('3.5');
+  });
+
   it('signs the same payment again without counting it twice', async () => {
     const first = await policy.review({ payment: payment(1), purpose: 'x' });
     const repeat = await policy.review({ payment: payment(1), purpose: 'x' });

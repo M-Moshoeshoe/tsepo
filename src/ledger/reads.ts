@@ -250,6 +250,7 @@ const AccountTxPageSchema = z.object({
         hash: z.string(),
         ledger_index: z.number(),
         validated: z.boolean().optional(),
+        close_time_iso: z.string().optional(),
         tx_json: z.object({
           TransactionType: z.string(),
           Account: z.string(),
@@ -268,6 +269,7 @@ const AccountTxPageSchema = z.object({
 export interface LedgerPayment {
   hash: string;
   ledgerIndex: number;
+  closeTimeIso: string | undefined;
   result: string;
   sender: string;
   destinationTag: number | undefined;
@@ -302,6 +304,7 @@ export async function getIncomingPayments(client: Client, account: string, after
       payments.push({
         hash: item.hash,
         ledgerIndex: item.ledger_index,
+        closeTimeIso: item.close_time_iso,
         result: item.meta.TransactionResult,
         sender: tx.Account,
         destinationTag: tx.DestinationTag,
@@ -313,4 +316,112 @@ export async function getIncomingPayments(client: Client, account: string, after
     marker = page.marker;
   } while (marker !== undefined);
   return payments;
+}
+
+const CredentialTxPageSchema = z.object({
+  result: z.object({
+    transactions: z.array(
+      z.object({
+        hash: z.string(),
+        validated: z.boolean().optional(),
+        close_time_iso: z.string().optional(),
+        tx_json: z.object({
+          TransactionType: z.string(),
+          Account: z.string(),
+          Issuer: z.string().optional(),
+          Subject: z.string().optional(),
+          CredentialType: z.string().optional(),
+        }),
+        meta: z.object({ TransactionResult: z.string() }),
+      }),
+    ),
+  }),
+});
+
+export interface CredentialEvent {
+  type: 'CredentialCreate' | 'CredentialAccept' | 'CredentialDelete';
+  hash: string;
+  closeTimeIso: string | undefined;
+}
+
+const CREDENTIAL_TX_TYPES = new Set(['CredentialCreate', 'CredentialAccept', 'CredentialDelete']);
+
+/**
+ * Successful credential transactions for one agent, issuer and type, newest
+ * first, read from the agent account history.
+ */
+export async function getCredentialHistory(
+  client: Client,
+  query: { subject: string; issuer: string; credentialTypeHex: string },
+  limit = 200,
+): Promise<CredentialEvent[]> {
+  const response = await client.request({
+    command: 'account_tx',
+    account: query.subject,
+    forward: false,
+    limit,
+    ledger_index_min: -1,
+    ledger_index_max: -1,
+  });
+  const events: CredentialEvent[] = [];
+  for (const item of CredentialTxPageSchema.parse(response).result.transactions) {
+    const tx = item.tx_json;
+    if (item.validated !== true || item.meta.TransactionResult !== 'tesSUCCESS') continue;
+    if (!CREDENTIAL_TX_TYPES.has(tx.TransactionType) || tx.CredentialType !== query.credentialTypeHex) continue;
+    // The issuer is the sender of a create and the Issuer field of an accept or a subject-side delete.
+    const issuer = tx.TransactionType === 'CredentialCreate' ? tx.Account : (tx.Issuer ?? tx.Account);
+    if (issuer !== query.issuer) continue;
+    events.push({ type: tx.TransactionType as CredentialEvent['type'], hash: item.hash, closeTimeIso: item.close_time_iso });
+  }
+  return events;
+}
+
+const PaymentTxSchema = z.object({
+  result: z.object({
+    hash: z.string(),
+    validated: z.boolean().optional(),
+    ledger_index: z.number().optional(),
+    close_time_iso: z.string().optional(),
+    tx_json: z.object({
+      TransactionType: z.string(),
+      Account: z.string(),
+      Destination: z.string().optional(),
+      Amount: z.unknown().optional(),
+      DeliverMax: z.unknown().optional(),
+    }),
+    meta: z.object({ TransactionResult: z.string() }).optional(),
+  }),
+});
+
+export interface ValidatedPaymentAttempt {
+  hash: string;
+  ledgerIndex: number;
+  closeTimeIso: string | undefined;
+  sender: string;
+  destination: string;
+  result: string;
+  amount: z.infer<typeof IssuedAmountSchema> | undefined;
+}
+
+/** Reads one validated payment by hash, whatever its result. Undefined when it is not a validated payment. */
+export async function getValidatedPayment(client: Client, hash: string): Promise<ValidatedPaymentAttempt | undefined> {
+  try {
+    const { result } = PaymentTxSchema.parse(await client.request({ command: 'tx', transaction: hash }));
+    const tx = result.tx_json;
+    if (result.validated !== true || result.meta === undefined || result.ledger_index === undefined) return undefined;
+    if (tx.TransactionType !== 'Payment' || tx.Destination === undefined) return undefined;
+    const amount = IssuedAmountSchema.safeParse(tx.Amount ?? tx.DeliverMax);
+    return {
+      hash: result.hash,
+      ledgerIndex: result.ledger_index,
+      closeTimeIso: result.close_time_iso,
+      sender: tx.Account,
+      destination: tx.Destination,
+      result: result.meta.TransactionResult,
+      amount: amount.success ? amount.data : undefined,
+    };
+  } catch (error: unknown) {
+    if (isNotFound(error)) return undefined;
+    throw error;
+  }
 }

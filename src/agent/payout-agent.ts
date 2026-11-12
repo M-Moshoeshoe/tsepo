@@ -1,5 +1,4 @@
 import type { Client, Wallet } from 'xrpl';
-import { z } from 'zod';
 import type { BusinessIdentity } from '../config/demo.ts';
 import { AGENT_MANDATE_CREDENTIAL_TYPE } from '../domain/credential-check.ts';
 import { Directive9PackageSchema, packageFingerprint, type Directive9Package } from '../domain/directive9.ts';
@@ -11,9 +10,10 @@ import { findCredential, lookupTransaction } from '../ledger/reads.ts';
 import { rlusdPayment } from '../ledger/rlusd.ts';
 import { combineParts, prepareTransaction, signPart, submitAndReport } from '../ledger/submit.ts';
 import type { PolicyService } from '../policy/policy-service.ts';
-import { appendOnlyLog, collection, type DocumentStore } from '../storage/store.ts';
+import type { DocumentStore } from '../storage/store.ts';
 import type { Payee, PayeeDirectory } from './payee-directory.ts';
 import type { PayoutIntent, PayoutParser } from './payout-parser.ts';
+import { agentRecords, type PayoutRecord } from './records.ts';
 
 /** Why the agent itself stopped before asking the policy service. */
 export const AgentReason = {
@@ -24,16 +24,6 @@ export const AgentReason = {
   Error: 'ERROR',
 } as const;
 
-const PayoutRecordSchema = z.strictObject({
-  reference: z.string(),
-  status: z.enum(['package-sent', 'refused', 'signed', 'paid', 'failed']),
-  invoiceId: z.string().optional(),
-  hash: z.string().optional(),
-  reasons: z.array(z.string()),
-  updatedAt: z.iso.datetime(),
-});
-
-type PayoutRecord = z.infer<typeof PayoutRecordSchema>;
 
 export type PayoutResult =
   | { reference: string; status: 'paid'; hash: string; ledgerIndex: number }
@@ -76,8 +66,7 @@ const SIGNATURES_PER_PAYMENT = 2;
 
 export function createPayoutAgent(deps: PayoutAgentDeps): PayoutAgent {
   const clock = deps.now ?? (() => new Date());
-  const payouts = collection(deps.store, 'payouts', PayoutRecordSchema);
-  const log = appendOnlyLog(deps.store, 'events', PayoutRecordSchema);
+  const { payouts, runs, events: log } = agentRecords(deps.store);
 
   async function save(record: Omit<PayoutRecord, 'updatedAt'>): Promise<void> {
     const entry = { ...record, updatedAt: clock().toISOString() };
@@ -177,6 +166,8 @@ export function createPayoutAgent(deps: PayoutAgentDeps): PayoutAgent {
   return {
     async run(payoutList) {
       const intents = await deps.parser.parse(payoutList);
+      const startedAt = clock().toISOString();
+      await runs.put(startedAt, { id: startedAt, startedAt, instruction: payoutList, intents });
       deps.onEvent?.({ type: 'parsed', intents });
       const results: PayoutResult[] = [];
       for (const intent of intents) {

@@ -1,19 +1,19 @@
 import type { Client } from 'xrpl';
-import { createPayeeDirectory } from '../../src/agent/payee-directory.ts';
-import { createPayoutAgent, type AgentEvent, type PayoutAgent } from '../../src/agent/payout-agent.ts';
-import { createDailyCallBudget, DAILY_MODEL_CALL_LIMIT, withCallBudget } from '../../src/agent/call-budget.ts';
-import { createClaudePayoutParser, type PayoutParser } from '../../src/agent/payout-parser.ts';
-import { printLine } from '../../src/cli/output.ts';
-import { DEMO_BUSINESS, DEMO_PAYEES, demoMandate } from '../../src/config/demo.ts';
-import { loadEnv, type Env } from '../../src/config/env.ts';
-import { loadWallets, type Wallets } from '../../src/config/wallets.ts';
-import type { Mandate } from '../../src/domain/mandate.ts';
-import { createExchangeVerifier, type ExchangeVerifier } from '../../src/exchange/exchange-verifier.ts';
-import { findCredential } from '../../src/ledger/reads.ts';
-import { createPolicyService, type PolicyService } from '../../src/policy/policy-service.ts';
-import { createRegistry, type Registry } from '../../src/registry/registry.ts';
-import { createFileStore } from '../../src/storage/file-store.ts';
-import type { DocumentStore } from '../../src/storage/store.ts';
+import { createPayeeDirectory } from '../agent/payee-directory.ts';
+import { createPayoutAgent, type AgentEvent, type PayoutAgent } from '../agent/payout-agent.ts';
+import { createDailyCallBudget, DAILY_MODEL_CALL_LIMIT, withCallBudget } from '../agent/call-budget.ts';
+import { createClaudePayoutParser, type PayoutParser } from '../agent/payout-parser.ts';
+import { DEMO_BUSINESS, DEMO_PAYEES, demoMandate } from '../config/demo.ts';
+import { loadEnv, type Env } from '../config/env.ts';
+import { loadWallets, type Wallets } from '../config/wallets.ts';
+import type { Mandate } from '../domain/mandate.ts';
+import { createExchangeVerifier, type ExchangeVerifier } from '../exchange/exchange-verifier.ts';
+import { findCredential } from '../ledger/reads.ts';
+import { createPolicyService, type PolicyService } from '../policy/policy-service.ts';
+import { createRegistry, type Registry } from '../registry/registry.ts';
+import { createFileStore } from '../storage/file-store.ts';
+import type { DocumentStore } from '../storage/store.ts';
+import type { Report } from './events.ts';
 
 export interface DemoContext {
   client: Client;
@@ -32,7 +32,7 @@ export interface DemoContext {
  * Wires every service for the demo. Each service gets its own key and its
  * own store directory; they talk only through the interfaces passed here.
  */
-export function createDemoContext(client: Client): DemoContext {
+export function createDemoContext(client: Client, report: Report): DemoContext {
   const env = loadEnv();
   const wallets = loadWallets(env);
   const issuerAddress = wallets.issuer.address;
@@ -58,7 +58,7 @@ export function createDemoContext(client: Client): DemoContext {
     agentSignerAddress: wallets.agentSigner.address,
     policyAddress: wallets.policy.address,
     beforeSubmit: (hash) => {
-      printLine(`submitting ${hash}`);
+      report({ type: 'line', text: 'Submitting to the ledger', hash });
     },
   });
   const agentStore = createFileStore('.data/agent');
