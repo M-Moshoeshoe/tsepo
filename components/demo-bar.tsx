@@ -27,7 +27,7 @@ function useElapsedSeconds(state: RunState): number {
   return Math.max(0, Math.round(((state.finishedAt ?? now) - state.startedAt) / 1000));
 }
 
-function RunProgress({ state, onClose }: { state: Exclude<RunState, { status: 'idle' }>; onClose: () => void }) {
+function RunProgress({ state, busy, onClose }: { state: Exclude<RunState, { status: 'idle' }>; busy: boolean; onClose: () => void }) {
   const seconds = useElapsedSeconds(state);
   const list = useRef<HTMLOListElement>(null);
   const count = state.events.length;
@@ -51,7 +51,7 @@ function RunProgress({ state, onClose }: { state: Exclude<RunState, { status: 'i
           {state.label}
           <span className="font-normal text-muted tabular-nums">{summary}</span>
         </p>
-        {state.status !== 'running' && (
+        {!busy && (
           <Button variant="ghost" size="sm" onClick={onClose}>
             Close
           </Button>
@@ -88,8 +88,7 @@ function RunProgress({ state, onClose }: { state: Exclude<RunState, { status: 'i
 
 /** The demo controls: four scenarios and Reset, with live progress while a run is going. */
 export function DemoBar() {
-  const { state, start, dismiss } = useRun();
-  const busy = state.status === 'running';
+  const { state, busy, start, dismiss } = useRun();
 
   return (
     <div className="border-b border-border bg-surface">
@@ -117,7 +116,7 @@ export function DemoBar() {
           </Button>
         </div>
       </div>
-      {state.status !== 'idle' && <RunProgress state={state} onClose={dismiss} />}
+      {state.status !== 'idle' && <RunProgress state={state} busy={busy} onClose={dismiss} />}
     </div>
   );
 }

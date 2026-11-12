@@ -11,6 +11,8 @@ export type RunState =
 
 interface RunContextValue {
   state: RunState;
+  /** True from the start of a run until its connection has fully closed. Controls stay disabled while busy. */
+  busy: boolean;
   start: (request: RunRequest, label: string) => void;
   dismiss: () => void;
 }
@@ -45,6 +47,7 @@ function parseLine(line: string): DemoEvent | undefined {
 export function RunProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<RunState>({ status: 'idle' });
+  const [busy, setBusy] = useState(false);
   const running = useRef(false);
 
   const append = useCallback((event: DemoEvent) => {
@@ -61,6 +64,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
     (request: RunRequest, label: string) => {
       if (running.current) return;
       running.current = true;
+      setBusy(true);
       setState({ status: 'running', label, events: [], startedAt: Date.now() });
 
       void (async () => {
@@ -98,6 +102,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
         } finally {
           if (!finished) append({ type: 'failed', text: LOST_CONNECTION });
           running.current = false;
+          setBusy(false);
           router.refresh();
         }
       })();
@@ -109,7 +114,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
     if (!running.current) setState({ status: 'idle' });
   }, []);
 
-  return <RunContext.Provider value={{ state, start, dismiss }}>{children}</RunContext.Provider>;
+  return <RunContext.Provider value={{ state, busy, start, dismiss }}>{children}</RunContext.Provider>;
 }
 
 export function useRun(): RunContextValue {

@@ -135,8 +135,8 @@ function RevokeDialog({ disabled }: { disabled: boolean }) {
 }
 
 export function MandateActions({ perPaymentLimit, dailyLimit, agentActive }: MandateActionsProps) {
-  const { state } = useRun();
-  const disabled = !agentActive || state.status === 'running';
+  const { busy } = useRun();
+  const disabled = !agentActive || busy;
   return (
     <div className="flex flex-wrap gap-2">
       <ChangeLimitsDialog perPaymentLimit={perPaymentLimit} dailyLimit={dailyLimit} disabled={disabled} />
