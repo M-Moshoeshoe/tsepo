@@ -1,0 +1,23 @@
+{
+  "name": "tsepo",
+  "version": "0.1.0",
+  "description": "Identity and authority for AI agents that pay on the XRP Ledger.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "xrpl": "5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

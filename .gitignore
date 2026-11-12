@@ -1,0 +1,18 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Secrets: every env file except the committed example
+.env
+.env.*
+!.env.example
+
+# Local tool state
+.qodo/
+.claude/settings.local.json
+
+# Logs and operating system files
+*.log
+.DS_Store
+Thumbs.db
