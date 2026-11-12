@@ -3,20 +3,18 @@ import { chromium, type Browser, type Page } from 'playwright';
 
 /**
  * Drives the running interface like a person would and saves screenshots to
- * screenshots/. Start the app first (npm run build && npm start).
- *   node scripts/capture-demo.ts screens   only the two screens, at 1280px and 390px
- *   node scripts/capture-demo.ts all       Reset and each of the four scenarios from the demo bar, then the screens
+ * screenshots/. Start the app first (npm run build && npm start), and run this
+ * with the demo access code in the environment (node --env-file=.env.local ...).
+ *   node scripts/capture-demo.ts screens   the screens only
+ *   node scripts/capture-demo.ts all       runs from the demo bar, then the screens
  */
 const BASE_URL = process.env.CAPTURE_URL ?? 'http://localhost:3000';
+const ACCESS_CODE = process.env.DEMO_ACCESS_CODE ?? '';
 const OUT = 'screenshots';
 const RUN_TIMEOUT_MS = 240_000;
 
-const SCENARIOS = [
-  { number: 1, button: 'Unknown agent', screens: ['compliance'] },
-  { number: 2, button: 'Verified agent', screens: ['registry', 'compliance'] },
-  { number: 3, button: 'Split payments', screens: ['registry', 'compliance'] },
-  { number: 4, button: 'Revoke', screens: ['registry', 'compliance'] },
-] as const;
+/** Split payments first, then a reset, so the desk has runs before and since the last reset. */
+const RUNS = ['Reset demo', 'Split payments', 'Reset demo', 'Unknown agent', 'Verified agent'];
 
 async function openPage(browser: Browser, width: number): Promise<Page> {
   const context = await browser.newContext({
@@ -27,14 +25,28 @@ async function openPage(browser: Browser, width: number): Promise<Page> {
   return context.newPage();
 }
 
-async function shot(page: Page, name: string): Promise<void> {
-  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true });
+async function shot(page: Page, name: string, fullPage = true): Promise<void> {
+  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage });
   console.log(`saved ${OUT}/${name}.png`);
 }
 
-/** Clicks a demo bar button and waits until the run reports that it finished. Stops on any failure. */
+/** Enters the access code once per browser session. The code is never printed. */
+async function unlock(page: Page): Promise<void> {
+  const input = page.locator('#demo-access-code');
+  if (!(await input.isVisible())) return;
+  if (ACCESS_CODE === '') throw new Error('DEMO_ACCESS_CODE is not set in the environment');
+  await input.fill(ACCESS_CODE);
+  await page.getByRole('button', { name: 'Unlock the demo controls' }).click();
+  await page.getByRole('button', { name: 'Reset demo' }).waitFor();
+}
+
+async function visit(page: Page, path: string): Promise<void> {
+  await page.goto(`${BASE_URL}${path}`, { waitUntil: 'networkidle' });
+  await unlock(page);
+}
+
+/** Clicks a demo bar button and waits until that run has fully closed. Stops on any failure. */
 async function runFromBar(page: Page, button: string): Promise<void> {
-  // Close the previous run's panel first, so its result is never mistaken for this run's.
   const close = page.getByRole('button', { name: 'Close', exact: true });
   if (await close.isVisible()) await close.click();
   await page.getByRole('button', { name: button, exact: false }).first().click();
@@ -43,47 +55,44 @@ async function runFromBar(page: Page, button: string): Promise<void> {
   const finished = progress.getByText(/Finished in \d+ seconds|Stopped after \d+ seconds/);
   await finished.waitFor({ timeout: RUN_TIMEOUT_MS });
   if ((await finished.textContent())?.startsWith('Stopped') === true) {
-    throw new Error(`The run "${button}" stopped. See the screenshot of the progress panel.`);
+    await shot(page, 'run-stopped');
+    throw new Error(`The run "${button}" stopped. See screenshots/run-stopped.png.`);
   }
-  // Close appears only once the run's connection has fully closed and the controls are free again.
   await close.waitFor({ timeout: RUN_TIMEOUT_MS });
-  await page.waitForLoadState('networkidle');
+  console.log(`ran ${button}`);
 }
 
-async function screens(browser: Browser, suffix = ''): Promise<void> {
+async function screens(browser: Browser): Promise<void> {
   for (const width of [1280, 390]) {
     const page = await openPage(browser, width);
     for (const screen of ['registry', 'compliance']) {
-      await page.goto(`${BASE_URL}/${screen}`, { waitUntil: 'networkidle' });
-      await shot(page, `${screen}-${width}${suffix}`);
+      await visit(page, `/${screen}`);
+      await shot(page, `${screen}-${width}`);
+    }
+    if (width === 1280) {
+      await visit(page, '/compliance?filter=refused');
+      await shot(page, 'compliance-1280-refused');
+    } else {
+      await visit(page, '/compliance');
+      await page.locator('tbody tr a').first().click();
+      await page.getByRole('dialog', { name: 'Details' }).waitFor();
+      await shot(page, 'compliance-390-details-open', false);
     }
     await page.context().close();
   }
-}
-
-async function scenarios(browser: Browser): Promise<void> {
-  const page = await openPage(browser, 1280);
-  await page.goto(`${BASE_URL}/registry`, { waitUntil: 'networkidle' });
-  for (const scenario of SCENARIOS) {
-    await runFromBar(page, 'Reset demo');
-    await runFromBar(page, scenario.button);
-    await shot(page, `scenario-${scenario.number}-progress`);
-    for (const screen of scenario.screens) {
-      await page.goto(`${BASE_URL}/${screen}`, { waitUntil: 'networkidle' });
-      await shot(page, `scenario-${scenario.number}-${screen}`);
-    }
-    if (scenario.number === 2) await screens(browser);
-    await page.goto(`${BASE_URL}/registry`, { waitUntil: 'networkidle' });
-  }
-  await page.context().close();
 }
 
 const mode = process.argv[2] ?? 'screens';
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 try {
-  if (mode === 'all') await scenarios(browser);
-  else await screens(browser);
+  if (mode === 'all') {
+    const page = await openPage(browser, 1280);
+    await visit(page, '/registry');
+    for (const run of RUNS) await runFromBar(page, run);
+    await page.context().close();
+  }
+  await screens(browser);
 } finally {
   await browser.close();
 }

@@ -10,6 +10,7 @@ coverage/
 
 # Local demo data (file storage adapter)
 .data/
+.data-archive/
 
 # Local tool state
 .qodo/
