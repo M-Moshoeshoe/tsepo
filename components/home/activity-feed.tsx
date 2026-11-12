@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import type { DeskEntry } from '../../app/_data/desk-entries.ts';
 import { deskHref } from '../../app/compliance/desk-href.ts';
+import { actorName } from '../../src/views/actors.ts';
 import { formatSast } from '../../src/views/status.ts';
-import { Amount, EmptyMessage, StatusBadge } from '../display.tsx';
+import { Amount, StatusBadge } from '../display.tsx';
+import { EmptyMessage } from '../empty-message.tsx';
 
 /** The five newest payments and stopped attempts, each linking to its details on the compliance desk. */
 export function ActivityFeed({ entries }: { entries: DeskEntry[] }) {
@@ -24,7 +26,7 @@ export function ActivityFeed({ entries }: { entries: DeskEntry[] }) {
               <StatusBadge tone={entry.status.tone}>{entry.status.chip}</StatusBadge>
             </span>
             <span className="text-xs text-tertiary tabular-nums">
-              {formatSast(entry.at)}. Decided by {entry.decidedBy}.
+              {formatSast(entry.at)}. Decided by {actorName(entry.decidedBy)}.
             </span>
           </Link>
         </li>

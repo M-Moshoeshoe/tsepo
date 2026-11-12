@@ -51,11 +51,7 @@ function Metrics({ view }: { view: HomeView }) {
         note={view.usage === undefined ? 'No mandate is set.' : `of ${view.usage.limit} RLUSD, ${view.usage.left} left`}
       />
       <Metric label="Cleared since reset" value={view.clearedSinceReset} note={`Payments ${since}`} />
-      <Metric
-        label="Refused since reset"
-        value={view.refusedSinceReset.total}
-        note={`${String(view.refusedSinceReset.byPolicy)} by the policy service, ${String(view.refusedSinceReset.byLedger)} by the ledger`}
-      />
+      <Metric label="Stopped since reset" value={view.stoppedSinceReset.attempts} note={view.stoppedSinceReset.sentence} />
     </dl>
   );
 }
@@ -94,7 +90,7 @@ export default async function HomePage() {
       <div className="grid items-start gap-10 2xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section aria-labelledby="runbook-title" className="grid min-w-0 gap-4">
           <SectionTitle id="runbook-title" title="Demo runbook" />
-          <p className="-mt-2 text-sm text-tertiary">Run the scenarios in order. Reset first to start from a clean state.</p>
+          <p className="-mt-2 text-sm text-tertiary">Run them in any order. Each scenario prepares the demo first and shows that in its steps.</p>
           <div className="overflow-hidden rounded-xl ring-1 ring-secondary">
             <Runbook lastResults={view.lastResults} />
           </div>

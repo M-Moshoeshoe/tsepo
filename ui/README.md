@@ -7,20 +7,21 @@ kept as copied so they can be compared with upstream. Changes made for
 Tšepo are listed below.
 
 - `application/app-navigation/base-components/mobile-header.tsx`: takes the
-  logo as a prop (the Tšepo mark) instead of the Untitled UI logo, and has no
-  background blur.
+  logo as a prop (the Tšepo mark) instead of the Untitled UI logo, has no
+  background blur, and is a plain `div` rather than a second `header`
+  banner (the application header is the page's one banner).
 - `application/modals/modal.tsx`: no background blur behind the overlay.
 - `application/app-navigation/base-components/nav-item.tsx`: items sit on the
   sidebar tone (transparent, tinted when hovered or selected) instead of white.
 - `application/empty-state/empty-state.tsx`: trimmed to the frame, featured
   icon, title, description and footer (no illustrations, background patterns,
-  file icons or avatar groups), and the title is an `h3`, so each page keeps
-  one `h1`.
+  file icons or avatar groups), the title is an `h3`, so each page keeps
+  one `h1`, and the content is a `div`, so each page keeps one `main`.
 - `application/slideout-menus/slideout-menu.tsx`: takes a `dialogLabel`, so
   each slideout has its own accessible name.
 - `base/progress-indicators/progress-indicators.tsx`: the bar takes a `label`,
   its accessible name.
-- `application/table` and `application/tabs` are copied unchanged.
+- `application/table` is copied unchanged.
 - `providers/router-provider.tsx` and `foundations/social-icons/github.tsx` are
   copied unchanged.
 - `base/avatar/utils.ts` and `base/buttons/button.tsx`: two one-line fixes so

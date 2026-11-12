@@ -7,6 +7,8 @@ import { Button } from '@/components/base/buttons/button';
 import { cx } from '@/utils/cx';
 import type { DemoEvent, Explanation } from '../../src/demo/events.ts';
 import { TESTNET_EXPLORER } from '../../src/ledger/testnet.ts';
+import { actorName, decisionNote } from '../../src/views/actors.ts';
+import { runEndAnnouncement } from '../../src/views/announcement.ts';
 import { useRun, type RunState } from '../run-provider.tsx';
 import { Term } from '../term.tsx';
 
@@ -71,9 +73,10 @@ function WhatJustHappened({ explanation }: { explanation: Explanation }) {
       <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
         <span>
           <span className="text-tertiary">Decided by </span>
-          <span className="font-semibold text-primary">
-            {explanation.decidedBy === 'ledger' ? 'the XRP Ledger itself' : 'the policy service'}
-          </span>
+          <span className="font-semibold text-primary">{actorName(explanation.decidedBy)}</span>
+          {explanation.decidedBy === 'exchange' && (
+            <span className="text-tertiary">. {decisionNote(explanation.decidedBy, 'cleared')}</span>
+          )}
         </span>
         {evidence.hash !== undefined && <ExplorerAnchor hash={evidence.hash}>{evidence.label}</ExplorerAnchor>}
         {evidence.hash === undefined && evidence.path !== undefined && (
@@ -163,11 +166,21 @@ function RunPanel({ state, busy, onClose }: { state: ActiveRun; busy: boolean; o
   );
 }
 
-/** The thin bar under the header while a run is going (motion 7), and the run result once it ends. */
+/**
+ * The thin bar under the header while a run is going (motion 7), and the run
+ * result once it ends. The status line is always present, so screen readers
+ * hear "finished" or "stopped" when a run ends.
+ */
 export function RunResult() {
   const { state, busy, dismiss } = useRun();
+  const last = state.status === 'idle' ? undefined : state.events.at(-1);
+  const announcement =
+    state.status === 'idle' ? '' : runEndAnnouncement(state.label, state.status, last?.type === 'failed' ? last.text : undefined);
   return (
     <>
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
       <div className="h-0.5 overflow-hidden" aria-hidden={!busy}>
         {busy && (
           <div role="progressbar" aria-label="A demo run is in progress" className="h-full bg-brand-primary">

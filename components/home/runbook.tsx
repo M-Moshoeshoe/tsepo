@@ -1,20 +1,16 @@
 'use client';
 
 import { PlayCircle } from '@untitledui/icons';
-import { Table } from '@/components/application/table/table';
 import { Button } from '@/components/base/buttons/button';
+import { actorName, decisionNote } from '../../src/views/actors.ts';
 import { SCENARIOS, scenarioLabel, type ScenarioKind } from '../../src/views/scenarios.ts';
 import { formatSast } from '../../src/views/status.ts';
 import type { LastResult } from '../../app/_data/home.ts';
 import { StatusBadge } from '../display.tsx';
 import { useDemoActions } from '../shell/demo-actions.tsx';
 
-const HEAD = 'px-4 lg:px-5';
-const CELL = 'px-4 py-3 lg:px-5 align-top';
-
-function sentenceCase(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
+const HEAD = 'px-4 py-2.5 text-left text-xs font-semibold text-quaternary lg:px-5';
+const CELL = 'px-4 py-3 align-top lg:px-5';
 
 function LastResultCell({ result }: { result: LastResult | undefined }) {
   if (result === undefined) return <span className="text-tertiary">Not run yet</span>;
@@ -26,38 +22,60 @@ function LastResultCell({ result }: { result: LastResult | undefined }) {
         </StatusBadge>
         <span className="text-xs text-tertiary tabular-nums">{formatSast(result.at)}</span>
       </span>
-      {result.summary !== undefined && <span className="text-primary">{result.summary}</span>}
+      <span className="text-primary">{result.summary}</span>
     </span>
   );
 }
 
-/** The four scenarios in the order they are told, what each proves, and a Run button for each. */
+/**
+ * The four scenarios in the order they are told, what each proves, and a Run
+ * button for each. A plain table, so Tab reaches every Run button. Each
+ * scenario prepares its own starting state, so they run in any order.
+ */
 export function Runbook({ lastResults }: { lastResults: Partial<Record<ScenarioKind, LastResult>> }) {
   const { busy, runScenario } = useDemoActions();
   return (
-    <Table size="sm" aria-label="Demo runbook">
-      <Table.Header>
-        <Table.Head id="scenario" label="Scenario" isRowHeader className={HEAD} />
-        <Table.Head id="decided" label="Decided by" className={`${HEAD} w-36 max-md:hidden`} />
-        <Table.Head id="last" label="Last result" className={`${HEAD} w-48 max-sm:hidden`} />
-        <Table.Head id="run" label="Run" className={`${HEAD} w-24 *:justify-end`} />
-      </Table.Header>
-      <Table.Body items={SCENARIOS.map((scenario) => ({ ...scenario, id: scenario.kind }))}>
-        {(scenario) => (
-          <Table.Row id={scenario.id} className="h-auto" textValue={scenarioLabel(scenario)}>
-            <Table.Cell className={CELL}>
+    <table className="w-full text-sm">
+      <caption className="sr-only">Demo runbook: the four scenarios, who decides each, and the last result</caption>
+      <thead className="bg-secondary">
+        <tr>
+          <th scope="col" className={HEAD}>
+            Scenario
+          </th>
+          <th scope="col" className={`${HEAD} w-44 max-md:hidden`}>
+            Decided by
+          </th>
+          <th scope="col" className={`${HEAD} w-56 max-sm:hidden`}>
+            Last result
+          </th>
+          <th scope="col" className={`${HEAD} w-24 text-right`}>
+            Run
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {SCENARIOS.map((scenario) => (
+          <tr key={scenario.kind} className="border-t border-secondary">
+            <th scope="row" className={`${CELL} text-left font-normal`}>
               <span className="grid gap-0.5">
                 <span className="font-semibold text-primary">
                   <span className="text-brand-secondary tabular-nums">{scenario.number}</span> {scenario.title}
                 </span>
                 <span className="text-tertiary">{scenario.proves}</span>
               </span>
-            </Table.Cell>
-            <Table.Cell className={`${CELL} max-md:hidden`}>{sentenceCase(scenario.decidedBy)}</Table.Cell>
-            <Table.Cell className={`${CELL} max-sm:hidden`}>
+            </th>
+            <td className={`${CELL} text-secondary max-md:hidden`}>
+              <span className="grid gap-0.5">
+                <span>{actorName(scenario.decidedBy, true)}</span>
+                {scenario.decidedBy === 'exchange' && (
+                  <span className="text-xs text-tertiary">{decisionNote(scenario.decidedBy, 'cleared')}</span>
+                )}
+              </span>
+            </td>
+            <td className={`${CELL} max-sm:hidden`}>
               <LastResultCell result={lastResults[scenario.kind]} />
-            </Table.Cell>
-            <Table.Cell className={`${CELL} text-right whitespace-nowrap`}>
+            </td>
+            <td className={`${CELL} text-right whitespace-nowrap`}>
               <Button
                 color="secondary"
                 size="sm"
@@ -70,10 +88,10 @@ export function Runbook({ lastResults }: { lastResults: Partial<Record<ScenarioK
               >
                 Run
               </Button>
-            </Table.Cell>
-          </Table.Row>
-        )}
-      </Table.Body>
-    </Table>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

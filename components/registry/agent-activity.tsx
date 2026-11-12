@@ -1,7 +1,8 @@
 import type { PayoutActivity, PayoutStep, RunActivity } from '../../src/views/activity.ts';
 import { formatSast, reasonText } from '../../src/views/status.ts';
 import { CopyButton } from '../copy-button.tsx';
-import { Amount, AssistantMark, EmptyMessage, ExplorerLink, StatusBadge } from '../display.tsx';
+import { Amount, AssistantMark, ExplorerLink, StatusBadge } from '../display.tsx';
+import { EmptyMessage } from '../empty-message.tsx';
 import { Timeline, type TimelineState } from '../timeline.tsx';
 
 const OUTCOME: Record<PayoutActivity['outcome'], { tone: 'cleared' | 'refused' | 'neutral'; label: string }> = {

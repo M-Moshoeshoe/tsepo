@@ -14,7 +14,7 @@ import { cx } from "@/utils/cx";
 export const MobileNavigationHeader = ({ children, logo }: PropsWithChildren<{ logo: ReactNode }>) => {
     return (
         <AriaDialogTrigger>
-            <header className="flex h-14 items-center justify-between border-b border-secondary bg-primary p-3 pl-4 lg:hidden">
+            <div className="flex h-14 items-center justify-between border-b border-secondary bg-primary p-3 pl-4 lg:hidden">
                 {logo}
 
                 <AriaButton
@@ -24,7 +24,7 @@ export const MobileNavigationHeader = ({ children, logo }: PropsWithChildren<{ l
                     <Menu02 className="size-6 transition duration-200 ease-in-out group-aria-expanded:opacity-0" />
                     <CloseIcon className="absolute size-6 opacity-0 transition duration-200 ease-in-out group-aria-expanded:opacity-100" />
                 </AriaButton>
-            </header>
+            </div>
 
             <AriaModalOverlay
                 isDismissable

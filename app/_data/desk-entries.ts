@@ -5,6 +5,8 @@ import { PolicyReason } from '../../src/domain/reasons.ts';
 import { agentCredentialQuery } from '../../src/ledger/credential.ts';
 import { getCredentialHistory, type CredentialEvent } from '../../src/ledger/reads.ts';
 import type { DepositRecord } from '../../src/exchange/exchange-verifier.ts';
+import type { Actor } from '../../src/demo/events.ts';
+import { UNREGISTERED_AGENT } from '../../src/views/desk.ts';
 import { decidedBy } from '../../src/views/payment-events.ts';
 import { depositStatus, LEDGER_REJECTION_STATUS, refusalStatus, type Status } from '../../src/views/status.ts';
 
@@ -18,7 +20,7 @@ export interface DeskEntry {
   amount: string | undefined;
   asset: string | undefined;
   status: Status;
-  decidedBy: ReturnType<typeof decidedBy>;
+  decidedBy: Actor;
   reasons: string[];
   hash: string | undefined;
   invoiceId: string | undefined;
@@ -50,7 +52,7 @@ export async function collectDeskEntries(ctx: DemoContext): Promise<DeskEntries>
 
   const nameOf = (address: string | undefined): string => {
     if (address === wallets.agent.address) return DEMO_AGENT_NAME;
-    if (address === wallets.unknownAgent.address) return 'Unregistered agent';
+    if (address === wallets.unknownAgent.address) return UNREGISTERED_AGENT;
     return 'Unknown account';
   };
 

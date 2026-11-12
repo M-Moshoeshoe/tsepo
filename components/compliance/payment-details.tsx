@@ -1,4 +1,5 @@
 import type { DeskDetail } from '../../app/_data/compliance.ts';
+import { actorName, decisionNote } from '../../src/views/actors.ts';
 import type { EventState } from '../../src/views/payment-events.ts';
 import { isGlossaryTerm } from '../../src/views/glossary.ts';
 import { formatSast, reasonText } from '../../src/views/status.ts';
@@ -51,7 +52,10 @@ export function PaymentDetails({ detail }: { detail: DeskDetail }) {
   const { entry } = detail;
   return (
     <div className="grid w-full gap-8">
-      <p className="rounded-lg bg-secondary px-3 py-2.5 text-sm text-primary">{entry.status.label}</p>
+      <div className="grid gap-1 rounded-lg bg-secondary px-3 py-2.5 text-sm">
+        <p className="text-primary">{entry.status.label}</p>
+        <p className="text-tertiary">{decisionNote(entry.decidedBy, entry.status.tone)}</p>
+      </div>
 
       <SlideoutSection title="What happened">
         {/* Motion 2: the steps tick in one after another. The key restarts them for another payment. */}
@@ -89,7 +93,7 @@ export function PaymentDetails({ detail }: { detail: DeskDetail }) {
                 </span>
               ),
             },
-            { term: 'Decided by', value: entry.decidedBy.charAt(0).toUpperCase() + entry.decidedBy.slice(1) },
+            { term: 'Decided by', value: actorName(entry.decidedBy, true) },
             ...(entry.ledgerResult === undefined ? [] : [{ term: 'Ledger result', value: <LedgerResult code={entry.ledgerResult} /> }]),
             entry.hash === undefined
               ? { term: 'Ledger', value: <span className="text-tertiary">Never submitted. The policy service refused to co-sign.</span> }

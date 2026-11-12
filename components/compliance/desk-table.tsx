@@ -1,15 +1,12 @@
 'use client';
 
 import { Table } from '@/components/application/table/table';
+import { actorName } from '../../src/views/actors.ts';
 import { formatSastDate, formatSastTime } from '../../src/views/status.ts';
 import type { DeskFilter } from '../../src/views/desk.ts';
 import type { DeskEntry } from '../../app/_data/desk-entries.ts';
 import { deskHref } from '../../app/compliance/desk-href.ts';
 import { Amount, ShortAddress, StatusBadge } from '../display.tsx';
-
-function sentenceCase(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
 
 const HEAD = 'px-4 lg:px-5';
 const CELL = 'px-4 py-2.5 lg:px-5';
@@ -58,7 +55,12 @@ export function DeskTable({ entries, filter, earlier }: { entries: DeskEntry[]; 
                 {entry.status.chip}
               </StatusBadge>
             </Table.Cell>
-            <Table.Cell className={`${CELL} max-md:hidden`}>{sentenceCase(entry.decidedBy)}</Table.Cell>
+            <Table.Cell className={`${CELL} max-md:hidden`}>
+              <span className="grid">
+                <span>{actorName(entry.decidedBy, true)}</span>
+                {entry.kind === 'refusal' && <span className="text-xs text-tertiary">Reported by the agent&apos;s policy service</span>}
+              </span>
+            </Table.Cell>
           </Table.Row>
         )}
       </Table.Body>

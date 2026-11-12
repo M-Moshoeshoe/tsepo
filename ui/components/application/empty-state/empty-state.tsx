@@ -38,7 +38,7 @@ const Content = (props: ComponentPropsWithRef<"div">) => {
     const { size } = useContext(RootContext);
 
     return (
-        <main
+        <div
             {...props}
             className={cx(
                 "z-10 mb-6 flex w-full max-w-88 flex-col items-center justify-center gap-1",

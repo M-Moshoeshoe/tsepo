@@ -1,6 +1,3 @@
-'use client';
-
-import { Table } from '@/components/application/table/table';
 import { ShortAddress } from '../display.tsx';
 
 export interface RecipientRow {
@@ -10,31 +7,44 @@ export interface RecipientRow {
   paidThrough: string | undefined;
 }
 
-const HEAD = 'px-4 lg:px-5';
+const HEAD = 'px-4 py-2.5 text-left text-xs font-semibold text-quaternary lg:px-5';
 const CELL = 'px-4 py-2.5 lg:px-5';
 
-/** The people the agent may pay, as a compact table. */
+/** The people the agent may pay, as a compact plain table. */
 export function RecipientsTable({ recipients }: { recipients: RecipientRow[] }) {
   return (
-    <Table size="sm" aria-label="Approved recipients">
-      <Table.Header>
-        <Table.Head id="name" label="Name" isRowHeader className={HEAD} />
-        <Table.Head id="through" label="Paid through" className={HEAD} />
-        <Table.Head id="tag" label="Destination tag" className={`${HEAD} *:justify-end`} />
-        <Table.Head id="account" label="Account" className={`${HEAD} max-sm:hidden`} />
-      </Table.Header>
-      <Table.Body items={recipients.map((recipient) => ({ ...recipient, id: `${recipient.address}-${String(recipient.destinationTag)}` }))}>
-        {(recipient) => (
-          <Table.Row id={recipient.id} className="h-auto">
-            <Table.Cell className={`${CELL} font-medium text-primary`}>{recipient.name}</Table.Cell>
-            <Table.Cell className={CELL}>{recipient.paidThrough ?? 'Paid directly'}</Table.Cell>
-            <Table.Cell className={`${CELL} text-right tabular-nums`}>{recipient.destinationTag ?? 'None'}</Table.Cell>
-            <Table.Cell className={`${CELL} max-sm:hidden`}>
+    <table className="w-full text-sm">
+      <caption className="sr-only">Approved recipients</caption>
+      <thead className="bg-secondary">
+        <tr>
+          <th scope="col" className={HEAD}>
+            Name
+          </th>
+          <th scope="col" className={HEAD}>
+            Paid through
+          </th>
+          <th scope="col" className={`${HEAD} text-right`}>
+            Destination tag
+          </th>
+          <th scope="col" className={`${HEAD} max-sm:hidden`}>
+            Account
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {recipients.map((recipient) => (
+          <tr key={`${recipient.address}-${String(recipient.destinationTag)}`} className="border-t border-secondary">
+            <th scope="row" className={`${CELL} text-left font-medium text-primary`}>
+              {recipient.name}
+            </th>
+            <td className={`${CELL} text-secondary`}>{recipient.paidThrough ?? 'Paid directly'}</td>
+            <td className={`${CELL} text-right text-secondary tabular-nums`}>{recipient.destinationTag ?? 'None'}</td>
+            <td className={`${CELL} max-sm:hidden`}>
               <ShortAddress address={recipient.address} />
-            </Table.Cell>
-          </Table.Row>
-        )}
-      </Table.Body>
-    </Table>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

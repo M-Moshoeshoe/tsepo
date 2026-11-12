@@ -2,7 +2,7 @@ import 'server-only';
 import { DEMO_AGENT_NAME } from '../../src/config/demo.ts';
 import { agentCredentialQuery } from '../../src/ledger/credential.ts';
 import { findCredential, getCredentialHistory } from '../../src/ledger/reads.ts';
-import { countByFilter, itemsSince } from '../../src/views/desk.ts';
+import { countByFilter, itemsSince, stoppedSummary, type StoppedSummary } from '../../src/views/desk.ts';
 import { SCENARIOS, type ScenarioKind } from '../../src/views/scenarios.ts';
 import { dailyUsage, type DailyUsage } from '../../src/views/usage.ts';
 import { collectDeskEntries, type DeskEntry } from './desk-entries.ts';
@@ -12,8 +12,8 @@ import { agentStatus, type AgentStatus } from './registry.ts';
 export interface LastResult {
   at: string;
   outcome: 'finished' | 'stopped';
-  /** The plain summary of a finished run. Not kept for a stopped run, whose error text is for the server log. */
-  summary: string | undefined;
+  /** The plain summary of the run, or the plain reason it stopped. */
+  summary: string;
 }
 
 export interface HomeView {
@@ -22,7 +22,7 @@ export interface HomeView {
   usage: DailyUsage | undefined;
   lastResetAt: string | undefined;
   clearedSinceReset: number;
-  refusedSinceReset: { total: number; byPolicy: number; byLedger: number };
+  stoppedSinceReset: StoppedSummary;
   lastResults: Partial<Record<ScenarioKind, LastResult>>;
   /** The five newest payments and stopped attempts. */
   recent: DeskEntry[];
@@ -45,7 +45,8 @@ export async function loadHome(): Promise<HomeView> {
       ctx.demo.lastRuns(),
     ]);
 
-    const counts = countByFilter(itemsSince(desk.entries, desk.lastResetAt));
+    const sinceReset = itemsSince(desk.entries, desk.lastResetAt);
+    const counts = countByFilter(sinceReset);
     const lastResults: Partial<Record<ScenarioKind, LastResult>> = {};
     for (const run of runs) {
       const scenario = SCENARIOS.find((item) => item.kind === run.kind);
@@ -53,7 +54,7 @@ export async function loadHome(): Promise<HomeView> {
       lastResults[scenario.kind] = {
         at: run.at,
         outcome: run.outcome,
-        summary: run.outcome === 'finished' ? run.summary : undefined,
+        summary: run.summary,
       };
     }
 
@@ -63,7 +64,7 @@ export async function loadHome(): Promise<HomeView> {
       usage: mandate === undefined ? undefined : dailyUsage(usedToday, mandate.dailyLimit),
       lastResetAt: desk.lastResetAt,
       clearedSinceReset: counts.cleared,
-      refusedSinceReset: { total: counts.refused + counts.rejected, byPolicy: counts.refused, byLedger: counts.rejected },
+      stoppedSinceReset: stoppedSummary(sinceReset),
       lastResults,
       recent: itemsSince(desk.entries, undefined).slice(0, 5),
     };
