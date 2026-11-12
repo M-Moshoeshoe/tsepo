@@ -43,3 +43,10 @@ export function loadEnv(): Env {
 
   return { sourceTag: settings.data.AGENT_SOURCE_TAG, dataDir: settings.data.TSEPO_DATA_DIR, seeds };
 }
+
+/** Only the data folder, for parts that keep records but never touch the ledger, such as the pilot list. */
+export function dataDir(): string {
+  const settings = SettingsSchema.safeParse(process.env);
+  if (!settings.success) throw new Error('Invalid TSEPO_DATA_DIR setting');
+  return settings.data.TSEPO_DATA_DIR;
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Button } from '@/components/base/buttons/button';
-import { Brand } from '../../components/shell/brand.tsx';
+import { Brand, BrandMark } from '../../components/shell/brand.tsx';
+import { JoinPilot } from '../../components/site/join-pilot.tsx';
 
 export const metadata: Metadata = {
   title: 'Tšepo: spending rules your AI agent cannot break',
@@ -32,9 +33,11 @@ export default function LandingPage() {
           <Button href="/business" color="secondary" size="xl">
             Open the product
           </Button>
+          <JoinPilot />
         </div>
       </main>
-      <footer className="mx-auto max-w-5xl px-4 pb-10 text-sm text-tertiary lg:px-8">
+      <footer className="mx-auto flex max-w-5xl items-center gap-2 px-4 pb-10 text-sm text-tertiary lg:px-8">
+        <BrandMark className="size-5" />
         Testnet only. No real money moves. Sample businesses and people are fictional.
       </footer>
     </div>

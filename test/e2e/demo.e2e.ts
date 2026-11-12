@@ -254,6 +254,23 @@ void describe('the interface', () => {
     await page2.context().close();
   });
 
+  void it('takes a pilot request from the landing page, and refuses a bad one with a plain message', async () => {
+    const landing = await openPage(browser, 1280, BASE_URL, '/');
+    await landing.getByRole('button', { name: 'Join the pilot' }).click();
+    const dialog = landing.getByRole('dialog', { name: 'Join the pilot' });
+    await dialog.getByLabel('Your name').fill('Test Person');
+    await dialog.getByLabel('Organisation').fill('Example Organisation');
+    await dialog.getByLabel('Email').fill('not-an-email');
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await dialog.getByText('Enter a valid email address.').waitFor();
+    await dialog.getByLabel('Email').fill('test@example.com');
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await dialog.getByText('Thank you. We have your details and will contact you about the pilot.').waitFor();
+    await landing.context().close();
+    const refused = await fetch(`${BASE_URL}/api/pilot`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"name":"x"}' });
+    assert.equal(refused.status, 400);
+  });
+
   void it('refuses an evidence request for a malformed or unknown payment', async () => {
     assert.equal((await fetch(`${BASE_URL}/business/payments/not-a-payment!/evidence`)).status, 400);
     assert.equal((await fetch(`${BASE_URL}/business/payments/1-NO-SUCH-PAYMENT/evidence`)).status, 404);
