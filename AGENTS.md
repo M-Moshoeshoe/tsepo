@@ -62,7 +62,9 @@ accepts deposits only from agents that hold a valid credential.
 
 ## Tooling
 
-- Node 24, npm, strict TypeScript, Vitest.
+- Node 24, npm, strict TypeScript 6.0.3, ESLint (typescript-eslint strict
+  type-checked rules), Vitest. TypeScript 7 is not used because
+  typescript-eslint supports TypeScript below 6.1 only.
 - Dependencies are pinned to exact versions (`.npmrc` sets
   `save-exact=true`).
 - The XRPL Docs MCP server is configured in `.mcp.json`.
@@ -84,4 +86,6 @@ accepts deposits only from agents that hold a valid credential.
 ## Commands
 
 - `npm run typecheck`: type check the project.
+- `npm run lint`: lint the project.
 - `npm test`: run the test suite.
+- `npm run check`: all three. Must pass before every commit.
