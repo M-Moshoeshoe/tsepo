@@ -82,12 +82,18 @@ async function scenarioThree(browser: Browser): Promise<void> {
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Compliance desk' }).click();
   await page.locator('[aria-busy="true"]').waitFor({ timeout: 10_000 });
   await shot(page, 'loading-skeleton', false);
-  await page.getByRole('heading', { name: 'Details' }).waitFor({ timeout: 60_000 });
+  // The skeleton also has a Details title, so wait for the loaded Checks heading, then for the timeline to finish.
+  await page.getByRole('heading', { name: 'Checks' }).waitFor({ timeout: 60_000 });
   await page.waitForTimeout(1500);
+  // The browser does not animate the part of a full-page shot below the fold, so show the finished timeline.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await shot(page, 'scenario-3-compliance');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
 
   await page.getByRole('button', { name: /agent lane, what this means/ }).click();
   await page.getByRole('dialog').waitFor();
+  // Let the short fade finish before the screenshot.
+  await page.waitForTimeout(400);
   await shot(page, 'tooltip-open', false);
   await page.context().close();
 }
