@@ -1,5 +1,5 @@
 import type { Directive9Package } from '../../src/domain/directive9.ts';
-import { formatUtc } from '../../src/views/status.ts';
+import { formatSast } from '../../src/views/status.ts';
 import { Amount, DemoDataTag, Facts, Mono } from '../display.tsx';
 
 /** The travel information (FIC Directive 9) the exchange received before the payment. */
@@ -16,7 +16,7 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
         <Facts
           items={[
             { term: 'Reference', value: <span className="tabular-nums">{pkg.reference}</span> },
-            { term: 'Created', value: formatUtc(pkg.createdAt) },
+            { term: 'Created', value: formatSast(pkg.createdAt) },
             {
               term: 'Originator',
               value: (
@@ -50,7 +50,7 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
                   <span className="tabular-nums">
                     {pkg.agent.mandate.perPaymentLimit} RLUSD per payment, {pkg.agent.mandate.dailyLimit} RLUSD per day
                   </span>
-                  <span className="text-muted">Expires {formatUtc(pkg.agent.mandate.expiresAt)}</span>
+                  <span className="text-muted">Expires {formatSast(pkg.agent.mandate.expiresAt)}</span>
                   <Mono className="text-xs">{pkg.agent.mandateFingerprint}</Mono>
                 </span>
               ),
