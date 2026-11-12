@@ -84,7 +84,7 @@ function StackedDiagram() {
     { title: 'Business', note: 'sets limits, can revoke' },
     { title: 'AI agent', note: 'reads the instruction' },
     { title: 'Policy service', note: 'co-signs within limits' },
-    { title: 'XRP Ledger', note: 'checks the credential' },
+    { title: 'XRP Ledger', note: 'holds the credential' },
     { title: 'Exchange', note: 'agent lane' },
   ];
   const edges = ['instruction and signed limits', 'asks for a co-signature', 'payment with two signatures', 'credential required'];

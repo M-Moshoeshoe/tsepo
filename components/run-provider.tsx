@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from 'react';
 import { z } from 'zod';
 import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunKind, type RunRequest } from '../src/demo/events.ts';
 import { useToast } from './toast-provider.tsx';
@@ -12,7 +12,10 @@ export type RunState =
 
 interface RunContextValue {
   state: RunState;
-  /** True from the start of a run until its connection has fully closed. Controls stay disabled while busy. */
+  /**
+   * True from the start of a run until its connection has closed and the page shows the new ledger state.
+   * Controls stay disabled while busy, so nobody acts on data that is about to change.
+   */
   busy: boolean;
   /** The demo access code for this browser session, once entered. */
   accessCode: string | undefined;
@@ -80,7 +83,9 @@ export function RunProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const notify = useToast();
   const [state, setState] = useState<RunState>({ status: 'idle' });
-  const [busy, setBusy] = useState(false);
+  const [runActive, setRunActive] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
+  const busy = runActive || refreshing;
   const [accessCode, setAccessCode] = useState<string | undefined>(undefined);
   const codeRef = useRef<string | undefined>(undefined);
   const running = useRef(false);
@@ -117,7 +122,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
     (request: RunRequest, label: string) => {
       if (running.current) return;
       running.current = true;
-      setBusy(true);
+      setRunActive(true);
       setState({ status: 'running', label, events: [], startedAt: Date.now() });
 
       void (async () => {
@@ -158,8 +163,11 @@ export function RunProvider({ children }: { children: ReactNode }) {
         } finally {
           if (!finished) append({ type: 'failed', text: LOST_CONNECTION });
           running.current = false;
-          setBusy(false);
-          router.refresh();
+          // The refresh runs as a transition, so the run counts as busy until the new data has rendered.
+          startRefresh(() => {
+            router.refresh();
+          });
+          setRunActive(false);
         }
       })();
     },
