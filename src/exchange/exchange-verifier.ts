@@ -33,6 +33,8 @@ export const DepositRecordSchema = z.strictObject({
   reasons: z.array(z.string()),
   ledgerResult: z.string(),
   amount: z.string().optional(),
+  asset: z.string().optional(),
+  destinationTag: z.number().int().optional(),
   invoiceId: z.string().optional(),
   packageReference: z.string().optional(),
   recordedAt: z.iso.datetime(),
@@ -48,6 +50,7 @@ export const LedgerRejectionSchema = z.strictObject({
   sender: z.string(),
   ledgerResult: z.string().regex(/^tec[A-Z_]+$/),
   amount: z.string().optional(),
+  asset: z.string().optional(),
   recordedAt: z.iso.datetime(),
 });
 
@@ -135,7 +138,9 @@ export function createExchangeVerifier(deps: ExchangeVerifierDeps): ExchangeVeri
       closeTimeIso: payment.closeTimeIso,
       sender: payment.sender,
       ledgerResult: payment.result,
-      amount: payment.delivered?.value,
+      amount: payment.amount?.value,
+      asset: payment.amount?.asset,
+      destinationTag: payment.destinationTag,
       invoiceId: payment.invoiceId,
       recordedAt: clock().toISOString(),
     };
@@ -186,6 +191,7 @@ export function createExchangeVerifier(deps: ExchangeVerifierDeps): ExchangeVeri
       sender: attempt.sender,
       ledgerResult: attempt.result,
       amount: attempt.amount?.value,
+      asset: attempt.amount?.asset,
       recordedAt: clock().toISOString(),
     };
     await rejections.put(hash, entry);

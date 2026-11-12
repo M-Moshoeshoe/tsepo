@@ -1,6 +1,7 @@
 import { convertHexToString, RippledError, type Client } from 'xrpl';
 import { z } from 'zod';
 import type { CredentialEntry } from '../domain/credential-check.ts';
+import { describeAmount, type DisplayAmount } from './amounts.ts';
 import type { Reserves } from './reserve.ts';
 
 /** All reads use the latest validated ledger, never a pending one. */
@@ -274,7 +275,10 @@ export interface LedgerPayment {
   sender: string;
   destinationTag: number | undefined;
   invoiceId: string | undefined;
+  /** The delivered amount when it is an issued token, for the deposit rules. */
   delivered: z.infer<typeof IssuedAmountSchema> | undefined;
+  /** The delivered amount in any asset, for people to read. */
+  amount: DisplayAmount | undefined;
   credentialIds: string[];
 }
 
@@ -310,6 +314,7 @@ export async function getIncomingPayments(client: Client, account: string, after
         destinationTag: tx.DestinationTag,
         invoiceId: tx.InvoiceID,
         delivered: delivered.success ? delivered.data : undefined,
+        amount: describeAmount(item.meta.delivered_amount),
         credentialIds: tx.CredentialIDs ?? [],
       });
     }
@@ -400,7 +405,7 @@ export interface ValidatedPaymentAttempt {
   sender: string;
   destination: string;
   result: string;
-  amount: z.infer<typeof IssuedAmountSchema> | undefined;
+  amount: DisplayAmount | undefined;
 }
 
 /** Reads one validated payment by hash, whatever its result. Undefined when it is not a validated payment. */
@@ -410,7 +415,6 @@ export async function getValidatedPayment(client: Client, hash: string): Promise
     const tx = result.tx_json;
     if (result.validated !== true || result.meta === undefined || result.ledger_index === undefined) return undefined;
     if (tx.TransactionType !== 'Payment' || tx.Destination === undefined) return undefined;
-    const amount = IssuedAmountSchema.safeParse(tx.Amount ?? tx.DeliverMax);
     return {
       hash: result.hash,
       ledgerIndex: result.ledger_index,
@@ -418,7 +422,7 @@ export async function getValidatedPayment(client: Client, hash: string): Promise
       sender: tx.Account,
       destination: tx.Destination,
       result: result.meta.TransactionResult,
-      amount: amount.success ? amount.data : undefined,
+      amount: describeAmount(tx.Amount ?? tx.DeliverMax),
     };
   } catch (error: unknown) {
     if (isNotFound(error)) return undefined;
