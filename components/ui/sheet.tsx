@@ -24,7 +24,7 @@ export function Sheet({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40" />
+        <DialogPrimitive.Overlay className="dialog-fade fixed inset-0 z-50 bg-ink/40" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className="sheet-up fixed inset-x-0 bottom-0 z-50 flex max-h-[88vh] flex-col rounded-t-md border-t border-border bg-surface"
