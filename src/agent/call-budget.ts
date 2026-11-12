@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { utcDay } from '../domain/decision.ts';
+import { utcDay } from '../domain/time.ts';
 import { collection, type DocumentStore } from '../storage/store.ts';
 import type { PayoutParser } from './payout-parser.ts';
 

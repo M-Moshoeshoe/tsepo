@@ -39,13 +39,13 @@ export function fingerprintOf(value: Json): string {
 
 /**
  * A stable fingerprint of a mandate. The order of approved recipients
- * carries no meaning, so it is sorted first.
+ * carries no meaning, so they are sorted by their canonical form first.
  */
 export function mandateFingerprint(mandate: Mandate): string {
-  return fingerprintOf({
-    ...mandate,
-    approvedRecipients: [...mandate.approvedRecipients].sort(byCodeUnit),
-  });
+  const recipients = mandate.approvedRecipients
+    .map((recipient) => JsonSchema.parse(recipient))
+    .sort((a, b) => byCodeUnit(canonicalJson(a), canonicalJson(b)));
+  return fingerprintOf({ ...mandate, approvedRecipients: recipients });
 }
 
 /** The 256-bit ledger form of a fingerprint, as used in a payment's InvoiceID. */

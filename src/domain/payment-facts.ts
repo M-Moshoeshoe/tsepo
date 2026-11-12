@@ -43,6 +43,8 @@ export interface PaymentFacts {
   destinationTag: number | undefined;
   /** Undefined when the payment is in XRP rather than a token. */
   amount: IssuedAmount | undefined;
+  /** The amount in drops when the payment is in XRP. */
+  xrpDrops: string | undefined;
   usesUnsupportedFeature: boolean;
   hasMemos: boolean;
   invoiceId: string | undefined;
@@ -66,6 +68,7 @@ export function readUnsignedPayment(input: unknown): ReadPayment {
       destination: payment.Destination,
       destinationTag: payment.DestinationTag,
       amount: typeof payment.Amount === 'string' ? undefined : payment.Amount,
+      xrpDrops: typeof payment.Amount === 'string' ? payment.Amount : undefined,
       usesUnsupportedFeature:
         (payment.Flags ?? 0) !== 0 ||
         payment.SendMax !== undefined ||

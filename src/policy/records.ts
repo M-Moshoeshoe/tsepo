@@ -37,6 +37,7 @@ const ReviewEntrySchema = z.strictObject({
   destination: z.string().optional(),
   destinationTag: z.number().int().optional(),
   amount: z.string().optional(),
+  asset: z.string().optional(),
   /** The agent's stated purpose, stored as data for review, cut to 280 characters. */
   purpose: z.string().max(280),
   /** For SERVICE_ERROR only: the error message, cut to 200 characters. Never contains a key. */

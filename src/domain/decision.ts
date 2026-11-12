@@ -1,7 +1,7 @@
 import { RLUSD } from '../ledger/testnet.ts';
 import { toUnits } from './amount.ts';
 import type { CredentialCheck } from './credential-check.ts';
-import type { Mandate } from './mandate.ts';
+import { isApprovedRecipient, type Mandate } from './mandate.ts';
 import type { PaymentFacts } from './payment-facts.ts';
 import { PolicyReason } from './reasons.ts';
 
@@ -29,11 +29,6 @@ export interface ReviewContext {
 }
 
 export type Decision = { approve: true } | { approve: false; reasons: PolicyReason[] };
-
-/** The calendar day, in UTC, that daily totals are counted against. */
-export function utcDay(moment: Date): string {
-  return moment.toISOString().slice(0, 10);
-}
 
 function sumUnits(approvals: Approval[]): bigint {
   return approvals.reduce((total, approval) => total + toUnits(approval.amount), 0n);
@@ -74,7 +69,9 @@ export function decide(context: ReviewContext): Decision {
   if (context.credential === undefined) reasons.add(PolicyReason.CredentialMissing);
   else if (!context.credential.valid) reasons.add(PolicyReason.CredentialInvalid);
   if (Date.parse(mandate.expiresAt) <= context.now.getTime()) reasons.add(PolicyReason.MandateExpired);
-  if (!mandate.approvedRecipients.includes(facts.destination)) reasons.add(PolicyReason.RecipientNotApproved);
+  if (!isApprovedRecipient(mandate, facts.destination, facts.destinationTag)) {
+    reasons.add(PolicyReason.RecipientNotApproved);
+  }
 
   const units = amountUnits(facts);
   const isRlusd = facts.amount?.currency === RLUSD.currency && facts.amount.issuer === RLUSD.issuer;

@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { makeMandate, makeParties, makePayment, type Parties } from '../../test/fixtures.ts';
-import { decide, utcDay, type Approval, type ReviewContext } from './decision.ts';
+import { decide, type Approval, type ReviewContext } from './decision.ts';
 import { readUnsignedPayment } from './payment-facts.ts';
 import { PolicyReason } from './reasons.ts';
+import { sastDay, utcDay } from './time.ts';
 
 const now = new Date('2026-11-12T10:00:00Z');
 let parties: Parties;
@@ -74,6 +75,15 @@ describe('decide', () => {
   it('refuses a recipient that is not approved', () => {
     const decision = decide(context({ Destination: parties.stranger.address }));
     expect(decision).toEqual({ approve: false, reasons: [PolicyReason.RecipientNotApproved] });
+  });
+
+  it('refuses an approved address paid at another destination tag', () => {
+    const decision = decide(context({ DestinationTag: 1002 }));
+    expect(decision).toEqual({ approve: false, reasons: [PolicyReason.RecipientNotApproved] });
+  });
+
+  it('approves a recipient approved without a tag at any tag', () => {
+    expect(decide(context({ Destination: parties.contractor.address, DestinationTag: 7 }))).toEqual({ approve: true });
   });
 
   it('refuses a payment one millionth over the per-payment limit', () => {
@@ -158,9 +168,13 @@ describe('decide', () => {
   });
 });
 
-describe('utcDay', () => {
-  it('uses the UTC calendar day', () => {
-    expect(utcDay(new Date('2026-11-12T23:59:59+02:00'))).toBe('2026-11-12');
+describe('days', () => {
+  it('counts daily limits against the South African day', () => {
+    expect(sastDay(new Date('2026-11-12T21:59:59Z'))).toBe('2026-11-12');
+    expect(sastDay(new Date('2026-11-12T22:00:00Z'))).toBe('2026-11-13');
+  });
+
+  it('can also give the UTC day', () => {
     expect(utcDay(new Date('2026-11-13T01:00:00+02:00'))).toBe('2026-11-12');
   });
 });

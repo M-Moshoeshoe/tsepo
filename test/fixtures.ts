@@ -20,10 +20,13 @@ export type Parties = ReturnType<typeof makeParties>;
 
 export function makeMandate(parties: Parties, overrides: Partial<Mandate> = {}): Mandate {
   return {
-    version: 1,
+    version: 2,
     principal: parties.business.address,
     agent: parties.agent.address,
-    approvedRecipients: [parties.lane.address, parties.contractor.address],
+    approvedRecipients: [
+      { name: 'Naledi Mokoena', address: parties.lane.address, destinationTag: 1001 },
+      { name: 'Contractor', address: parties.contractor.address },
+    ],
     currency: 'RLUSD',
     perPaymentLimit: '3',
     dailyLimit: '5',

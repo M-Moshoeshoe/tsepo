@@ -2,11 +2,13 @@ import { unixTimeToRippleTime, type Payment, type Wallet } from 'xrpl';
 import { SignedAdminActionSchema, verifyAdminAction } from '../domain/admin-action.ts';
 import { formatUnits, toUnits } from '../domain/amount.ts';
 import { AGENT_MANDATE_CREDENTIAL_TYPE, checkCredential, type CredentialCheck } from '../domain/credential-check.ts';
-import { decide, utcDay } from '../domain/decision.ts';
+import { decide } from '../domain/decision.ts';
+import { sastDay } from '../domain/time.ts';
 import { fingerprintOf, JsonSchema, mandateFingerprint } from '../domain/fingerprint.ts';
 import type { Mandate } from '../domain/mandate.ts';
 import { readUnsignedPayment, type PaymentFacts } from '../domain/payment-facts.ts';
 import { AdminReason, PolicyReason } from '../domain/reasons.ts';
+import { describeAmount } from '../ledger/amounts.ts';
 import { agentCredentialQuery, type CredentialQuery } from '../ledger/credential.ts';
 import type { FoundCredential } from '../ledger/reads.ts';
 import { signPart } from '../ledger/submit.ts';
@@ -45,7 +47,7 @@ export interface PolicyService {
   review(request: ReviewRequest): Promise<ReviewResult>;
   applyAdminAction(signed: unknown): Promise<AdminResult>;
   currentMandate(agent: string): Promise<Mandate | undefined>;
-  /** The RLUSD co-signed for this agent today (UTC), as a decimal string. */
+  /** The RLUSD co-signed for this agent today (SAST day), as a decimal string. */
   todaysTotal(agent: string): Promise<string>;
   readLog(): Promise<PolicyLogEntry[]>;
   /** Demo only: forget today's co-signed totals. Logged like any other change. */
@@ -54,6 +56,12 @@ export interface PolicyService {
 
 const PURPOSE_LIMIT = 280;
 const DETAIL_LIMIT = 200;
+
+/** The amount and asset for the log, whatever asset the payment used. */
+function amountFields(facts: PaymentFacts | undefined): { amount?: string; asset?: string } {
+  const amount = describeAmount(facts?.amount ?? facts?.xrpDrops);
+  return amount === undefined ? {} : { amount: amount.value, asset: amount.asset };
+}
 
 /**
  * Treats the request as it would arrive over the wire: plain JSON only.
@@ -91,7 +99,7 @@ export function createPolicyService(deps: PolicyServiceDeps): PolicyService {
       invoiceId: facts?.invoiceId,
       destination: facts?.destination,
       destinationTag: facts?.destinationTag,
-      amount: facts?.amount?.value,
+      ...amountFields(facts),
       purpose,
     });
     return { decision: 'refused', reasons };
@@ -123,7 +131,7 @@ export function createPolicyService(deps: PolicyServiceDeps): PolicyService {
       const record = await mandates.get(facts.account);
       // The credential is read from the ledger before every signature, never from a cache.
       const credential = record === undefined ? undefined : await readCredentialCheck(facts.account, record.mandate, at);
-      const day = utcDay(at);
+      const day = sastDay(at);
       const paymentDigest = fingerprintOf(JsonSchema.parse(payment));
       const existing = facts.invoiceId === undefined ? undefined : await approvals.get(facts.invoiceId);
       if (existing !== undefined && existing.paymentDigest !== paymentDigest) {
@@ -161,7 +169,7 @@ export function createPolicyService(deps: PolicyServiceDeps): PolicyService {
         invoiceId: facts.invoiceId,
         destination: facts.destination,
         destinationTag: facts.destinationTag,
-        amount: facts.amount.value,
+        ...amountFields(facts),
         purpose,
       });
       return { decision: 'signed', signature };
@@ -223,7 +231,7 @@ export function createPolicyService(deps: PolicyServiceDeps): PolicyService {
       return (await mandates.get(agent))?.mandate;
     },
     async todaysTotal(agent) {
-      const day = utcDay(clock());
+      const day = sastDay(clock());
       const today = (await approvals.list()).filter((approval) => approval.agent === agent && approval.day === day);
       return formatUnits(today.reduce((total, approval) => total + toUnits(approval.amount), 0n));
     },
