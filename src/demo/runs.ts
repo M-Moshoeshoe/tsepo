@@ -70,6 +70,7 @@ async function reportRefusals(ctx: DemoContext, report: Report, since: string): 
 async function reset(ctx: DemoContext, report: Report): Promise<string> {
   const { client, wallets } = ctx;
   const agent = wallets.agent.address;
+  const startedAt = new Date().toISOString();
 
   report({ type: 'step', text: 'Return all RLUSD to the agent' });
   for (const holder of HOLDERS) {
@@ -94,6 +95,7 @@ async function reset(ctx: DemoContext, report: Report): Promise<string> {
   await ctx.policy.clearDailyTotalsForDemo();
   await ctx.agentStore.clear('payouts');
   await ctx.exchange.syncDeposits();
+  await ctx.demo.recordReset(startedAt);
 
   return `The demo is reset. The agent holds ${agentBalance} RLUSD; limits are ${ctx.mandate.perPaymentLimit} RLUSD per payment and ${ctx.mandate.dailyLimit} RLUSD per day.`;
 }

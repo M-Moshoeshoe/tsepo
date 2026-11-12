@@ -13,6 +13,9 @@ export type DemoEvent = z.infer<typeof DemoEventSchema>;
 
 export type Report = (event: DemoEvent) => void;
 
+/** The request header that carries the demo access code. */
+export const ACCESS_CODE_HEADER = 'x-demo-access-code';
+
 const SimpleRunSchema = z.strictObject({
   kind: z.enum(['reset', 'scenario-1', 'scenario-2', 'scenario-3', 'scenario-4', 'revoke']),
 });

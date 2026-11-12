@@ -14,6 +14,7 @@ import { createRegistry, type Registry } from '../registry/registry.ts';
 import { createFileStore } from '../storage/file-store.ts';
 import type { DocumentStore } from '../storage/store.ts';
 import type { Report } from './events.ts';
+import { demoState, type DemoState } from './state.ts';
 
 export interface DemoContext {
   client: Client;
@@ -24,6 +25,7 @@ export interface DemoContext {
   exchange: ExchangeVerifier;
   registry: Registry;
   agentStore: DocumentStore;
+  demo: DemoState;
   /** Uses Claude, capped at 50 calls a day, to read payout lists unless another parser is given. */
   createAgent(onEvent: (event: AgentEvent) => void, parser?: PayoutParser): PayoutAgent;
 }
@@ -73,6 +75,7 @@ export function createDemoContext(client: Client, report: Report): DemoContext {
     exchange,
     registry,
     agentStore,
+    demo: demoState(createFileStore('.data/demo')),
     createAgent: (onEvent, parser = withCallBudget(createClaudePayoutParser(), createDailyCallBudget(agentStore, DAILY_MODEL_CALL_LIMIT))) =>
       createPayoutAgent({
         client,

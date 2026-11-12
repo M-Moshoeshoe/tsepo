@@ -2,23 +2,50 @@ import { DepositReason, PolicyReason } from '../domain/reasons.ts';
 
 export type Tone = 'cleared' | 'held' | 'refused';
 
+/** The groups the compliance desk filters by. */
+export type Category = 'cleared' | 'held' | 'refused' | 'rejected';
+
 export interface Status {
   tone: Tone;
+  category: Category;
+  /** The short chip shown in tables. */
+  chip: string;
+  /** The full sentence shown in the details panel. */
   label: string;
 }
 
-/** "12 November 2026 at 15:11 UTC". Always UTC, so every viewer sees the same time. */
-export function formatUtc(iso: string): string {
-  const formatted = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'UTC',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).format(new Date(iso));
-  return `${formatted} UTC`;
+export const CATEGORY_CHIPS: Record<Category, string> = {
+  cleared: 'Cleared',
+  held: 'Held',
+  refused: 'Refused',
+  rejected: 'Rejected by the ledger',
+};
+
+function status(category: Category, label: string): Status {
+  return { tone: category === 'rejected' ? 'refused' : category, category, chip: CATEGORY_CHIPS[category], label };
+}
+
+/** Every time is shown in South African Standard Time (UTC+2). */
+const SAST_ZONE = 'Africa/Johannesburg';
+
+/** "18:02 SAST" */
+export function formatSastTime(iso: string): string {
+  const time = new Intl.DateTimeFormat('en-GB', { timeZone: SAST_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(
+    new Date(iso),
+  );
+  return `${time} SAST`;
+}
+
+/** "12 November 2026", the calendar day in South Africa. */
+export function formatSastDate(iso: string): string {
+  return new Intl.DateTimeFormat('en-GB', { timeZone: SAST_ZONE, day: 'numeric', month: 'long', year: 'numeric' }).format(
+    new Date(iso),
+  );
+}
+
+/** "12 November 2026, 18:02 SAST" */
+export function formatSast(iso: string): string {
+  return `${formatSastDate(iso)}, ${formatSastTime(iso)}`;
 }
 
 const UNVERIFIED_SENDER: readonly string[] = [
@@ -31,11 +58,11 @@ const UNVERIFIED_SENDER: readonly string[] = [
 ];
 
 export function depositStatus(deposit: { status: 'Cleared' | 'Held'; reasons: readonly string[] }): Status {
-  if (deposit.status === 'Cleared') return { tone: 'cleared', label: 'Cleared' };
+  if (deposit.status === 'Cleared') return status('cleared', 'Cleared');
   if (deposit.reasons.some((reason) => UNVERIFIED_SENDER.includes(reason))) {
-    return { tone: 'held', label: 'Held: no verified sender for this payment' };
+    return status('held', 'Held: no verified sender for this payment');
   }
-  return { tone: 'held', label: 'Held: the payment does not match its travel package' };
+  return status('held', 'Held: the payment does not match its travel package');
 }
 
 /**
@@ -45,18 +72,15 @@ export function depositStatus(deposit: { status: 'Cleared' | 'Held'; reasons: re
 export function refusalStatus(reasons: readonly string[], revokedAt?: string): Status {
   const has = (reason: string): boolean => reasons.includes(reason);
   if (has(PolicyReason.SplitPaymentPattern)) {
-    return { tone: 'refused', label: 'Refused by the policy service: payments split to get around the daily limit' };
+    return status('refused', 'Refused by the policy service: payments split to get around the daily limit');
   }
   if (has(PolicyReason.CredentialMissing) && revokedAt !== undefined) {
-    return { tone: 'refused', label: `Refused: this agent's mandate was revoked at ${formatUtc(revokedAt)}` };
+    return status('refused', `Refused: this agent's mandate was revoked at ${formatSastTime(revokedAt)}`);
   }
-  return { tone: 'refused', label: `Refused by the policy service: ${firstReasonText(reasons)}` };
+  return status('refused', `Refused by the policy service: ${firstReasonText(reasons)}`);
 }
 
-export const LEDGER_REJECTION_STATUS: Status = {
-  tone: 'refused',
-  label: 'Rejected by the ledger: no verified agent credential',
-};
+export const LEDGER_REJECTION_STATUS: Status = status('rejected', 'Rejected by the ledger: no verified agent credential');
 
 const REASON_TEXT: Record<string, string> = {
   [PolicyReason.MalformedPayment]: 'the payment was not well formed',

@@ -1,5 +1,6 @@
 import { toUnits } from '../domain/amount.ts';
 import type { Directive9Package } from '../domain/directive9.ts';
+import { isApprovedRecipient } from '../domain/mandate.ts';
 import { DepositReason, PolicyReason } from '../domain/reasons.ts';
 
 export type CheckState = 'passed' | 'failed' | 'not-checked';
@@ -40,6 +41,7 @@ export function depositChecks(
   deposit: { reasons: readonly string[]; amount?: string | undefined },
   pkg: Directive9Package | undefined,
   laneAddress: string,
+  destinationTag: number | undefined,
 ): Check[] {
   const has = (reason: string): boolean => deposit.reasons.includes(reason);
   if (pkg === undefined) {
@@ -65,7 +67,7 @@ export function depositChecks(
     ),
     check(
       'recipient',
-      passIf(!has(DepositReason.BeneficiaryMismatch) && pkg.agent.mandate.approvedRecipients.includes(laneAddress)),
+      passIf(!has(DepositReason.BeneficiaryMismatch) && isApprovedRecipient(pkg.agent.mandate, laneAddress, destinationTag)),
     ),
     check('limits', passIf(!has(DepositReason.AmountMismatch) && withinPerPaymentLimit(deposit.amount, pkg))),
     check('package-first', passIf(!has(DepositReason.PackageAfterPayment))),

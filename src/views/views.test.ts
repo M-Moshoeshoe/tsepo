@@ -4,7 +4,7 @@ import type { PayoutRecord } from '../agent/records.ts';
 import { DepositReason, PolicyReason } from '../domain/reasons.ts';
 import { payoutSteps, runActivity } from './activity.ts';
 import { depositChecks, ledgerRejectionChecks, refusalChecks } from './checks.ts';
-import { depositStatus, formatUtc, LEDGER_REJECTION_STATUS, reasonText, refusalStatus } from './status.ts';
+import { depositStatus, formatSast, formatSastDate, formatSastTime, LEDGER_REJECTION_STATUS, reasonText, refusalStatus } from './status.ts';
 
 const parties = makeParties();
 const pkg = makePackage(parties, makeMandate(parties));
@@ -20,7 +20,7 @@ describe('status words', () => {
       'Refused by the policy service: payments split to get around the daily limit',
     );
     expect(refusalStatus([PolicyReason.CredentialMissing], '2026-11-12T15:11:37Z').label).toBe(
-      "Refused: this agent's mandate was revoked at 12 November 2026 at 15:11 UTC",
+      "Refused: this agent's mandate was revoked at 17:11 SAST",
     );
     expect(LEDGER_REJECTION_STATUS.label).toBe('Rejected by the ledger: no verified agent credential');
   });
@@ -43,14 +43,23 @@ describe('status words', () => {
     }
   });
 
-  it('formats times in UTC', () => {
-    expect(formatUtc('2026-11-12T23:30:00+02:00')).toBe('12 November 2026 at 21:30 UTC');
+  it('gives short chips for the table', () => {
+    expect(depositStatus({ status: 'Held', reasons: [DepositReason.PackageMissing] }).chip).toBe('Held');
+    expect(refusalStatus([PolicyReason.SplitPaymentPattern]).chip).toBe('Refused');
+    expect(LEDGER_REJECTION_STATUS.chip).toBe('Rejected by the ledger');
+    expect(LEDGER_REJECTION_STATUS.category).toBe('rejected');
+  });
+
+  it('formats times in SAST, including the date change at 22:00 UTC', () => {
+    expect(formatSastTime('2026-11-12T16:02:00Z')).toBe('18:02 SAST');
+    expect(formatSastDate('2026-11-12T22:30:00Z')).toBe('13 November 2026');
+    expect(formatSast('2026-11-12T16:02:00Z')).toBe('12 November 2026, 18:02 SAST');
   });
 });
 
 describe('check timeline', () => {
   it('passes every check for a cleared deposit', () => {
-    expect(depositChecks({ reasons: [], amount: '2' }, pkg, lane).map((c) => c.state)).toEqual([
+    expect(depositChecks({ reasons: [], amount: '2' }, pkg, lane, 1001).map((c) => c.state)).toEqual([
       'passed',
       'passed',
       'passed',
@@ -60,7 +69,7 @@ describe('check timeline', () => {
   });
 
   it('fails only the package check, and checks nothing else, when no package arrived', () => {
-    expect(depositChecks({ reasons: [DepositReason.PackageMissing], amount: '1' }, undefined, lane).map((c) => c.state)).toEqual([
+    expect(depositChecks({ reasons: [DepositReason.PackageMissing], amount: '1' }, undefined, lane, 1001).map((c) => c.state)).toEqual([
       'not-checked',
       'not-checked',
       'not-checked',
