@@ -42,3 +42,22 @@ export function groupBySastDate<T extends DeskItem>(items: readonly T[]): { date
   }
   return groups;
 }
+
+/** What to show, and what to do next, when the desk has nothing under a filter. */
+export function emptyDeskText(filter: DeskFilter): { title: string; next: string } {
+  switch (filter) {
+    case 'all':
+      return { title: 'No payments yet.', next: 'Run scenario 2 to see a cleared payment.' };
+    case 'cleared':
+      return { title: 'No cleared payments yet.', next: 'Run scenario 2 to see one.' };
+    case 'held':
+      return {
+        title: 'No held payments.',
+        next: 'A payment is held when it arrives without a matching travel package or credential.',
+      };
+    case 'refused':
+      return { title: 'No refused attempts yet.', next: 'Run scenario 3 to see the policy service refuse a split payment.' };
+    case 'rejected':
+      return { title: 'No ledger rejections yet.', next: 'Run scenario 1 to see the ledger reject an unknown agent.' };
+  }
+}
