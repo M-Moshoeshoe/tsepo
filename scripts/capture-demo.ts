@@ -34,12 +34,19 @@ async function shot(page: Page, name: string): Promise<void> {
 
 /** Clicks a demo bar button and waits until the run reports that it finished. Stops on any failure. */
 async function runFromBar(page: Page, button: string): Promise<void> {
+  // Close the previous run's panel first, so its result is never mistaken for this run's.
+  const close = page.getByRole('button', { name: 'Close', exact: true });
+  if (await close.isVisible()) await close.click();
   await page.getByRole('button', { name: button, exact: false }).first().click();
-  const finished = page.getByText(/Finished in \d+ seconds|Stopped after \d+ seconds/);
+  const progress = page.getByRole('region', { name: 'Run progress' });
+  await progress.getByText(/Running|Finished in|Stopped after/).first().waitFor({ timeout: 10_000 });
+  const finished = progress.getByText(/Finished in \d+ seconds|Stopped after \d+ seconds/);
   await finished.waitFor({ timeout: RUN_TIMEOUT_MS });
   if ((await finished.textContent())?.startsWith('Stopped') === true) {
     throw new Error(`The run "${button}" stopped. See the screenshot of the progress panel.`);
   }
+  // Close appears only once the run's connection has fully closed and the controls are free again.
+  await close.waitFor({ timeout: RUN_TIMEOUT_MS });
   await page.waitForLoadState('networkidle');
 }
 
