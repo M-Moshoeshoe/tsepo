@@ -110,3 +110,12 @@ Copy `.env.example` to `.env.local` and fill in the values there.
 project runs on the XRP Ledger Testnet only.
 
 See [AGENTS.md](AGENTS.md) for the rules every contributor follows.
+
+## Credits
+
+- Interface components from [Untitled UI React](https://www.untitledui.com/react)
+  (MIT licence), built on React Aria (Apache 2.0 licence). The copied files are
+  in `ui/`, with our changes listed in `ui/README.md` and our theme in
+  `ui/styles/tsepo-theme.css`.
+- Icons from Untitled UI and Lucide (ISC licence).
+- IBM Plex Sans and IBM Plex Mono (SIL Open Font Licence).

@@ -1,0 +1,89 @@
+/*
+ * Tšepo theme: replaces the Untitled UI defaults (Inter and a purple brand)
+ * with the Tšepo tokens. Loaded after theme.css, so these values win.
+ * Each scale is built around an exact token; src/views/theme-contrast.test.ts
+ * checks the text and background pairs below for WCAG AA.
+ */
+@theme {
+  /* Fonts: IBM Plex Sans everywhere, IBM Plex Mono for addresses, hashes and fingerprints. */
+  --font-body: var(--font-plex-sans), -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: var(--font-plex-sans), -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Corners stay close to the earlier 6px. */
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+
+  /* Brand: primary #0B5563 is the solid brand step (600); hover #08404B is 700. */
+  --color-brand-25: #f2f8f9;
+  --color-brand-50: #e7f2f4;
+  --color-brand-100: #cde4e8;
+  --color-brand-200: #9dc9d1;
+  --color-brand-300: #6aabb6;
+  --color-brand-400: #3a8c9a;
+  --color-brand-500: #19707f;
+  --color-brand-600: #0b5563;
+  --color-brand-700: #08404b;
+  --color-brand-800: #06333c;
+  --color-brand-900: #04262d;
+  --color-brand-950: #02171c;
+
+  /* Neutral: background #F5F7F7 (50), border #D5DCDF (300), muted #4A5A68 (600), ink #0B1F2E (900). */
+  --color-neutral-25: #fafbfb;
+  --color-neutral-50: #f5f7f7;
+  --color-neutral-100: #eef1f2;
+  --color-neutral-200: #e3e8ea;
+  --color-neutral-300: #d5dcdf;
+  --color-neutral-400: #a3b0b7;
+  --color-neutral-500: #5f6f7c;
+  --color-neutral-600: #4a5a68;
+  --color-neutral-700: #354452;
+  --color-neutral-800: #1f2f3d;
+  --color-neutral-900: #0b1f2e;
+  --color-neutral-950: #061219;
+
+  /* Cleared: #11693A on #E3F4EA. */
+  --color-green-25: #f3faf6;
+  --color-green-50: #e3f4ea;
+  --color-green-100: #c8e9d5;
+  --color-green-200: #a4d9b8;
+  --color-green-300: #6fbf8e;
+  --color-green-400: #3e9f66;
+  --color-green-500: #1f8149;
+  --color-green-600: #167444;
+  --color-green-700: #11693a;
+  --color-green-800: #0d5530;
+  --color-green-900: #0a4326;
+  --color-green-950: #052817;
+
+  /* Held: #7A4D00 on #FFF1D6. */
+  --color-yellow-25: #fff9ee;
+  --color-yellow-50: #fff1d6;
+  --color-yellow-100: #ffe3ad;
+  --color-yellow-200: #f6cf7e;
+  --color-yellow-300: #e9b04a;
+  --color-yellow-400: #d49422;
+  --color-yellow-500: #b47610;
+  --color-yellow-600: #96600a;
+  --color-yellow-700: #7a4d00;
+  --color-yellow-800: #613d00;
+  --color-yellow-900: #4b2f00;
+  --color-yellow-950: #2e1c00;
+
+  /* Refused: #A1251B on #FDE7E4. */
+  --color-red-25: #fef5f4;
+  --color-red-50: #fde7e4;
+  --color-red-100: #facdc7;
+  --color-red-200: #f4a9a0;
+  --color-red-300: #ea7d70;
+  --color-red-400: #da5445;
+  --color-red-500: #c2382b;
+  --color-red-600: #ad2d22;
+  --color-red-700: #a1251b;
+  --color-red-800: #831e16;
+  --color-red-900: #681811;
+  --color-red-950: #3e0d09;
+
+  /* Accent: the Tšepo mark and the AI assistant mark only. Never text or buttons. */
+  --color-accent: #c7841a;
+}

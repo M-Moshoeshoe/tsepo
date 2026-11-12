@@ -1,13 +1,38 @@
 @import 'tailwindcss';
+/* Untitled UI React (MIT), then the Tšepo theme, which replaces its fonts and colours. */
+@import '../ui/styles/theme.css';
+@import '../ui/styles/typography.css';
+@import '../ui/styles/tsepo-theme.css';
 
-/* Design tokens. These values are exact and are the only colours the interface uses. */
+@plugin 'tailwindcss-react-aria-components';
+@plugin 'tailwindcss-animate';
+
+@custom-variant label (& [data-label]);
+@custom-variant focus-input-within (&:has(input:focus));
+
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+}
+
+@utility transition-inherit-all {
+  transition-property: inherit;
+  transition-duration: inherit;
+  transition-timing-function: inherit;
+}
+
+/*
+ * Tokens used by the screens not yet rebuilt on Untitled UI. They match the
+ * Tšepo theme exactly. "teal" is the primary colour: in Untitled UI,
+ * "primary" means ink text and a white surface.
+ */
 @theme {
   --color-ink: #0b1f2e;
   --color-muted: #4a5a68;
-  --color-primary: #0b5563;
-  --color-primary-hover: #08404b;
-  /* Accent: logo and AI assistant mark only. Never text or buttons. */
-  --color-accent: #c7841a;
+  --color-teal: #0b5563;
+  --color-teal-hover: #08404b;
   --color-background: #f5f7f7;
   --color-surface: #ffffff;
   --color-border: #d5dcdf;
@@ -18,26 +43,34 @@
   --color-refused: #a1251b;
   --color-refused-bg: #fde7e4;
 
-  --radius-md: 6px;
   --spacing: 4px;
 
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 html {
   color-scheme: light;
 }
 
+html,
 body {
-  background-color: var(--color-background);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-teal);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
 }
 
 /*
@@ -155,6 +188,14 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Untitled UI enter and exit animations and hover transitions also stop. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
   .press,
   .status-transition {
     transition: none;

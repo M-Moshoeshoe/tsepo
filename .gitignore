@@ -28,3 +28,6 @@ next-env.d.ts
 
 # Local screenshots
 screenshots/
+
+# Third-party design reference screenshots, kept locally only
+design/references/

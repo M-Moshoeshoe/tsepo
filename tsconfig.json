@@ -35,9 +35,15 @@
     ],
     "incremental": true,
     "allowJs": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": [
+        "./ui/*"
+      ]
+    }
   },
   "include": [
+    "ui",
     "src",
     "spikes",
     "scenarios",
