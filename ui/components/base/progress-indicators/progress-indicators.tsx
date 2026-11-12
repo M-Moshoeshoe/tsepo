@@ -26,6 +26,10 @@ export interface ProgressBarProps {
      */
     progressClassName?: string;
     /**
+     * The accessible name of the progress bar.
+     */
+    label?: string;
+    /**
      * Optional function to format the displayed value.
      * It receives the raw value and the calculated percentage.
      */
@@ -35,12 +39,13 @@ export interface ProgressBarProps {
 /**
  * A basic progress bar component.
  */
-export const ProgressBarBase = ({ value, min = 0, max = 100, className, progressClassName }: ProgressBarProps) => {
+export const ProgressBarBase = ({ value, min = 0, max = 100, className, progressClassName, label }: ProgressBarProps) => {
     const percentage = ((value - min) * 100) / (max - min);
 
     return (
         <div
             role="progressbar"
+            aria-label={label}
             aria-valuenow={value}
             aria-valuemin={min}
             aria-valuemax={max}

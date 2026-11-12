@@ -1,160 +1,223 @@
 import type { Metadata } from 'next';
-import { Amount, CopyableMono, DemoDataTag, ExplorerLink, Facts, Section } from '../../components/display.tsx';
-import { Term } from '../../components/term.tsx';
+import { ProgressBarBase } from '@/components/base/progress-indicators/progress-indicators';
+import { Amount, CopyableMono, DemoDataTag, ExplorerLink, Facts, SectionTitle, StatusBadge } from '../../components/display.tsx';
 import { AgentActivity } from '../../components/registry/agent-activity.tsx';
 import { MandateActions } from '../../components/registry/mandate-actions.tsx';
-import { Badge } from '../../components/ui/badge.tsx';
-import { toUnits } from '../../src/domain/amount.ts';
-import { formatSast } from '../../src/views/status.ts';
+import { RecipientsTable } from '../../components/registry/recipients-table.tsx';
+import { Term } from '../../components/term.tsx';
+import { formatSast, formatSastDate } from '../../src/views/status.ts';
 import { loadRegistry, type AgentStatus, type RegistryView } from '../_data/registry.ts';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Agent registry - Tšepo' };
+export const metadata: Metadata = { title: 'Agent - Tšepo' };
 
-function StatusBadge({ status }: { status: AgentStatus }) {
+function AgentStatusBadge({ status }: { status: AgentStatus }) {
   switch (status.state) {
     case 'active':
-      return <Badge tone="cleared">Active</Badge>;
+      return <StatusBadge tone="cleared">Active</StatusBadge>;
     case 'revoked':
-      return (
-        <span className="flex flex-wrap items-center gap-2">
-          <Badge tone="refused">Revoked</Badge>
-          {status.at !== undefined && <span className="text-sm text-muted">at {formatSast(status.at)}</span>}
-        </span>
-      );
+      return <StatusBadge tone="refused">Revoked</StatusBadge>;
     case 'mismatch':
-      return <Badge tone="held">Credential does not match the mandate</Badge>;
+      return <StatusBadge tone="held">Credential does not match the mandate</StatusBadge>;
     case 'not-registered':
-      return <Badge>Not registered</Badge>;
+      return <StatusBadge tone="neutral">Not registered</StatusBadge>;
   }
 }
 
-function DailyUse({ used, limit }: { used: string; limit: string }) {
-  const share = Math.min(100, Number((toUnits(used) * 100n) / toUnits(limit)));
+function PageHeader({ view }: { view: RegistryView }) {
+  const { agent, mandate } = view;
   return (
-    <div className="grid gap-1.5">
-      <p>
-        <Amount value={limit} /> <span className="text-muted">per day.</span>{' '}
-        <span className="tabular-nums">
-          {used} of {limit} RLUSD
-        </span>{' '}
-        <span className="text-muted">co-signed today (SAST)</span>
-      </p>
-      <div className="h-1.5 w-full max-w-64 rounded-md bg-background" role="img" aria-label={`${share} percent of the daily limit used`}>
-        <div className="h-full rounded-md bg-teal" style={{ width: `${share}%` }} />
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="grid gap-1.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-xl font-semibold text-primary">{agent.name}</h2>
+          <AgentStatusBadge status={agent.status} />
+        </div>
+        <p className="text-sm text-tertiary">
+          Pays contractors for {view.business.registeredName}.
+          {agent.status.state === 'revoked' && agent.status.at !== undefined && ` Revoked at ${formatSast(agent.status.at)}.`}
+        </p>
       </div>
+      <MandateActions
+        perPaymentLimit={mandate?.perPaymentLimit}
+        dailyLimit={mandate?.dailyLimit}
+        agentActive={agent.status.state === 'active'}
+      />
     </div>
   );
 }
 
-function BusinessSection({ business }: { business: RegistryView['business'] }) {
-  const { address } = business;
+function Figure({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Section title="Business" aside={<DemoDataTag />}>
-      <Facts
-        items={[
-          { term: 'Registered name', value: business.registeredName },
-          { term: 'Registration number (CIPC)', value: <span className="tabular-nums">{business.registrationNumber}</span> },
-          { term: 'Address', value: `${address.street}, ${address.city}, ${address.postalCode}, South Africa` },
-          { term: 'Ledger account', value: <CopyableMono value={business.ledgerAddress} label="business ledger account" /> },
-        ]}
-      />
-    </Section>
+    <div className="grid gap-1">
+      <dt className="text-sm text-tertiary">{label}</dt>
+      <dd className="text-display-xs font-semibold text-primary tabular-nums">{children}</dd>
+    </div>
   );
 }
 
-function AgentSection({ agent }: { agent: RegistryView['agent'] }) {
+function MandateCard({ mandate }: { mandate: NonNullable<RegistryView['mandate']> }) {
+  const { usage } = mandate;
   return (
-    <Section title="Agent">
+    <section aria-labelledby="mandate-title" className="grid gap-6 rounded-xl bg-secondary p-5 lg:p-6">
+      <SectionTitle id="mandate-title" title="Mandate" />
+      <dl className="grid gap-5 sm:grid-cols-3">
+        <Figure label="Per payment">
+          <Amount value={mandate.perPaymentLimit} />
+        </Figure>
+        <Figure label="Per day (SAST)">
+          <Amount value={mandate.dailyLimit} />
+        </Figure>
+        <Figure label="Expires">{formatSastDate(mandate.expiresAt)}</Figure>
+      </dl>
+      <div className="grid gap-2">
+        <p className="text-sm text-primary tabular-nums">{usage.sentence}</p>
+        <ProgressBarBase value={usage.percent} label="Share of the daily limit used today" className="h-2 bg-tertiary" />
+      </div>
+      <p className="flex flex-wrap items-center gap-x-2 text-sm text-tertiary">
+        Mandate <Term term="fingerprint">fingerprint</Term>
+        <CopyableMono value={mandate.fingerprint} label="mandate fingerprint" className="text-xs text-tertiary" />
+      </p>
+    </section>
+  );
+}
+
+function SideSection({ title, aside, children }: { title: string; aside?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section className="grid content-start gap-4">
+      <SectionTitle title={title} aside={aside} />
+      {children}
+    </section>
+  );
+}
+
+function BusinessDetails({ business }: { business: RegistryView['business'] }) {
+  const { address } = business;
+  return (
+    <SideSection title="Business" aside={<DemoDataTag />}>
       <Facts
         items={[
-          { term: 'Ledger account', value: <CopyableMono value={agent.address} label="agent ledger account" /> },
-          { term: 'Status', value: <StatusBadge status={agent.status} /> },
+          { term: 'Registered name', value: business.registeredName },
+          { term: 'Registration (CIPC)', value: <span className="tabular-nums">{business.registrationNumber}</span> },
+          { term: 'Address', value: `${address.street}, ${address.city}, ${address.postalCode}, South Africa` },
+          { term: 'Ledger account', value: <CopyableMono value={business.ledgerAddress} label="business ledger account" className="text-xs" /> },
+        ]}
+      />
+    </SideSection>
+  );
+}
+
+function CredentialDetails({ agent }: { agent: RegistryView['agent'] }) {
+  return (
+    <SideSection title="Credential">
+      <Facts
+        items={[
+          { term: 'Agent account', value: <CopyableMono value={agent.address} label="agent ledger account" className="text-xs" /> },
           {
             key: 'credential',
             term: <Term term="credential">Credential</Term>,
             value:
               agent.credentialId === undefined ? (
-                <span className="text-muted">No credential on the ledger</span>
+                <span className="text-tertiary">No credential on the ledger</span>
               ) : (
                 <span className="grid gap-1">
                   <span>AGENT_MANDATE</span>
-                  <CopyableMono value={agent.credentialId} label="credential ID" className="text-xs text-muted" />
+                  <CopyableMono value={agent.credentialId} label="credential ID" className="text-xs text-tertiary" />
                   {agent.credentialHash !== undefined && <ExplorerLink hash={agent.credentialHash}>Acceptance on the ledger</ExplorerLink>}
                 </span>
               ),
           },
-          { term: 'Issued by', value: <CopyableMono value={agent.issuer} label="issuer account" /> },
+          { term: 'Issued by', value: <CopyableMono value={agent.issuer} label="issuer account" className="text-xs" /> },
         ]}
       />
-    </Section>
+    </SideSection>
   );
 }
 
-function MandateSection({ view }: { view: RegistryView }) {
-  const { mandate } = view;
-  if (mandate === undefined) {
-    return (
-      <Section title="Mandate">
-        <p className="text-sm text-muted">No mandate is set. Reset the demo to register the agent.</p>
-      </Section>
-    );
-  }
+function SignerSetup({ signers }: { signers: RegistryView['signers'] }) {
   return (
-    <Section title="Mandate">
-      <div className="grid gap-5">
-        <Facts
-          items={[
-            {
-              term: 'Approved recipients',
-              value: (
-                <ul className="grid gap-3">
-                  {mandate.approvedRecipients.map((recipient) => (
-                    <li key={`${recipient.address}-${String(recipient.destinationTag)}`} className="grid gap-0.5">
-                      <span className="font-medium">{recipient.name}</span>
-                      <span className="text-muted">
-                        {recipient.paidThrough === undefined ? 'paid directly' : `paid through ${recipient.paidThrough}`}
-                        {recipient.destinationTag !== undefined && <span className="tabular-nums"> (tag {recipient.destinationTag})</span>}
-                      </span>
-                      <CopyableMono value={recipient.address} label={`account for ${recipient.name}`} className="text-xs" />
-                    </li>
-                  ))}
-                </ul>
-              ),
-            },
-            { term: 'Per-payment limit', value: <Amount value={mandate.perPaymentLimit} /> },
-            { term: 'Daily limit', value: <DailyUse used={mandate.usedToday} limit={mandate.dailyLimit} /> },
-            { term: 'Expires', value: formatSast(mandate.expiresAt) },
-            {
-              key: 'fingerprint',
-              term: <Term term="fingerprint">Fingerprint</Term>,
-              value: <CopyableMono value={mandate.fingerprint} label="mandate fingerprint" className="text-xs" />,
-            },
-          ]}
-        />
-        <MandateActions
-          perPaymentLimit={mandate.perPaymentLimit}
-          dailyLimit={mandate.dailyLimit}
-          agentActive={view.agent.status.state === 'active'}
-        />
-      </div>
-    </Section>
-  );
-}
-
-export default async function RegistryPage() {
-  const view = await loadRegistry();
-  return (
-    <div className="grid gap-6">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        <div className="grid content-start gap-6">
-          <BusinessSection business={view.business} />
-          <AgentSection agent={view.agent} />
-          <MandateSection view={view} />
+    <SideSection title="Signer setup">
+      {signers === undefined ? (
+        <p className="text-sm text-tertiary">No signer list on the ledger. Reset the demo to set it up.</p>
+      ) : (
+        <div className="grid gap-3">
+          <table className="w-full text-sm">
+            <caption className="sr-only">Keys that can sign for the agent account, with their weights</caption>
+            <thead>
+              <tr className="text-left text-xs font-semibold text-quaternary">
+                <th scope="col" className="pb-2 font-semibold">
+                  Signer
+                </th>
+                <th scope="col" className="pb-2 text-right font-semibold">
+                  Weight
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {signers.entries.map((signer) => (
+                <tr key={signer.address} className="border-t border-secondary">
+                  <th scope="row" className="py-2 text-left font-normal">
+                    <span className="grid">
+                      <span className="text-primary">{signer.role}</span>
+                      <CopyableMono value={signer.address} label={`${signer.role} account`} className="text-xs text-tertiary" />
+                    </span>
+                  </th>
+                  <td className="py-2 text-right align-top text-primary tabular-nums">{signer.weight}</td>
+                </tr>
+              ))}
+              <tr className="border-t border-secondary">
+                <th scope="row" className="py-2 text-left font-semibold text-primary">
+                  <Term term="quorum">Quorum</Term>
+                </th>
+                <td className="py-2 text-right font-semibold text-primary tabular-nums">{signers.quorum}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="text-sm text-tertiary">
+            {signers.masterKeyDisabled
+              ? 'The master key is disabled. Every payment needs the agent key and the policy service together.'
+              : 'The master key is still enabled. Reset the demo to disable it.'}
+          </p>
         </div>
-        <Section title="Agent activity" className="content-start self-start">
-          <AgentActivity activity={view.activity} />
-        </Section>
+      )}
+    </SideSection>
+  );
+}
+
+export default async function AgentPage() {
+  const view = await loadRegistry();
+  const { mandate } = view;
+  return (
+    <div className="grid gap-8">
+      <PageHeader view={view} />
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="grid min-w-0 gap-10">
+          {mandate === undefined ? (
+            <section className="grid gap-2 rounded-xl bg-secondary p-6">
+              <SectionTitle title="Mandate" />
+              <p className="text-sm text-tertiary">No mandate is set. Reset the demo to register the agent.</p>
+            </section>
+          ) : (
+            <MandateCard mandate={mandate} />
+          )}
+          {mandate !== undefined && (
+            <section aria-labelledby="recipients-title" className="grid gap-4">
+              <SectionTitle id="recipients-title" title="Approved recipients" />
+              <div className="overflow-hidden rounded-xl ring-1 ring-secondary">
+                <RecipientsTable recipients={mandate.approvedRecipients} />
+              </div>
+            </section>
+          )}
+          <section aria-labelledby="activity-title" className="grid gap-4">
+            <SectionTitle id="activity-title" title="Activity" />
+            <AgentActivity activity={view.activity} />
+          </section>
+        </div>
+        <aside aria-label="Business, credential and signers" className="grid gap-10">
+          <BusinessDetails business={view.business} />
+          <CredentialDetails agent={view.agent} />
+          <SignerSetup signers={view.signers} />
+        </aside>
       </div>
     </div>
   );

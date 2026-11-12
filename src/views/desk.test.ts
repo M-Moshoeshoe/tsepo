@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DepositReason, PolicyReason } from '../domain/reasons.ts';
-import { applyFilter, countByFilter, groupBySastDate, itemsSince, parseDeskFilter, type DeskItem } from './desk.ts';
+import { applyFilter, countByFilter, itemsSince, parseDeskFilter, type DeskItem } from './desk.ts';
 import { depositStatus, LEDGER_REJECTION_STATUS, refusalStatus } from './status.ts';
 
 const items: DeskItem[] = [
@@ -27,14 +27,6 @@ describe('compliance desk views', () => {
   it('filters by category', () => {
     expect(applyFilter(items, 'refused').map((item) => item.status.chip)).toEqual(['Refused']);
     expect(applyFilter(items, 'all')).toHaveLength(4);
-  });
-
-  it('groups by SAST date, so 23:00 UTC belongs to the next day', () => {
-    const groups = groupBySastDate(itemsSince(items, undefined));
-    expect(groups.map((group) => [group.date, group.items.length])).toEqual([
-      ['13 November 2026', 1],
-      ['12 November 2026', 3],
-    ]);
   });
 
   it('accepts only known filters', () => {

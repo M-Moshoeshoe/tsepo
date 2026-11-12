@@ -1,12 +1,21 @@
 import 'server-only';
-import { unixTimeToRippleTime } from 'xrpl';
+import { LedgerEntry, unixTimeToRippleTime } from 'xrpl';
 import { agentRecords } from '../../src/agent/records.ts';
-import { DEMO_BUSINESS } from '../../src/config/demo.ts';
+import { DEMO_AGENT_NAME, DEMO_BUSINESS } from '../../src/config/demo.ts';
 import { AGENT_MANDATE_CREDENTIAL_TYPE, checkCredential } from '../../src/domain/credential-check.ts';
 import { mandateFingerprint } from '../../src/domain/fingerprint.ts';
+import type { Mandate } from '../../src/domain/mandate.ts';
 import { agentCredentialQuery } from '../../src/ledger/credential.ts';
-import { findCredential, getCredentialHistory } from '../../src/ledger/reads.ts';
+import {
+  findCredential,
+  getAccountState,
+  getCredentialHistory,
+  getSignerList,
+  type CredentialEvent,
+  type FoundCredential,
+} from '../../src/ledger/reads.ts';
 import { runActivity, type RunActivity } from '../../src/views/activity.ts';
+import { dailyUsage, type DailyUsage } from '../../src/views/usage.ts';
 import { withDemo } from './ledger.ts';
 
 export type AgentStatus =
@@ -18,6 +27,7 @@ export type AgentStatus =
 export interface RegistryView {
   business: typeof DEMO_BUSINESS & { ledgerAddress: string };
   agent: {
+    name: string;
     address: string;
     status: AgentStatus;
     credentialId: string | undefined;
@@ -29,15 +39,45 @@ export interface RegistryView {
         approvedRecipients: { name: string; address: string; destinationTag: number | undefined; paidThrough: string | undefined }[];
         perPaymentLimit: string;
         dailyLimit: string;
-        usedToday: string;
+        usage: DailyUsage;
         expiresAt: string;
         fingerprint: string;
       }
     | undefined;
+  /** Who can sign for the agent account, read from the ledger. */
+  signers: {
+    entries: { role: string; address: string; weight: number }[];
+    quorum: number;
+    masterKeyDisabled: boolean;
+  } | undefined;
   activity: RunActivity | undefined;
 }
 
-/** Everything the agent registry screen shows, read from the ledger and the service stores. */
+/** Whether the agent is active, revoked, mismatched or not registered, from what the ledger and the policy service hold. */
+export function agentStatus(input: {
+  credential: FoundCredential | undefined;
+  history: CredentialEvent[];
+  mandate: Mandate | undefined;
+  issuer: string;
+  agent: string;
+}): AgentStatus {
+  const { credential, history, mandate, issuer, agent } = input;
+  if (credential === undefined) {
+    const latest = history[0];
+    return latest?.type === 'CredentialDelete' ? { state: 'revoked', at: latest.closeTimeIso } : { state: 'not-registered' };
+  }
+  const check =
+    mandate === undefined
+      ? { valid: false }
+      : checkCredential(
+          credential.entry,
+          { issuer, subject: agent, credentialType: AGENT_MANDATE_CREDENTIAL_TYPE, fingerprint: mandateFingerprint(mandate) },
+          unixTimeToRippleTime(Date.now()),
+        );
+  return check.valid ? { state: 'active' } : { state: 'mismatch' };
+}
+
+/** Everything the agent screen shows, read from the ledger and the service stores. */
 export async function loadRegistry(): Promise<RegistryView> {
   return withDemo(async (ctx) => {
     const { client, wallets } = ctx;
@@ -45,28 +85,21 @@ export async function loadRegistry(): Promise<RegistryView> {
     const issuer = wallets.issuer.address;
     const query = agentCredentialQuery(agent, issuer);
 
-    const [credential, history, mandate, usedToday] = await Promise.all([
+    const [credential, history, mandate, usedToday, signerList, account] = await Promise.all([
       findCredential(client, query),
       getCredentialHistory(client, query),
       ctx.policy.currentMandate(agent),
       ctx.policy.todaysTotal(agent),
+      getSignerList(client, agent),
+      getAccountState(client, agent),
+    ]);
+    const signerRoles = new Map([
+      [wallets.business.address, 'Business key (recovery)'],
+      [wallets.agentSigner.address, 'Agent key'],
+      [wallets.policy.address, 'Policy service'],
     ]);
 
-    let status: AgentStatus;
-    if (credential === undefined) {
-      const latest = history[0];
-      status = latest?.type === 'CredentialDelete' ? { state: 'revoked', at: latest.closeTimeIso } : { state: 'not-registered' };
-    } else {
-      const check =
-        mandate === undefined
-          ? { valid: false }
-          : checkCredential(
-              credential.entry,
-              { issuer, subject: agent, credentialType: AGENT_MANDATE_CREDENTIAL_TYPE, fingerprint: mandateFingerprint(mandate) },
-              unixTimeToRippleTime(Date.now()),
-            );
-      status = check.valid ? { state: 'active' } : { state: 'mismatch' };
-    }
+    const status = agentStatus({ credential, history, mandate, issuer, agent });
 
     const accountNames = new Map([[wallets.exchange.address, 'Demo Exchange']]);
 
@@ -77,6 +110,7 @@ export async function loadRegistry(): Promise<RegistryView> {
     return {
       business: { ...DEMO_BUSINESS, ledgerAddress: wallets.business.address },
       agent: {
+        name: DEMO_AGENT_NAME,
         address: agent,
         status,
         credentialId: credential?.id,
@@ -95,9 +129,21 @@ export async function loadRegistry(): Promise<RegistryView> {
               })),
               perPaymentLimit: mandate.perPaymentLimit,
               dailyLimit: mandate.dailyLimit,
-              usedToday,
+              usage: dailyUsage(usedToday, mandate.dailyLimit),
               expiresAt: mandate.expiresAt,
               fingerprint: mandateFingerprint(mandate),
+            },
+      signers:
+        signerList === undefined
+          ? undefined
+          : {
+              entries: signerList.SignerEntries.map(({ SignerEntry }) => ({
+                role: signerRoles.get(SignerEntry.Account) ?? 'Unknown key',
+                address: SignerEntry.Account,
+                weight: SignerEntry.SignerWeight,
+              })),
+              quorum: signerList.SignerQuorum,
+              masterKeyDisabled: account !== undefined && (account.flags & LedgerEntry.AccountRootFlags.lsfDisableMaster) !== 0,
             },
       activity: latestRun === undefined ? undefined : runActivity(latestRun, events),
     };

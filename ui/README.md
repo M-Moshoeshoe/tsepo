@@ -12,6 +12,15 @@ Tšepo are listed below.
 - `application/modals/modal.tsx`: no background blur behind the overlay.
 - `application/app-navigation/base-components/nav-item.tsx`: items sit on the
   sidebar tone (transparent, tinted when hovered or selected) instead of white.
+- `application/empty-state/empty-state.tsx`: trimmed to the frame, featured
+  icon, title, description and footer (no illustrations, background patterns,
+  file icons or avatar groups), and the title is an `h3`, so each page keeps
+  one `h1`.
+- `application/slideout-menus/slideout-menu.tsx`: takes a `dialogLabel`, so
+  each slideout has its own accessible name.
+- `base/progress-indicators/progress-indicators.tsx`: the bar takes a `label`,
+  its accessible name.
+- `application/table` and `application/tabs` are copied unchanged.
 - `providers/router-provider.tsx` and `foundations/social-icons/github.tsx` are
   copied unchanged.
 - `base/avatar/utils.ts` and `base/buttons/button.tsx`: two one-line fixes so

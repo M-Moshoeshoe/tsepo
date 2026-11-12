@@ -5,9 +5,8 @@ export function AppFooter() {
       <p className="text-sm font-medium text-secondary">Runs on the XRP Ledger Testnet. No real money moves.</p>
       <p>Tšepo, Node Engine Hackathon 2026.</p>
       <p>
-        Interface built with Untitled UI React (MIT licence) on React Aria (Apache 2.0 licence), with icons from Untitled UI
-        and Lucide (ISC licence) and the IBM Plex typefaces (SIL Open Font Licence). Some screens still use parts adapted from
-        shadcn/ui and Radix UI (MIT licence) until they are rebuilt.
+        Interface built with Untitled UI React (MIT licence) on React Aria (Apache 2.0 licence), with Untitled UI icons and
+        the IBM Plex typefaces (SIL Open Font Licence).
       </p>
     </footer>
   );

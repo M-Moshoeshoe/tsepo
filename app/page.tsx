@@ -1,86 +1,110 @@
+import { ChevronDown } from '@untitledui/icons';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Section } from '../components/display.tsx';
+import type { ReactNode } from 'react';
+import { SectionTitle, StatusBadge } from '../components/display.tsx';
+import { ActivityFeed } from '../components/home/activity-feed.tsx';
+import { Runbook } from '../components/home/runbook.tsx';
 import { FlowDiagram } from '../components/overview/flow-diagram.tsx';
 import { Term } from '../components/term.tsx';
-import { Button } from '../components/ui/button.tsx';
+import { formatSast } from '../src/views/status.ts';
+import { loadHome, type HomeView } from './_data/home.ts';
 
-export const metadata: Metadata = { title: 'Overview - Tšepo' };
+export const dynamic = 'force-dynamic';
+export const metadata: Metadata = { title: 'Home - Tšepo' };
 
-const SCENARIOS = [
-  {
-    number: 1,
-    title: 'Unknown agent',
-    proves: (
-      <>
-        An agent without a credential cannot pay the agent lane: the ledger itself rejects it with{' '}
-        <Term term="tecNO_PERMISSION">tecNO_PERMISSION</Term>.
-      </>
-    ),
-  },
-  {
-    number: 2,
-    title: 'Verified agent',
-    proves: <>A registered agent pays 2 RLUSD on its own, and the exchange clears it because every check passes.</>,
-  },
-  {
-    number: 3,
-    title: 'Split payments',
-    proves: <>Splitting a payment into smaller parts does not get around the 5 RLUSD daily limit.</>,
-  },
-  {
-    number: 4,
-    title: 'Revoke',
-    proves: (
-      <>
-        The business revokes its agent at once; its next payment is refused, and a stale credential would fail with{' '}
-        <Term term="tecBAD_CREDENTIALS">tecBAD_CREDENTIALS</Term>.
-      </>
-    ),
-  },
-];
-
-export default function OverviewPage() {
+function Metric({ label, value, note }: { label: string; value: ReactNode; note: ReactNode }) {
   return (
-    <div className="grid gap-8">
-      <div className="grid max-w-3xl gap-5">
-        <p className="text-2xl leading-snug font-semibold text-ink sm:text-3xl">
-          Tšepo gives an AI agent that pays a verified identity and spending limits on the XRP Ledger, so its business stays
-          in control and an exchange knows who is paying.
+    <div className="grid content-start gap-2 rounded-xl bg-secondary p-5">
+      <dt className="text-sm text-tertiary">{label}</dt>
+      <dd className="grid gap-1">
+        <span className="text-display-xs font-semibold text-primary tabular-nums">{value}</span>
+        <span className="text-sm text-tertiary">{note}</span>
+      </dd>
+    </div>
+  );
+}
+
+const AGENT_STATUS: Record<HomeView['agentStatus']['state'], { tone: 'cleared' | 'held' | 'refused' | 'neutral'; text: string }> = {
+  active: { tone: 'cleared', text: 'Active' },
+  revoked: { tone: 'refused', text: 'Revoked' },
+  mismatch: { tone: 'held', text: 'Credential does not match' },
+  'not-registered': { tone: 'neutral', text: 'Not registered' },
+};
+
+function Metrics({ view }: { view: HomeView }) {
+  const status = AGENT_STATUS[view.agentStatus.state];
+  const since = view.lastResetAt === undefined ? 'since the start' : `since the reset at ${formatSast(view.lastResetAt)}`;
+  return (
+    <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Metric
+        label="Agent status"
+        value={
+          <StatusBadge tone={status.tone} size="md">
+            {status.text}
+          </StatusBadge>
+        }
+        note={view.agentName}
+      />
+      <Metric
+        label="Used today (SAST)"
+        value={view.usage === undefined ? 'None' : `${view.usage.used} RLUSD`}
+        note={view.usage === undefined ? 'No mandate is set.' : `of ${view.usage.limit} RLUSD, ${view.usage.left} left`}
+      />
+      <Metric label="Cleared since reset" value={view.clearedSinceReset} note={`Payments ${since}`} />
+      <Metric
+        label="Refused since reset"
+        value={view.refusedSinceReset.total}
+        note={`${String(view.refusedSinceReset.byPolicy)} by the policy service, ${String(view.refusedSinceReset.byLedger)} by the ledger`}
+      />
+    </dl>
+  );
+}
+
+function HowItWorks() {
+  return (
+    <details className="group rounded-xl bg-secondary">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-5 py-4 outline-focus-ring focus-visible:outline-2 [&::-webkit-details-marker]:hidden">
+        <span className="text-lg font-semibold text-primary">How it works</span>
+        <ChevronDown className="size-5 text-fg-quaternary transition-transform group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="grid gap-4 px-5 pb-5">
+        <p className="max-w-3xl text-sm text-tertiary">
+          Tšepo gives an AI agent that pays a verified identity and spending limits on the XRP Ledger, so its business stays in
+          control and an exchange knows who is paying.
         </p>
-        <div>
-          <Button asChild>
-            <Link href="/agent">Start the demo</Link>
-          </Button>
-        </div>
-      </div>
-
-      <Section title="How a payment moves">
-        <div className="grid gap-4">
+        <div className="rounded-lg bg-primary p-4">
           <FlowDiagram />
-          <p className="max-w-3xl text-sm text-muted">
-            The agent holds a <Term term="credential">credential</Term> that proves its mandate; only the mandate{' '}
-            <Term term="fingerprint">fingerprint</Term> goes on the ledger. The exchange{' '}
-            <Term term="agent-lane">agent lane</Term> accepts only credentialed agents, and the{' '}
-            <Term term="travel-rule">Travel Rule</Term> package reaches the exchange before the money does.
-          </p>
         </div>
-      </Section>
+        <p className="max-w-3xl text-sm text-tertiary">
+          The agent holds a <Term term="credential">credential</Term> that proves its mandate; only the mandate{' '}
+          <Term term="fingerprint">fingerprint</Term> goes on the ledger. The exchange <Term term="agent-lane">agent lane</Term>{' '}
+          accepts only credentialed agents, and the <Term term="travel-rule">Travel Rule</Term> package reaches the exchange
+          before the money does.
+        </p>
+      </div>
+    </details>
+  );
+}
 
-      <section aria-labelledby="scenarios-heading" className="grid gap-3">
-        <h2 id="scenarios-heading" className="text-lg font-semibold text-ink">
-          What each scenario proves
-        </h2>
-        <ol className="grid divide-y divide-border rounded-md border border-border bg-surface">
-          {SCENARIOS.map((scenario) => (
-            <li key={scenario.number} className="grid gap-1 px-4 py-3 sm:grid-cols-[2rem_11rem_1fr] sm:gap-4">
-              <span className="font-semibold text-teal tabular-nums">{scenario.number}</span>
-              <span className="font-medium text-ink">{scenario.title}</span>
-              <span className="text-sm text-ink sm:text-base">{scenario.proves}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+export default async function HomePage() {
+  const view = await loadHome();
+  return (
+    <div className="grid gap-10">
+      <Metrics view={view} />
+      <div className="grid items-start gap-10 2xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section aria-labelledby="runbook-title" className="grid min-w-0 gap-4">
+          <SectionTitle id="runbook-title" title="Demo runbook" />
+          <p className="-mt-2 text-sm text-tertiary">Run the scenarios in order. Reset first to start from a clean state.</p>
+          <div className="overflow-hidden rounded-xl ring-1 ring-secondary">
+            <Runbook lastResults={view.lastResults} />
+          </div>
+        </section>
+        <section aria-labelledby="recent-title" className="grid min-w-0 gap-4">
+          <SectionTitle id="recent-title" title="Recent activity" />
+          <ActivityFeed entries={view.recent} />
+        </section>
+      </div>
+      <HowItWorks />
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { RegistrySkeleton } from '../../components/loading-skeletons.tsx';
+import { AgentSkeleton } from '../../components/loading-skeletons.tsx';
 
 export default function Loading() {
-  return <RegistrySkeleton />;
+  return <AgentSkeleton />;
 }

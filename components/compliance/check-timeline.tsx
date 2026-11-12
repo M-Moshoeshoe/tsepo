@@ -7,13 +7,11 @@ const STATE: Record<Check['state'], { state: TimelineState; text: string }> = {
   'not-checked': { state: 'pending', text: 'Not checked' },
 };
 
-/** The checks for one payment, ticking in one after another. The only animation in the interface. */
+/** The checks the exchange ran for one payment, each with its result in words. */
 export function CheckTimeline({ checks }: { checks: Check[] }) {
   return (
     <Timeline
       label="Checks"
-      animate
-      live
       items={checks.map((check) => ({ id: check.id, label: check.label, state: STATE[check.state].state, stateText: STATE[check.state].text }))}
     />
   );

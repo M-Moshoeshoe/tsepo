@@ -77,18 +77,11 @@ details summary::-webkit-details-marker {
  * Motion. Only seven purposeful motions exist, and every one is switched off
  * for reduced motion at the end of this file:
  * 1 button press, 2 check timeline, 3 status colour transitions,
- * 4 panel slide and dialog fade, 5 toasts, 6 skeleton shimmer, 7 run progress.
+ * 4 slideout and dialog entry, 5 toasts, 6 skeleton shimmer, 7 run progress.
  */
 
-/* 1. Button press. */
-.press {
-  transition:
-    transform 80ms ease-out,
-    background-color 150ms ease-out,
-    border-color 150ms ease-out,
-    color 150ms ease-out;
-}
-.press:active:not(:disabled) {
+/* 1. Button press. React Aria marks a pressed button with data-pressed. */
+button[data-pressed]:not([data-disabled]) {
   transform: scale(0.98);
 }
 
@@ -115,18 +108,8 @@ details summary::-webkit-details-marker {
     color 300ms ease-out;
 }
 
-/* 4. Panel slide (phone details) and dialog fade. */
-@keyframes sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: none;
-  }
-}
-.sheet-up {
-  animation: sheet-up 200ms ease-out;
-}
+/* 4. Slideout and dialog entry. The slideout and modals use the Untitled UI
+   enter animations; the term popover fades in. */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -196,18 +179,16 @@ details summary::-webkit-details-marker {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .press,
   .status-transition {
     transition: none;
   }
-  .press:active:not(:disabled) {
+  button[data-pressed]:not([data-disabled]) {
     transform: none;
   }
   .check-animate {
     opacity: 1;
     animation: none;
   }
-  .sheet-up,
   .dialog-fade,
   .toast-in,
   .shimmer {

@@ -1,8 +1,8 @@
 'use client';
 
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy01 } from '@untitledui/icons';
 import { useEffect, useState } from 'react';
-import { cn } from './ui/cn.ts';
+import { cx } from '@/utils/cx';
 
 const CONFIRM_MS = 2000;
 
@@ -30,18 +30,18 @@ export function CopyButton({ value, label, className }: { value: string; label: 
   }
 
   return (
-    <span className={cn('inline-flex shrink-0 items-center gap-1 align-middle', className)}>
+    <span className={cx('inline-flex shrink-0 items-center gap-1 align-middle', className)}>
       <button
         type="button"
         onClick={() => {
           void copy();
         }}
-        className="press inline-flex size-6 items-center justify-center rounded-md text-muted hover:bg-background hover:text-ink"
+        className="press inline-flex size-6 items-center justify-center rounded-md text-fg-quaternary outline-focus-ring hover:bg-primary_hover hover:text-fg-secondary focus-visible:outline-2"
         aria-label={`Copy ${label}`}
       >
-        {state === 'copied' ? <Check className="size-3.5 text-cleared" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
+        {state === 'copied' ? <Check className="size-3.5 text-fg-success-primary" aria-hidden /> : <Copy01 className="size-3.5" aria-hidden />}
       </button>
-      <span aria-live="polite" className={cn('text-xs font-medium', state === 'failed' ? 'text-refused' : 'text-cleared')}>
+      <span aria-live="polite" className={cx('text-xs font-medium', state === 'failed' ? 'text-error-primary' : 'text-success-primary')}>
         {state === 'copied' ? 'Copied' : state === 'failed' ? 'Copy failed' : ''}
       </span>
     </span>

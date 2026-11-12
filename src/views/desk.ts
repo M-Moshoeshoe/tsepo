@@ -1,4 +1,4 @@
-import { CATEGORY_CHIPS, formatSastDate, type Category, type Status } from './status.ts';
+import { CATEGORY_CHIPS, type Category, type Status } from './status.ts';
 
 export interface DeskItem {
   at: string;
@@ -29,18 +29,6 @@ export function countByFilter(items: readonly DeskItem[]): Record<DeskFilter, nu
 
 export function applyFilter<T extends DeskItem>(items: readonly T[], filter: DeskFilter): T[] {
   return filter === 'all' ? [...items] : items.filter((item) => item.status.category === filter);
-}
-
-/** Groups items (already newest first) under their SAST calendar date. */
-export function groupBySastDate<T extends DeskItem>(items: readonly T[]): { date: string; items: T[] }[] {
-  const groups: { date: string; items: T[] }[] = [];
-  for (const item of items) {
-    const date = formatSastDate(item.at);
-    const last = groups.at(-1);
-    if (last?.date === date) last.items.push(item);
-    else groups.push({ date, items: [item] });
-  }
-  return groups;
 }
 
 /** What to show, and what to do next, when the desk has nothing under a filter. */

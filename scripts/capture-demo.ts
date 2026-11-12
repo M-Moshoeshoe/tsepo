@@ -5,8 +5,8 @@ import { chromium, type Browser, type Page } from 'playwright';
  * Drives the running interface like a person would and saves screenshots to
  * screenshots/. Start the app first (npm run build && npm start), and run this
  * with the demo access code in the environment (npm run demo:capture).
- *   node scripts/capture-demo.ts screens   the overview only
- *   node scripts/capture-demo.ts all       Reset and scenario 3 from the demo bar, then every screenshot
+ *   node scripts/capture-demo.ts screens   every page at both widths, without running anything
+ *   node scripts/capture-demo.ts all       Reset, scenario 1 and scenario 3 first, then every screenshot
  */
 const BASE_URL = process.env.CAPTURE_URL ?? 'http://localhost:3000';
 const ACCESS_CODE = process.env.DEMO_ACCESS_CODE ?? '';
@@ -23,118 +23,127 @@ async function shot(page: Page, name: string, fullPage = true): Promise<void> {
   console.log(`saved ${OUT}/${name}.png`);
 }
 
-/** Enters the access code once per browser session. The code is never printed. */
+/** Enters the access code through the dialog that a locked demo action opens. The code is never printed. */
 async function unlock(page: Page): Promise<void> {
-  const input = page.locator('#demo-access-code');
-  if (!(await input.isVisible())) return;
   if (ACCESS_CODE === '') throw new Error('DEMO_ACCESS_CODE is not set in the environment');
-  await input.fill(ACCESS_CODE);
-  await page.getByRole('button', { name: 'Unlock the demo controls' }).click();
-  await page.getByRole('button', { name: 'Reset demo' }).waitFor();
+  await page.getByRole('button', { name: 'Reset', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Enter the demo access code' });
+  await dialog.waitFor();
+  await dialog.locator('input[type="password"]').fill(ACCESS_CODE);
+  await page.getByRole('button', { name: 'Unlock the demo' }).click();
+  await dialog.waitFor({ state: 'detached' });
 }
 
-async function visit(page: Page, path: string): Promise<void> {
-  await page.goto(`${BASE_URL}${path}`, { waitUntil: 'networkidle' });
-  await unlock(page);
-}
-
-/** Clicks a demo bar button and waits until that run has fully closed. Stops on any failure. */
-async function runFromBar(page: Page, button: string): Promise<void> {
-  const close = page.getByRole('button', { name: 'Close', exact: true });
+/** Starts a run with `start` and waits until it has fully finished. Stops on any failure. */
+async function runAndWait(page: Page, name: string, start: () => Promise<void>): Promise<void> {
+  const close = page.getByRole('region', { name: 'Run progress' }).getByRole('button', { name: 'Close', exact: true });
   if (await close.isVisible()) await close.click();
-  await page.getByRole('button', { name: button, exact: false }).first().click();
+  await start();
   const progress = page.getByRole('region', { name: 'Run progress' });
   await progress.getByText(/Running|Finished in|Stopped after/).first().waitFor({ timeout: 10_000 });
   const finished = progress.getByText(/Finished in \d+ seconds|Stopped after \d+ seconds/);
   await finished.waitFor({ timeout: RUN_TIMEOUT_MS });
   if ((await finished.textContent())?.startsWith('Stopped') === true) {
     await shot(page, 'run-stopped');
-    throw new Error(`The run "${button}" stopped. See screenshots/run-stopped.png.`);
+    throw new Error(`The run "${name}" stopped. See screenshots/run-stopped.png.`);
   }
   await close.waitFor({ timeout: RUN_TIMEOUT_MS });
-  console.log(`ran ${button}`);
+  await page.waitForLoadState('networkidle');
+  console.log(`ran ${name}`);
 }
 
-async function overview(browser: Browser): Promise<void> {
-  for (const width of [1280, 390]) {
-    const page = await openPage(browser, width);
-    await visit(page, '/');
-    await shot(page, `overview-${width}`);
-    await page.context().close();
-  }
+async function goTo(page: Page, link: 'Home' | 'Agent' | 'Compliance desk'): Promise<void> {
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: link }).click();
 }
 
-async function scenarioThree(browser: Browser): Promise<void> {
+/** Opens the first payment on the desk and waits for its slideout. */
+async function openFirstPayment(page: Page): Promise<void> {
+  await page.getByRole('grid').getByRole('row').nth(1).click();
+  await page.getByRole('dialog', { name: 'Payment details' }).waitFor({ timeout: 60_000 });
+  await page.waitForTimeout(1500);
+}
+
+/** Reset, scenario 1 from the runbook and scenario 3 from the header menu, with screenshots along the way. */
+async function runScenarios(browser: Browser): Promise<void> {
   // Motion on, so the toast, the skeleton shimmer and the timeline behave as people see them.
   const page = await openPage(browser, 1280, 'no-preference');
-  await visit(page, '/agent');
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+  await unlock(page);
 
-  await runFromBar(page, 'Reset demo');
+  await runAndWait(page, 'Reset', () => page.getByRole('button', { name: 'Reset', exact: true }).click());
   await page.getByRole('status').getByText('Demo reset').waitFor();
   await shot(page, 'toast-demo-reset', false);
 
-  await runFromBar(page, 'Split payments');
+  await runAndWait(page, 'Scenario 1', () => page.getByRole('button', { name: 'Run Scenario 1: Unknown agent' }).click());
+  await runAndWait(page, 'Scenario 3', async () => {
+    await page.getByRole('button', { name: 'Run scenario', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Scenario 3: Split payments' }).click();
+  });
   await page.getByRole('heading', { name: 'What just happened' }).waitFor();
-  await page.waitForLoadState('networkidle');
-  await shot(page, 'scenario-3-registry');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await shot(page, 'home-1280');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
 
-  // Moving within the app keeps the panel, and shows the loading skeleton while the desk reads the ledger.
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Compliance desk' }).click();
+  await goTo(page, 'Agent');
+  await page.getByRole('heading', { name: 'Approved recipients' }).waitFor({ timeout: 60_000 });
+  await shot(page, 'agent-1280');
+  await page.getByRole('button', { name: 'Change limits' }).click();
+  await page.getByRole('dialog', { name: 'Change the agent limits' }).waitFor();
+  await page.waitForTimeout(400);
+  await shot(page, 'change-limits-dialog', false);
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog').waitFor({ state: 'detached' });
+
+  // Moving within the app shows the loading skeleton while the desk reads the ledger.
+  await goTo(page, 'Compliance desk');
   await page.locator('[aria-busy="true"]').waitFor({ timeout: 10_000 });
   await shot(page, 'loading-skeleton', false);
-  // The skeleton also has a Details title, so wait for the loaded Checks heading, then for the timeline to finish.
-  await page.getByRole('heading', { name: 'Checks' }).waitFor({ timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  // The browser does not animate the part of a full-page shot below the fold, so show the finished timeline.
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await shot(page, 'scenario-3-compliance');
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.getByRole('grid').waitFor({ timeout: 60_000 });
+  await shot(page, 'desk-1280');
+
+  await openFirstPayment(page);
+  await shot(page, 'desk-slideout-1280', false);
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog').waitFor({ state: 'detached' });
+
+  await page.getByRole('tab', { name: /Refused/ }).first().click();
+  await page.waitForURL(/filter=refused/);
+  await page.waitForLoadState('networkidle');
+  await shot(page, 'desk-refused-1280');
 
   await page.getByRole('button', { name: /agent lane, what this means/ }).click();
   await page.getByRole('dialog').waitFor();
-  // Let the short fade finish before the screenshot.
   await page.waitForTimeout(400);
   await shot(page, 'tooltip-open', false);
   await page.context().close();
 }
 
-/** Phase 3C step 1: the application shell at both widths, with its menus open. */
-async function shell(browser: Browser): Promise<void> {
-  const desktop = await openPage(browser, 1280);
-  await desktop.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-  await desktop.getByRole('button', { name: 'Run scenario' }).click();
-  await desktop.getByRole('dialog', { name: 'Enter the demo access code' }).waitFor();
-  await shot(desktop, 'shell-1280-locked', false);
-  await desktop.getByRole('dialog').locator('input[type="password"]').fill(ACCESS_CODE);
-  await desktop.getByRole('button', { name: 'Unlock the demo' }).click();
-  await desktop.getByRole('dialog').waitFor({ state: 'detached' });
-  await desktop.getByText('Demo unlocked').first().waitFor();
-  // The menu shot comes first: a full-page shot resizes the page, which upsets the next click.
-  await desktop.getByRole('button', { name: 'Run scenario' }).click();
-  await desktop.getByRole('menu', { name: 'Run scenario' }).waitFor();
-  await shot(desktop, 'shell-1280-run-menu', false);
-  await desktop.keyboard.press('Escape');
-  await desktop.getByRole('menu').waitFor({ state: 'detached' });
-  await shot(desktop, 'shell-1280');
-  await desktop.context().close();
-
-  const phone = await openPage(browser, 390);
-  await phone.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-  await shot(phone, 'shell-390');
-  await phone.getByRole('button', { name: 'Expand navigation menu' }).click();
-  await phone.getByRole('dialog').waitFor();
-  await shot(phone, 'shell-390-menu-open', false);
-  await phone.context().close();
+/** Every page at phone width, and the desktop pages when no run was made first. */
+async function screens(browser: Browser, includeDesktop: boolean): Promise<void> {
+  const widths = includeDesktop ? [1280, 390] : [390];
+  for (const width of widths) {
+    const page = await openPage(browser, width);
+    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+    await shot(page, `home-${String(width)}`);
+    await page.goto(`${BASE_URL}/agent`, { waitUntil: 'networkidle' });
+    await shot(page, `agent-${String(width)}`);
+    await page.goto(`${BASE_URL}/compliance`, { waitUntil: 'networkidle' });
+    await shot(page, `desk-${String(width)}`);
+    await openFirstPayment(page);
+    await shot(page, `desk-slideout-${String(width)}`, false);
+    await page.context().close();
+  }
 }
 
 const mode = process.argv[2] ?? 'screens';
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 try {
-  if (mode === 'shell') await shell(browser);
-  else {
-    if (mode === 'all') await scenarioThree(browser);
-    await overview(browser);
+  if (mode === 'all') {
+    await runScenarios(browser);
+    await screens(browser, false);
+  } else {
+    await screens(browser, true);
   }
 } finally {
   await browser.close();
