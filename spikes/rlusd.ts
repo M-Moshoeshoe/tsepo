@@ -1,20 +1,21 @@
 import { LedgerEntry, TrustSetFlags, type TrustSet } from 'xrpl';
 import { RLUSD } from '../src/ledger/testnet.ts';
 import { signAsAgent } from './lib/agent.ts';
-import { loadEnv } from './lib/env.ts';
-import { getTrustLine, requireAccountState } from './lib/ledger.ts';
-import { accountLink, printLine, printStep } from './lib/output.ts';
-import { rlusd } from './lib/rlusd.ts';
-import { runSpike } from './lib/run.ts';
-import { signSingle, submitAndConfirm } from './lib/submit.ts';
-import { loadWallets } from './lib/wallets.ts';
+import { loadEnv } from '../src/config/env.ts';
+import { getTrustLine, requireAccountState } from '../src/ledger/reads.ts';
+import { accountLink, printLine, printStep } from '../src/cli/output.ts';
+import { rlusd } from '../src/ledger/rlusd.ts';
+import { runScript } from '../src/cli/run.ts';
+import { confirm } from '../src/cli/report.ts';
+import { signSingle } from '../src/ledger/submit.ts';
+import { loadWallets } from '../src/config/wallets.ts';
 
 /** The most RLUSD each account agrees to hold. */
 const TRUST_LIMIT = '1000000';
 
 const HOLDERS = ['agent', 'contractor', 'exchange'] as const;
 
-await runSpike('rlusd', async (client) => {
+await runScript('spike:rlusd', async (client) => {
   const env = loadEnv();
   const wallets = loadWallets(env);
 
@@ -44,6 +45,6 @@ await runSpike('rlusd', async (client) => {
     };
     const signed =
       role === 'agent' ? await signAsAgent(client, wallets, tx, env.sourceTag) : await signSingle(client, wallets[role], tx);
-    await submitAndConfirm(client, signed);
+    await confirm(client, signed);
   }
 });

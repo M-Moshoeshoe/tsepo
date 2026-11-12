@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { ClassicAddressSchema } from '../ledger/address.ts';
-
-/** A positive decimal amount written as a string, as the ledger expects. */
-const DecimalAmountSchema = z
-  .string()
-  .regex(/^(0|[1-9]\d*)(\.\d{1,15})?$/, { message: 'Not a decimal amount' })
-  .refine((value) => Number(value) > 0, { message: 'Amount must be above zero' });
+import { DecimalAmountSchema } from './amount.ts';
 
 /**
  * What a business allows its agent to do. Addresses are public ledger
@@ -14,6 +9,7 @@ const DecimalAmountSchema = z
  */
 export const MandateSchema = z.strictObject({
   version: z.literal(1),
+  /** The business account the agent works for. */
   principal: ClassicAddressSchema,
   agent: ClassicAddressSchema,
   approvedRecipients: z.array(ClassicAddressSchema).min(1),

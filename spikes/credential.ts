@@ -1,20 +1,21 @@
 import { convertStringToHex, isoTimeToRippleTime, type CredentialAccept, type CredentialCreate } from 'xrpl';
-import { isAccepted } from '../src/credential/credential-check.ts';
-import { mandateFingerprint } from '../src/mandate/fingerprint.ts';
+import { isAccepted } from '../src/domain/credential-check.ts';
+import { mandateFingerprint } from '../src/domain/fingerprint.ts';
 import { signAsAgent } from './lib/agent.ts';
 import { agentCredentialQuery, CREDENTIAL_TYPE_HEX, requireValidCredential } from './lib/credential.ts';
-import { loadEnv } from './lib/env.ts';
-import { findCredential } from './lib/ledger.ts';
-import { sampleMandate } from './lib/mandate.ts';
-import { printLine, printStep } from './lib/output.ts';
-import { runSpike } from './lib/run.ts';
-import { signSingle, submitAndConfirm } from './lib/submit.ts';
-import { loadWallets } from './lib/wallets.ts';
+import { loadEnv } from '../src/config/env.ts';
+import { findCredential } from '../src/ledger/reads.ts';
+import { demoMandate } from '../src/config/demo.ts';
+import { printLine, printStep } from '../src/cli/output.ts';
+import { runScript } from '../src/cli/run.ts';
+import { confirm } from '../src/cli/report.ts';
+import { signSingle } from '../src/ledger/submit.ts';
+import { loadWallets } from '../src/config/wallets.ts';
 
-await runSpike('credential', async (client) => {
+await runScript('spike:credential', async (client) => {
   const env = loadEnv();
   const wallets = loadWallets(env);
-  const mandate = sampleMandate(wallets);
+  const mandate = demoMandate(wallets);
   const fingerprint = mandateFingerprint(mandate);
   const query = agentCredentialQuery(wallets);
 
@@ -33,7 +34,7 @@ await runSpike('credential', async (client) => {
       Expiration: isoTimeToRippleTime(mandate.expiresAt),
       URI: convertStringToHex(fingerprint),
     };
-    await submitAndConfirm(client, await signSingle(client, wallets.issuer, create));
+    await confirm(client, await signSingle(client, wallets.issuer, create));
   }
 
   printStep('Agent accepts the credential');
@@ -48,7 +49,7 @@ await runSpike('credential', async (client) => {
       Issuer: wallets.issuer.address,
       CredentialType: CREDENTIAL_TYPE_HEX,
     };
-    await submitAndConfirm(client, await signAsAgent(client, wallets, accept, env.sourceTag));
+    await confirm(client, await signAsAgent(client, wallets, accept, env.sourceTag));
   }
 
   printStep('Read the credential from the ledger and check it');

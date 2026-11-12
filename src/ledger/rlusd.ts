@@ -1,34 +1,44 @@
 import type { Client, IssuedCurrencyAmount, Payment } from 'xrpl';
 import { z } from 'zod';
-import { RLUSD } from '../../src/ledger/testnet.ts';
-import { getTrustLine } from './ledger.ts';
+import { getTrustLine } from './reads.ts';
 import type { Outcome } from './submit.ts';
+import { RLUSD } from './testnet.ts';
 
 export function rlusd(value: string): IssuedCurrencyAmount {
   return { currency: RLUSD.currency, issuer: RLUSD.issuer, value };
 }
 
-/** A plain RLUSD payment. Partial payments are never used. */
-export function rlusdPayment(from: string, to: string, value: string, credentialIds?: string[]): Payment {
+export interface RlusdPaymentOptions {
+  credentialIds?: string[] | undefined;
+  destinationTag?: number | undefined;
+  invoiceId?: string | undefined;
+}
+
+/** A plain RLUSD payment. Partial payments, paths and memos are never used. */
+export function rlusdPayment(from: string, to: string, value: string, options: RlusdPaymentOptions = {}): Payment {
+  const { credentialIds, destinationTag, invoiceId } = options;
   return {
     TransactionType: 'Payment',
     Account: from,
     Destination: to,
     Amount: rlusd(value),
+    ...(destinationTag === undefined ? {} : { DestinationTag: destinationTag }),
+    ...(invoiceId === undefined ? {} : { InvoiceID: invoiceId }),
     ...(credentialIds === undefined ? {} : { CredentialIDs: credentialIds }),
   };
 }
 
-export async function rlusdBalance(client: Client, account: string): Promise<number> {
+/** The RLUSD balance exactly as the ledger reports it, "0" when there is no trust line. */
+export async function rlusdBalance(client: Client, account: string): Promise<string> {
   const line = await getTrustLine(client, { account, issuer: RLUSD.issuer, currency: RLUSD.currency });
-  return line === undefined ? 0 : Number(line.balance);
+  return line?.balance ?? '0';
 }
 
 /** Fails unless the account holds at least `minimum` RLUSD. */
 export async function requireRlusd(client: Client, account: string, minimum: number): Promise<void> {
   const balance = await rlusdBalance(client, account);
-  if (balance < minimum) {
-    throw new Error(`Account ${account} holds ${balance} RLUSD, needs at least ${minimum}. Fund it first (see the Phase 1 report).`);
+  if (Number(balance) < minimum) {
+    throw new Error(`Account ${account} holds ${balance} RLUSD, needs at least ${minimum}. Fund it first.`);
   }
 }
 

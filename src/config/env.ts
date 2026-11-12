@@ -1,6 +1,6 @@
 import { isValidSecret } from 'xrpl';
 import { z } from 'zod';
-import { DEFAULT_SOURCE_TAG } from '../../src/ledger/testnet.ts';
+import { DEFAULT_SOURCE_TAG } from '../ledger/testnet.ts';
 import { ROLE_NAMES, ROLES, type Role } from './roles.ts';
 
 export const ENV_FILE = '.env.local';

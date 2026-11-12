@@ -1,4 +1,4 @@
-import { TESTNET_EXPLORER } from '../../src/ledger/testnet.ts';
+import { TESTNET_EXPLORER } from '../ledger/testnet.ts';
 
 export function txLink(hash: string): string {
   return `${TESTNET_EXPLORER}/transactions/${hash}`;

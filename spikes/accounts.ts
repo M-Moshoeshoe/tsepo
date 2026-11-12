@@ -1,12 +1,12 @@
 import { dropsToXrp, Wallet } from 'xrpl';
 import { requiredBalanceDrops } from '../src/ledger/reserve.ts';
-import { ENV_FILE, hasValidSeed, loadEnv } from './lib/env.ts';
-import { upsertEnvFile } from './lib/env-file.ts';
-import { getAccountState, getFundingHash, getReserves } from './lib/ledger.ts';
-import { accountLink, printLine, printStep, txLink } from './lib/output.ts';
-import { ROLE_NAMES, ROLES } from './lib/roles.ts';
-import { runSpike } from './lib/run.ts';
-import { loadWallets } from './lib/wallets.ts';
+import { ENV_FILE, hasValidSeed, loadEnv } from '../src/config/env.ts';
+import { upsertEnvFile } from '../src/config/env-file.ts';
+import { getAccountState, getFundingHash, getReserves } from '../src/ledger/reads.ts';
+import { accountLink, printLine, printStep, txLink } from '../src/cli/output.ts';
+import { ROLE_NAMES, ROLES } from '../src/config/roles.ts';
+import { runScript } from '../src/cli/run.ts';
+import { loadWallets } from '../src/config/wallets.ts';
 
 /** One XRP kept above the reserve to pay transaction fees. */
 const FEE_BUFFER_DROPS = 1_000_000;
@@ -26,7 +26,7 @@ function createMissingSeeds(): number {
   return Object.keys(created).length;
 }
 
-await runSpike('accounts', async (client) => {
+await runScript('spike:accounts', async (client) => {
   const createdCount = createMissingSeeds();
   printLine(`${createdCount} new seeds saved to ${ENV_FILE} (values not shown)`);
 

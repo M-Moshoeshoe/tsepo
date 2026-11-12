@@ -1,18 +1,15 @@
-import { convertStringToHex, unixTimeToRippleTime, type Client } from 'xrpl';
-import { AGENT_MANDATE_CREDENTIAL_TYPE, checkCredential } from '../../src/credential/credential-check.ts';
-import { mandateFingerprint } from '../../src/mandate/fingerprint.ts';
-import { findCredential, type FoundCredential } from './ledger.ts';
-import { sampleMandate } from './mandate.ts';
-import type { Wallets } from './wallets.ts';
+import { unixTimeToRippleTime, type Client } from 'xrpl';
+import { AGENT_MANDATE_CREDENTIAL_TYPE, checkCredential } from '../../src/domain/credential-check.ts';
+import { mandateFingerprint } from '../../src/domain/fingerprint.ts';
+import { findCredential, type FoundCredential } from '../../src/ledger/reads.ts';
+import { demoMandate } from '../../src/config/demo.ts';
+import type { Wallets } from '../../src/config/wallets.ts';
+import { agentCredentialQuery as sharedQuery, type CredentialQuery } from '../../src/ledger/credential.ts';
 
-export const CREDENTIAL_TYPE_HEX = convertStringToHex(AGENT_MANDATE_CREDENTIAL_TYPE);
+export { CREDENTIAL_TYPE_HEX } from '../../src/ledger/credential.ts';
 
-export function agentCredentialQuery(wallets: Wallets): {
-  subject: string;
-  issuer: string;
-  credentialTypeHex: string;
-} {
-  return { subject: wallets.agent.address, issuer: wallets.issuer.address, credentialTypeHex: CREDENTIAL_TYPE_HEX };
+export function agentCredentialQuery(wallets: Wallets): CredentialQuery {
+  return sharedQuery(wallets.agent.address, wallets.issuer.address);
 }
 
 /** Reads the agent credential from the ledger and fails unless it proves the current mandate. */
@@ -28,7 +25,7 @@ export async function requireValidCredential(client: Client, wallets: Wallets): 
       issuer: wallets.issuer.address,
       subject: wallets.agent.address,
       credentialType: AGENT_MANDATE_CREDENTIAL_TYPE,
-      fingerprint: mandateFingerprint(sampleMandate(wallets)),
+      fingerprint: mandateFingerprint(demoMandate(wallets)),
     },
     unixTimeToRippleTime(Date.now()),
   );

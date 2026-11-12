@@ -11,6 +11,7 @@ export const ROLES = {
   policy: { seedVar: 'POLICY_SEED', funded: true, ownedObjects: 0 },
   exchange: { seedVar: 'EXCHANGE_SEED', funded: true, ownedObjects: 2 }, // trust line, deposit preauth
   contractor: { seedVar: 'CONTRACTOR_SEED', funded: true, ownedObjects: 1 }, // trust line
+  unknownAgent: { seedVar: 'UNKNOWN_AGENT_SEED', funded: true, ownedObjects: 1 }, // trust line; holds no credential
 } as const;
 
 export type Role = keyof typeof ROLES;
