@@ -101,9 +101,11 @@ Requirements: Node 24 and npm.
 
 ```sh
 npm install
-npm run typecheck
-npm test
+npm run check
 ```
+
+End-to-end tests drive the running app against Testnet: start it with
+`npm run build && npm start`, then run `npm run test:e2e`.
 
 Copy `.env.example` to `.env.local` and fill in the values there.
 `.env.local` is gitignored and is the only place seeds are kept. This

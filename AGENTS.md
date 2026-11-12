@@ -89,3 +89,7 @@ accepts deposits only from agents that hold a valid credential.
 - `npm run lint`: lint the project.
 - `npm test`: run the test suite.
 - `npm run check`: all three. Must pass before every commit.
+- `npm run test:e2e`: end-to-end tests against a running production build
+  (`npm run build && npm start`) and the XRP Ledger Testnet. They make
+  about nine demo runs and five Claude calls, so run them before a release,
+  not on every commit.
