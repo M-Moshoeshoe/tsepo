@@ -4,24 +4,17 @@ import { chromium, type Browser, type Page } from 'playwright';
 /**
  * Drives the running interface like a person would and saves screenshots to
  * screenshots/. Start the app first (npm run build && npm start), and run this
- * with the demo access code in the environment (node --env-file=.env.local ...).
- *   node scripts/capture-demo.ts screens   the screens only
- *   node scripts/capture-demo.ts all       runs from the demo bar, then the screens
+ * with the demo access code in the environment (npm run demo:capture).
+ *   node scripts/capture-demo.ts screens   the overview only
+ *   node scripts/capture-demo.ts all       Reset and scenario 3 from the demo bar, then every screenshot
  */
 const BASE_URL = process.env.CAPTURE_URL ?? 'http://localhost:3000';
 const ACCESS_CODE = process.env.DEMO_ACCESS_CODE ?? '';
 const OUT = 'screenshots';
 const RUN_TIMEOUT_MS = 240_000;
 
-/** Split payments first, then a reset, so the desk has runs before and since the last reset. */
-const RUNS = ['Reset demo', 'Split payments', 'Reset demo', 'Unknown agent', 'Verified agent'];
-
-async function openPage(browser: Browser, width: number): Promise<Page> {
-  const context = await browser.newContext({
-    viewport: { width, height: width < 600 ? 844 : 900 },
-    // Reduced motion shows the finished check timeline, so screenshots are stable.
-    reducedMotion: 'reduce',
-  });
+async function openPage(browser: Browser, width: number, reducedMotion: 'reduce' | 'no-preference' = 'reduce'): Promise<Page> {
+  const context = await browser.newContext({ viewport: { width, height: width < 600 ? 844 : 900 }, reducedMotion });
   return context.newPage();
 }
 
@@ -62,37 +55,49 @@ async function runFromBar(page: Page, button: string): Promise<void> {
   console.log(`ran ${button}`);
 }
 
-async function screens(browser: Browser): Promise<void> {
+async function overview(browser: Browser): Promise<void> {
   for (const width of [1280, 390]) {
     const page = await openPage(browser, width);
-    for (const screen of ['registry', 'compliance']) {
-      await visit(page, `/${screen}`);
-      await shot(page, `${screen}-${width}`);
-    }
-    if (width === 1280) {
-      await visit(page, '/compliance?filter=refused');
-      await shot(page, 'compliance-1280-refused');
-    } else {
-      await visit(page, '/compliance');
-      await page.locator('tbody tr a').first().click();
-      await page.getByRole('dialog', { name: 'Details' }).waitFor();
-      await shot(page, 'compliance-390-details-open', false);
-    }
+    await visit(page, '/');
+    await shot(page, `overview-${width}`);
     await page.context().close();
   }
+}
+
+async function scenarioThree(browser: Browser): Promise<void> {
+  // Motion on, so the toast, the skeleton shimmer and the timeline behave as people see them.
+  const page = await openPage(browser, 1280, 'no-preference');
+  await visit(page, '/registry');
+
+  await runFromBar(page, 'Reset demo');
+  await page.getByRole('status').getByText('Demo reset').waitFor();
+  await shot(page, 'toast-demo-reset', false);
+
+  await runFromBar(page, 'Split payments');
+  await page.getByRole('heading', { name: 'What just happened' }).waitFor();
+  await page.waitForLoadState('networkidle');
+  await shot(page, 'scenario-3-registry');
+
+  // Moving within the app keeps the panel, and shows the loading skeleton while the desk reads the ledger.
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Compliance desk' }).click();
+  await page.locator('[aria-busy="true"]').waitFor({ timeout: 10_000 });
+  await shot(page, 'loading-skeleton', false);
+  await page.getByRole('heading', { name: 'Details' }).waitFor({ timeout: 60_000 });
+  await page.waitForTimeout(1500);
+  await shot(page, 'scenario-3-compliance');
+
+  await page.getByRole('button', { name: /agent lane, what this means/ }).click();
+  await page.getByRole('dialog').waitFor();
+  await shot(page, 'tooltip-open', false);
+  await page.context().close();
 }
 
 const mode = process.argv[2] ?? 'screens';
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 try {
-  if (mode === 'all') {
-    const page = await openPage(browser, 1280);
-    await visit(page, '/registry');
-    for (const run of RUNS) await runFromBar(page, run);
-    await page.context().close();
-  }
-  await screens(browser);
+  if (mode === 'all') await scenarioThree(browser);
+  await overview(browser);
 } finally {
   await browser.close();
 }
