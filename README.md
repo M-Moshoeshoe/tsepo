@@ -63,7 +63,37 @@ flowchart LR
 
 ## Status
 
-Phase 0: project setup. No application code yet.
+Phase 2: the core engine runs end to end from scripts. There is no
+interface yet.
+
+| Part | Where | Job |
+|---|---|---|
+| Domain rules | `src/domain` | Pure, tested functions: mandate, decision rules, Directive 9 package, fingerprints, deposit assessment |
+| Policy service | `src/policy` | Own key and append-only log; reads the credential from the ledger before every signature; signs or refuses with reason codes |
+| Registry | `src/registry` | Registers an agent (signer list, master key disabled, credential), re-issues the credential when limits change, revokes |
+| Agent | `src/agent` | Reads a plain-language payout list with Claude, sends the Directive 9 package to the exchange first, then pays with the policy co-signature |
+| Exchange verifier | `src/exchange` | Stores packages, watches the agent lane, records each deposit as Cleared or Held, reads refused attempts from the policy log |
+| Storage | `src/storage` | A small interface with a local file adapter (`.data/`) |
+
+## Running the demo
+
+1. `npm run spike:accounts` creates and funds the Testnet accounts and
+   writes their seeds to `.env.local`.
+2. Fund the agent with Testnet RLUSD (see the Phase 1 notes), and add
+   `ANTHROPIC_API_KEY` to `.env.local`.
+3. Run `npm run demo:reset` before each scenario. It returns all RLUSD to
+   the agent, applies the business-signed mandate (3 RLUSD per payment,
+   5 RLUSD per day), re-issues the credential if needed, and clears the
+   daily totals.
+4. Run a scenario:
+   - `npm run scenario:1`: an unknown agent is refused by the policy
+     service and rejected by the ledger.
+   - `npm run scenario:2`: a verified agent pays 2 RLUSD; the exchange
+     clears it.
+   - `npm run scenario:3`: three split payments of 2 RLUSD; the third is
+     refused.
+   - `npm run scenario:4`: the business revokes the agent; its next payment
+     is refused.
 
 ## Development
 
