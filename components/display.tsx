@@ -1,11 +1,22 @@
 import { ExternalLink } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { TESTNET_EXPLORER } from '../src/ledger/testnet.ts';
+import { CopyButton } from './copy-button.tsx';
 import { cn } from './ui/cn.ts';
 
 /** A ledger address, hash or fingerprint in IBM Plex Mono. Long values break anywhere so they never overflow. */
 export function Mono({ children, className }: { children: ReactNode; className?: string }) {
   return <span className={cn('font-mono text-[13px] break-all text-ink', className)}>{children}</span>;
+}
+
+/** A value people may need to paste elsewhere: an address, hash or fingerprint, with a copy button. */
+export function CopyableMono({ value, label, className }: { value: string; label: string; className?: string }) {
+  return (
+    <span className="inline-flex max-w-full items-start gap-1">
+      <Mono className={cn('min-w-0', className)}>{value}</Mono>
+      <CopyButton value={value} label={label} />
+    </span>
+  );
 }
 
 /** An amount and its asset, with tabular figures so columns of numbers line up. */
@@ -73,11 +84,14 @@ export function Section({
 }
 
 /** A two-column list of facts that stacks on narrow screens. */
-export function Facts({ items }: { items: { term: string; value: ReactNode }[] }) {
+export function Facts({ items }: { items: { term: ReactNode; value: ReactNode; key?: string }[] }) {
   return (
     <dl className="grid gap-3">
-      {items.map((item) => (
-        <div key={item.term} className="grid gap-0.5 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] sm:gap-6">
+      {items.map((item, index) => (
+        <div
+          key={item.key ?? (typeof item.term === 'string' ? item.term : String(index))}
+          className="grid gap-0.5 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)] sm:gap-6"
+        >
           <dt className="text-sm text-muted">{item.term}</dt>
           <dd className="min-w-0 text-sm text-ink">{item.value}</dd>
         </div>

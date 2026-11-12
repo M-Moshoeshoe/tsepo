@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { z } from 'zod';
-import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunRequest } from '../src/demo/events.ts';
+import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunKind, type RunRequest } from '../src/demo/events.ts';
+import { useToast } from './toast-provider.tsx';
 
 export type RunState =
   | { status: 'idle' }
@@ -49,6 +50,13 @@ function parseLine(line: string): DemoEvent | undefined {
 
 const STORAGE_KEY = 'tsepo-demo-access-code';
 
+/** Maintenance actions confirm with a toast; scenarios explain themselves in the run panel instead. */
+const TOASTS: Partial<Record<RunKind, string>> = {
+  reset: 'Demo reset',
+  'change-limits': 'Limits updated',
+  revoke: 'Agent revoked',
+};
+
 /** Session storage can be unavailable (private windows, blocked storage); the code then lasts for this page only. */
 function readStoredCode(): string | undefined {
   try {
@@ -70,6 +78,7 @@ function writeStoredCode(code: string | undefined): void {
 /** Runs one demo action at a time and keeps its live progress for every component that shows it. */
 export function RunProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const notify = useToast();
   const [state, setState] = useState<RunState>({ status: 'idle' });
   const [busy, setBusy] = useState(false);
   const [accessCode, setAccessCode] = useState<string | undefined>(undefined);
@@ -138,6 +147,8 @@ export function RunProvider({ children }: { children: ReactNode }) {
               if (event !== undefined) {
                 append(event);
                 if (event.type === 'done' || event.type === 'failed') finished = true;
+                const toast = TOASTS[request.kind];
+                if (event.type === 'done' && toast !== undefined) notify(toast);
               }
               newline = buffer.indexOf('\n');
             }
@@ -152,7 +163,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
         }
       })();
     },
-    [append, router, forgetAccessCode],
+    [append, router, forgetAccessCode, notify],
   );
 
   const dismiss = useCallback(() => {
