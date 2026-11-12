@@ -1,6 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { accessCodeConfigured, accessCodeMatches } from './access-code.ts';
+import { accessCodeConfigured, accessCodeMatches, decideAccess } from './access-code.ts';
 import { createRateLimiter } from './rate-limit.ts';
+
+describe('access decision', () => {
+  const code = 'lesedi-2026';
+
+  it('allows the right code without counting it as wrong', () => {
+    const wrong = createRateLimiter(1, 60_000);
+    expect(decideAccess(code, code, wrong, 0)).toEqual({ allowed: true });
+    expect(decideAccess(code, code, wrong, 0)).toEqual({ allowed: true });
+    expect(decideAccess(code, 'wrong-code', wrong, 0)).toMatchObject({ allowed: false, status: 401 });
+  });
+
+  it('refuses a wrong code with a clear sentence, then limits repeated wrong codes', () => {
+    const wrong = createRateLimiter(2, 60_000);
+    expect(decideAccess(code, 'wrong-code', wrong, 0)).toEqual({
+      allowed: false,
+      status: 401,
+      error: 'That access code was not accepted. Check it and try again.',
+    });
+    expect(decideAccess(code, 'wrong-code', wrong, 1000)).toMatchObject({ allowed: false, status: 401 });
+    expect(decideAccess(code, 'wrong-code', wrong, 2000)).toEqual({
+      allowed: false,
+      status: 429,
+      error: 'Too many wrong access codes. Try again in 1 minute.',
+    });
+  });
+
+  it('switches runs off when no usable code is configured', () => {
+    expect(decideAccess(undefined, 'anything', createRateLimiter(10, 60_000), 0)).toMatchObject({ allowed: false, status: 503 });
+  });
+});
 
 describe('access code', () => {
   it('matches only the configured code', () => {

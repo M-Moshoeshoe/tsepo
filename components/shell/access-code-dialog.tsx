@@ -1,13 +1,30 @@
 'use client';
 
 import { useState, type SyntheticEvent } from 'react';
+import { z } from 'zod';
 import { Dialog, Modal, ModalOverlay } from '@/components/application/modals/modal';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
+import { ACCESS_CODE_HEADER } from '../../src/demo/events.ts';
+
+const ErrorBodySchema = z.object({ error: z.string() });
+
+/** Asks the server whether the code is right. Nothing runs; a wrong code counts against the wrong-code limit. */
+async function checkCode(code: string): Promise<string | undefined> {
+  try {
+    const response = await fetch('/api/access', { method: 'POST', headers: { [ACCESS_CODE_HEADER]: code } });
+    if (response.ok) return undefined;
+    const body = ErrorBodySchema.safeParse(await response.json().catch(() => undefined));
+    return body.success ? body.data.error : 'That access code was not accepted. Check it and try again.';
+  } catch {
+    return 'The server could not be reached, so the code was not checked. Try again.';
+  }
+}
 
 /**
- * Asks once for the demo access code. The code is kept in session storage for
- * this browser session only, never in the page address or a cookie.
+ * Asks once for the demo access code and checks it with the server before
+ * saving it. The code is kept in session storage for this browser session
+ * only, never in the page address or a cookie.
  */
 export function AccessCodeDialog({
   isOpen,
@@ -20,12 +37,20 @@ export function AccessCodeDialog({
 }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
+  const [checking, setChecking] = useState(false);
 
-  function submit(event: SyntheticEvent<HTMLFormElement>): void {
+  async function submit(event: SyntheticEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     const trimmed = code.trim();
     if (trimmed.length < 6) {
       setError('Enter the demo access code. It has at least 6 characters.');
+      return;
+    }
+    setChecking(true);
+    const refused = await checkCode(trimmed);
+    setChecking(false);
+    if (refused !== undefined) {
+      setError(refused);
       return;
     }
     setError(undefined);
@@ -35,10 +60,23 @@ export function AccessCodeDialog({
   }
 
   return (
-    <ModalOverlay isOpen={isOpen} onOpenChange={onOpenChange} isDismissable>
+    <ModalOverlay
+      isOpen={isOpen}
+      onOpenChange={(open) => {
+        if (!open) setError(undefined);
+        onOpenChange(open);
+      }}
+      isDismissable
+    >
       <Modal className="max-w-md">
         <Dialog aria-label="Enter the demo access code">
-          <form onSubmit={submit} className="grid w-full gap-5 p-6" noValidate>
+          <form
+            onSubmit={(event) => {
+              void submit(event);
+            }}
+            className="grid w-full gap-5 p-6"
+            noValidate
+          >
             <div className="grid gap-1">
               <h2 className="text-lg font-semibold text-primary">Enter the demo access code</h2>
               <p className="text-sm text-tertiary">
@@ -65,7 +103,7 @@ export function AccessCodeDialog({
               >
                 Cancel
               </Button>
-              <Button color="primary" size="md" type="submit">
+              <Button color="primary" size="md" type="submit" isLoading={checking} showTextWhileLoading>
                 Unlock the demo
               </Button>
             </div>
