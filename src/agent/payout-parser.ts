@@ -25,6 +25,17 @@ export function validatePayoutIntents(value: unknown): PayoutIntent[] {
   return z.array(PayoutIntentSchema).max(MAX_PAYOUTS).parse(value);
 }
 
+/**
+ * Gives every payout without a reference a unique one, such as
+ * "T-MHX3K2P1-2", so a typed instruction like "Pay Naledi 2 RLUSD" can be paid
+ * and never collides with an earlier payout. References that were written
+ * are kept exactly as written.
+ */
+export function withReferences<T extends { reference: string }>(payouts: readonly T[], now: Date): T[] {
+  const prefix = `T-${now.getTime().toString(36).toUpperCase()}`;
+  return payouts.map((payout, index) => (payout.reference.trim() === '' ? { ...payout, reference: `${prefix}-${String(index + 1)}` } : payout));
+}
+
 export interface PayoutParser {
   parse(text: string): Promise<PayoutIntent[]>;
 }
@@ -67,7 +78,7 @@ export class ModelReadError extends Error {
  * here; the policy service decides them. The SDK does not retry, so each
  * parse is exactly one model call for the daily call limit.
  */
-export function createClaudePayoutParser(client: Anthropic = new Anthropic({ maxRetries: 0 })): PayoutParser {
+export function createClaudePayoutParser(client: Anthropic = new Anthropic({ maxRetries: 0 }), now: () => Date = () => new Date()): PayoutParser {
   return {
     async parse(text) {
       if (text.length > MAX_LIST_LENGTH) throw new Error(`The payout list is longer than ${MAX_LIST_LENGTH} characters`);
@@ -84,7 +95,7 @@ export function createClaudePayoutParser(client: Anthropic = new Anthropic({ max
       if (response.stop_reason === 'max_tokens') throw new ModelReadError('The model response was cut off');
       if (response.parsed_output === null) throw new ModelReadError('The model response did not match the expected structure');
       try {
-        return validatePayoutIntents(response.parsed_output.payouts);
+        return validatePayoutIntents(withReferences(response.parsed_output.payouts, now()));
       } catch (error: unknown) {
         throw new ModelReadError('The payouts the model read did not pass validation', { cause: error });
       }

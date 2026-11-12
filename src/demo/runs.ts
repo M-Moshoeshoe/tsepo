@@ -258,6 +258,40 @@ async function revokeScenario(ctx: DemoContext, report: Report): Promise<RunOutc
   };
 }
 
+/**
+ * A visitor's own instruction, read and paid by the real agent: Claude reads it,
+ * the approval service decides each payment, and the ledger enforces the
+ * signatures. Nothing is prepared first, so it meets the workspace as it is.
+ */
+async function visitorInstruction(ctx: DemoContext, report: Report, text: string): Promise<RunOutcome> {
+  report({ type: 'step', text: 'The agent reads your instruction and asks the approval service to approve each payment' });
+  const results = await ctx.createAgent(agentReporter(report)).run(text);
+  reportDeposits(report, await ctx.exchange.syncDeposits());
+  const paid = results.filter((result) => result.status === 'paid').length;
+  const stopped = results.length - paid;
+  const read =
+    results.length === 0
+      ? 'Claude found no payment in the instruction, so the agent paid nothing.'
+      : `Claude found ${payments(results.length)} in the instruction, and the agent asked the approval service to approve ${results.length === 1 ? 'it' : 'each one'}.`;
+  const decided =
+    results.length === 0
+      ? 'Text that asks the agent to break its rules is never turned into a payment.'
+      : stopped === 0
+        ? paid === 1
+          ? 'The approval service approved the payment, and the XRP Ledger settled it.'
+          : `The approval service approved all ${payments(paid)}, and the XRP Ledger settled them.`
+        : `${String(paid)} paid and ${String(stopped)} stopped: the approval service only approves payments within the spending rules, to approved recipients.`;
+  return {
+    summary:
+      results.length === 0
+        ? 'No payment was found in the instruction.'
+        : stopped === 0
+          ? `${payments(paid)} paid.`
+          : `${String(paid)} of ${payments(results.length)} paid.`,
+    explanation: { sentences: [read, decided], decidedBy: 'policy', evidence: { label: 'The result on the Agent page', path: '/business/agent' } },
+  };
+}
+
 async function changeLimits(ctx: DemoContext, report: Report, limits: MandateLimits): Promise<RunOutcome> {
   const { client, wallets } = ctx;
   const current = await findCredential(client, agentCredentialQuery(wallets.agent.address, wallets.issuer.address));
@@ -335,6 +369,9 @@ async function dispatch(ctx: DemoContext, request: RunRequest, report: Report): 
       break;
     case 'change-limits':
       outcome = await changeLimits(ctx, report, { perPaymentLimit: request.perPaymentLimit, dailyLimit: request.dailyLimit });
+      break;
+    case 'instruction':
+      outcome = await visitorInstruction(ctx, report, request.text);
       break;
   }
   return outcome;

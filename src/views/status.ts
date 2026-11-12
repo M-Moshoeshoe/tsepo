@@ -117,7 +117,7 @@ const REASON_TEXT: Record<string, string> = {
   [AdminReason.StaleAction]: 'a newer change was already applied',
   [AgentReason.AlreadyPaid]: 'it was already paid',
   [AgentReason.Unresolved]: 'an earlier attempt is not resolved yet',
-  [AgentReason.PayeeUnknown]: 'the payee is not in the directory',
+  [AgentReason.PayeeUnknown]: 'the payee is not an approved recipient',
   [AgentReason.NoMandate]: 'the agent has no spending rules',
 };
 

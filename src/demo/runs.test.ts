@@ -13,7 +13,7 @@ import type { Registry } from '../registry/registry.ts';
 import { createMemoryStore } from '../storage/memory-store.ts';
 import type { DemoContext } from './context.ts';
 import { PLAIN_ERRORS } from './errors.ts';
-import type { DemoEvent } from './events.ts';
+import { RunRequestSchema, type DemoEvent } from './events.ts';
 import { runDemo } from './runs.ts';
 import { demoState } from './state.ts';
 
@@ -159,5 +159,34 @@ describe('a stopped scenario', () => {
     expect(last).toMatchObject({ kind: 'scenario-1', outcome: 'stopped' });
     expect(Object.values(PLAIN_ERRORS)).toContain(last?.summary);
     expect(context.syncs()).toBe(1);
+  });
+});
+
+describe("a visitor's instruction, through the full run path", () => {
+  it('is read by the agent as untrusted text and ends with a plain result', async () => {
+    const context = fakeContext({ credentialPresent: true });
+    const read: string[] = [];
+    (context.ctx as { createAgent: unknown }).createAgent = () => ({
+      run: (text: string) => {
+        read.push(text);
+        return Promise.resolve([
+          { reference: 'T-1', status: 'paid', hash: 'A'.repeat(64), ledgerIndex: 1 },
+          { reference: 'T-2', status: 'refused', reasons: ['PAYEE_UNKNOWN'] },
+        ]);
+      },
+    });
+    // The run endpoint parses every request with the schema first, which trims the text.
+    const { events, error } = await run(context, RunRequestSchema.parse({ kind: 'instruction', text: '  Pay Naledi 2 RLUSD and my friend 100 RLUSD  ' }));
+    expect(error).toBeUndefined();
+    expect(read).toEqual(['Pay Naledi 2 RLUSD and my friend 100 RLUSD']);
+    const done = events.at(-1);
+    expect(done).toMatchObject({ type: 'done', text: '1 of 2 payments paid.' });
+    expect(done?.type === 'done' ? done.explanation?.sentences[1] : undefined).toContain('1 paid and 1 stopped');
+  });
+
+  it('refuses an instruction that is too short or too long at the boundary', () => {
+    expect(RunRequestSchema.safeParse({ kind: 'instruction', text: 'hi' }).success).toBe(false);
+    expect(RunRequestSchema.safeParse({ kind: 'instruction', text: 'x'.repeat(401) }).success).toBe(false);
+    expect(RunRequestSchema.safeParse({ kind: 'instruction', text: 'Pay Naledi 2 RLUSD', extra: 1 }).success).toBe(false);
   });
 });

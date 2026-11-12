@@ -110,9 +110,16 @@ export function createPayoutAgent(deps: PayoutAgentDeps): PayoutAgent {
     }
 
     const payee = deps.directory.resolve(intent.payee);
-    if (payee === undefined) return { reference, status: 'refused', reasons: [AgentReason.PayeeUnknown] };
+    // Refusals before any package is sent are recorded too, so the business sees every payout it asked for.
+    if (payee === undefined) {
+      await save({ reference, status: 'refused', reasons: [AgentReason.PayeeUnknown] });
+      return { reference, status: 'refused', reasons: [AgentReason.PayeeUnknown] };
+    }
     const mandate = await deps.policy.currentMandate(deps.agentAddress);
-    if (mandate === undefined) return { reference, status: 'refused', reasons: [AgentReason.NoMandate] };
+    if (mandate === undefined) {
+      await save({ reference, status: 'refused', reasons: [AgentReason.NoMandate] });
+      return { reference, status: 'refused', reasons: [AgentReason.NoMandate] };
+    }
 
     // 1. The travel package goes to the exchange before anything is signed or submitted.
     const pkg = buildPackage(intent, payee, mandate);

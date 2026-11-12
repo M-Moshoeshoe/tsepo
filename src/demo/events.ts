@@ -42,6 +42,19 @@ const SimpleRunSchema = z.strictObject({
   kind: z.enum(['reset', 'scenario-1', 'scenario-2', 'scenario-3', 'scenario-4', 'revoke']),
 });
 
+/** The longest instruction a visitor may give the agent. */
+export const INSTRUCTION_MAX_LENGTH = 400;
+
+/** An instruction typed by a visitor. It is untrusted text: Claude only reads it, and the rules decide. */
+const InstructionSchema = z.strictObject({
+  kind: z.literal('instruction'),
+  text: z
+    .string()
+    .trim()
+    .min(3, 'Write an instruction of at least 3 characters.')
+    .max(INSTRUCTION_MAX_LENGTH, `Keep the instruction under ${String(INSTRUCTION_MAX_LENGTH)} characters.`),
+});
+
 const ChangeLimitsSchema = z.strictObject({
   kind: z.literal('change-limits'),
   perPaymentLimit: DecimalAmountSchema,
@@ -50,7 +63,7 @@ const ChangeLimitsSchema = z.strictObject({
 
 /** What the browser may ask the server to run. Validated at the boundary. */
 export const RunRequestSchema = z
-  .discriminatedUnion('kind', [SimpleRunSchema, ChangeLimitsSchema])
+  .discriminatedUnion('kind', [SimpleRunSchema, ChangeLimitsSchema, InstructionSchema])
   .refine((request) => request.kind !== 'change-limits' || toUnits(request.perPaymentLimit) <= toUnits(request.dailyLimit), {
     message: 'The per-payment limit cannot be more than the daily limit',
   });
