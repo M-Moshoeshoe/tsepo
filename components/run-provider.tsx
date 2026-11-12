@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { z } from 'zod';
-import { DemoEventSchema, type DemoEvent, type RunRequest } from '../src/demo/events.ts';
+import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunRequest } from '../src/demo/events.ts';
 
 export type RunState =
   | { status: 'idle' }
@@ -13,6 +13,10 @@ interface RunContextValue {
   state: RunState;
   /** True from the start of a run until its connection has fully closed. Controls stay disabled while busy. */
   busy: boolean;
+  /** The demo access code for this browser session, once entered. */
+  accessCode: string | undefined;
+  saveAccessCode: (code: string) => void;
+  forgetAccessCode: () => void;
   start: (request: RunRequest, label: string) => void;
   dismiss: () => void;
 }
@@ -43,12 +47,52 @@ function parseLine(line: string): DemoEvent | undefined {
   }
 }
 
+const STORAGE_KEY = 'tsepo-demo-access-code';
+
+/** Session storage can be unavailable (private windows, blocked storage); the code then lasts for this page only. */
+function readStoredCode(): string | undefined {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeStoredCode(code: string | undefined): void {
+  try {
+    if (code === undefined) sessionStorage.removeItem(STORAGE_KEY);
+    else sessionStorage.setItem(STORAGE_KEY, code);
+  } catch {
+    // Kept in memory only.
+  }
+}
+
 /** Runs one demo action at a time and keeps its live progress for every component that shows it. */
 export function RunProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<RunState>({ status: 'idle' });
   const [busy, setBusy] = useState(false);
+  const [accessCode, setAccessCode] = useState<string | undefined>(undefined);
+  const codeRef = useRef<string | undefined>(undefined);
   const running = useRef(false);
+
+  useEffect(() => {
+    const stored = readStoredCode();
+    codeRef.current = stored;
+    setAccessCode(stored);
+  }, []);
+
+  const saveAccessCode = useCallback((code: string) => {
+    codeRef.current = code;
+    writeStoredCode(code);
+    setAccessCode(code);
+  }, []);
+
+  const forgetAccessCode = useCallback(() => {
+    codeRef.current = undefined;
+    writeStoredCode(undefined);
+    setAccessCode(undefined);
+  }, []);
 
   const append = useCallback((event: DemoEvent) => {
     setState((current) => {
@@ -72,9 +116,10 @@ export function RunProvider({ children }: { children: ReactNode }) {
         try {
           const response = await fetch('/api/runs', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', [ACCESS_CODE_HEADER]: codeRef.current ?? '' },
             body: JSON.stringify(request),
           });
+          if (response.status === 401) forgetAccessCode();
           if (!response.ok || response.body === null) {
             append({ type: 'failed', text: await readError(response) });
             finished = true;
@@ -107,14 +152,18 @@ export function RunProvider({ children }: { children: ReactNode }) {
         }
       })();
     },
-    [append, router],
+    [append, router, forgetAccessCode],
   );
 
   const dismiss = useCallback(() => {
     if (!running.current) setState({ status: 'idle' });
   }, []);
 
-  return <RunContext.Provider value={{ state, busy, start, dismiss }}>{children}</RunContext.Provider>;
+  return (
+    <RunContext.Provider value={{ state, busy, accessCode, saveAccessCode, forgetAccessCode, start, dismiss }}>
+      {children}
+    </RunContext.Provider>
+  );
 }
 
 export function useRun(): RunContextValue {

@@ -3,6 +3,7 @@ import type { DemoEvent } from '../../../src/demo/events.ts';
 import { RunRequestSchema } from '../../../src/demo/events.ts';
 import { runDemo } from '../../../src/demo/runs.ts';
 import { TESTNET_URL } from '../../../src/ledger/testnet.ts';
+import { guardRun } from './guard.ts';
 import { acquireRunLock, releaseRunLock } from './lock.ts';
 
 export const runtime = 'nodejs';
@@ -23,6 +24,9 @@ function plainError(error: unknown): string {
  * progress text and transaction hashes only.
  */
 export async function POST(request: Request): Promise<Response> {
+  const refused = guardRun(request);
+  if (refused !== undefined) return refused;
+
   let body: unknown;
   try {
     body = await request.json();

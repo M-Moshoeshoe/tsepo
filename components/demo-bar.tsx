@@ -1,12 +1,13 @@
 'use client';
 
 import { CheckCircle2, Hourglass, RotateCcw, XCircle } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import type { RunKind } from '../src/demo/events.ts';
 import { ExplorerLink } from './display.tsx';
 import { useRun, type RunState } from './run-provider.tsx';
 import { Button } from './ui/button.tsx';
 import { cn } from './ui/cn.ts';
+import { Input, Label } from './ui/input.tsx';
 
 const SCENARIOS: { kind: Extract<RunKind, `scenario-${string}`>; number: number; label: string }[] = [
   { kind: 'scenario-1', number: 1, label: 'Unknown agent' },
@@ -86,9 +87,55 @@ function RunProgress({ state, busy, onClose }: { state: Exclude<RunState, { stat
   );
 }
 
+/** Asks once for the demo access code. It is kept in session storage, never in the page address or a cookie. */
+function UnlockForm({ onSave }: { onSave: (code: string) => void }) {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  function submit(event: SyntheticEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const trimmed = code.trim();
+    if (trimmed.length < 6) {
+      setError('Enter the demo access code. It has at least 6 characters.');
+      return;
+    }
+    setError(undefined);
+    onSave(trimmed);
+    setCode('');
+  }
+
+  return (
+    <form onSubmit={submit} className="grid gap-1.5 sm:flex sm:items-end sm:gap-2" noValidate>
+      <div className="grid gap-1.5">
+        <Label htmlFor="demo-access-code">Demo access code</Label>
+        <Input
+          id="demo-access-code"
+          type="password"
+          autoComplete="off"
+          value={code}
+          onChange={(event) => {
+            setCode(event.target.value);
+          }}
+          aria-invalid={error !== undefined}
+          aria-describedby={error === undefined ? undefined : 'demo-access-code-error'}
+          className="sm:w-56"
+        />
+      </div>
+      <Button type="submit" size="md">
+        Unlock the demo controls
+      </Button>
+      {error !== undefined && (
+        <p id="demo-access-code-error" role="alert" className="text-sm text-refused sm:basis-full">
+          {error}
+        </p>
+      )}
+    </form>
+  );
+}
+
 /** The demo controls: four scenarios and Reset, with live progress while a run is going. */
 export function DemoBar() {
-  const { state, busy, start, dismiss } = useRun();
+  const { state, busy, accessCode, saveAccessCode, forgetAccessCode, start, dismiss } = useRun();
 
   return (
     <div className="border-b border-border bg-surface">
@@ -97,24 +144,39 @@ export function DemoBar() {
           <p className="text-sm font-semibold text-ink">Demo controls</p>
           <p className="text-xs text-muted">Runs on the XRP Ledger Testnet. Reset the demo before each scenario.</p>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-          {SCENARIOS.map((scenario) => (
+        {accessCode === undefined ? (
+          <UnlockForm onSave={saveAccessCode} />
+        ) : (
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            {SCENARIOS.map((scenario) => (
+              <Button
+                key={scenario.kind}
+                variant="secondary"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  start({ kind: scenario.kind }, `Scenario ${scenario.number}: ${scenario.label}`);
+                }}
+              >
+                <span className="font-semibold text-primary tabular-nums">{scenario.number}</span>
+                {scenario.label}
+              </Button>
+            ))}
             <Button
-              key={scenario.kind}
-              variant="secondary"
               size="sm"
               disabled={busy}
-              onClick={() => { start({ kind: scenario.kind }, `Scenario ${scenario.number}: ${scenario.label}`); }}
+              onClick={() => {
+                start({ kind: 'reset' }, 'Reset demo');
+              }}
             >
-              <span className="font-semibold text-primary tabular-nums">{scenario.number}</span>
-              {scenario.label}
+              <RotateCcw aria-hidden />
+              Reset demo
             </Button>
-          ))}
-          <Button size="sm" disabled={busy} onClick={() => { start({ kind: 'reset' }, 'Reset demo'); }} className="col-span-2 sm:col-span-1">
-            <RotateCcw aria-hidden />
-            Reset demo
-          </Button>
-        </div>
+            <Button variant="ghost" size="sm" disabled={busy} onClick={forgetAccessCode}>
+              Forget code
+            </Button>
+          </div>
+        )}
       </div>
       {state.status !== 'idle' && <RunProgress state={state} busy={busy} onClose={dismiss} />}
     </div>
