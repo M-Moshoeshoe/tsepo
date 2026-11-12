@@ -12,8 +12,14 @@ import { prepareTransaction, signSingle, submitAndConfirm, submitExpectingReject
 import type { RegistryStep } from '../registry/registry.ts';
 import { depositStatus, reasonText, refusalStatus } from '../views/status.ts';
 import { createDemoContext, type DemoContext } from './context.ts';
-import type { Report, RunRequest } from './events.ts';
+import type { Explanation, Report, RunRequest } from './events.ts';
 import { AFTER_REVOCATION_PAYOUT, SPLIT_PAYOUTS, VERIFIED_PAYOUT } from './payout-lists.ts';
+
+interface RunOutcome {
+  summary: string;
+  /** Scenarios explain what they showed; maintenance actions such as reset do not. */
+  explanation?: Explanation;
+}
 
 /** Accounts whose RLUSD goes back to the agent on reset. */
 const HOLDERS = ['exchange', 'contractor', 'unknownAgent'] as const;
@@ -67,7 +73,7 @@ async function reportRefusals(ctx: DemoContext, report: Report, since: string): 
   }
 }
 
-async function reset(ctx: DemoContext, report: Report): Promise<string> {
+async function reset(ctx: DemoContext, report: Report): Promise<RunOutcome> {
   const { client, wallets } = ctx;
   const agent = wallets.agent.address;
   const startedAt = new Date().toISOString();
@@ -97,10 +103,12 @@ async function reset(ctx: DemoContext, report: Report): Promise<string> {
   await ctx.exchange.syncDeposits();
   await ctx.demo.recordReset(startedAt);
 
-  return `The demo is reset. The agent holds ${agentBalance} RLUSD; limits are ${ctx.mandate.perPaymentLimit} RLUSD per payment and ${ctx.mandate.dailyLimit} RLUSD per day.`;
+  return {
+    summary: `The demo is reset. The agent holds ${agentBalance} RLUSD; limits are ${ctx.mandate.perPaymentLimit} RLUSD per payment and ${ctx.mandate.dailyLimit} RLUSD per day.`,
+  };
 }
 
-async function unknownAgent(ctx: DemoContext, report: Report): Promise<string> {
+async function unknownAgent(ctx: DemoContext, report: Report): Promise<RunOutcome> {
   const { client, wallets } = ctx;
   const since = new Date().toISOString();
   const unknown = wallets.unknownAgent.address;
@@ -125,18 +133,39 @@ async function unknownAgent(ctx: DemoContext, report: Report): Promise<string> {
 
   reportDeposits(report, await ctx.exchange.syncDeposits());
   await reportRefusals(ctx, report, since);
-  return 'Scenario 1 finished: the policy service refused the unknown agent and the ledger rejected its payment with tecNO_PERMISSION.';
+  return {
+    summary: 'Scenario 1 finished: the policy service refused the unknown agent and the ledger rejected its payment with tecNO_PERMISSION.',
+    explanation: {
+      sentences: [
+        'An agent nobody registered asked the policy service to co-sign 2 RLUSD, and the policy service refused because the agent has no mandate.',
+        'It then paid the agent lane directly with its own key, and the XRP Ledger rejected the payment with tecNO_PERMISSION because it holds no credential.',
+      ],
+      decidedBy: 'ledger',
+      evidence: { label: 'The rejected payment on the ledger', hash: signed.hash },
+    },
+  };
 }
 
-async function verifiedAgent(ctx: DemoContext, report: Report): Promise<string> {
+async function verifiedAgent(ctx: DemoContext, report: Report): Promise<RunOutcome> {
   report({ type: 'step', text: 'The agent reads its instruction and pays on its own' });
   const results = await ctx.createAgent(agentReporter(report)).run(VERIFIED_PAYOUT);
-  if (results.length !== 1 || results[0]?.status !== 'paid') throw new Error('The verified payment did not go through');
+  const paid = results[0];
+  if (results.length !== 1 || paid?.status !== 'paid') throw new Error('The verified payment did not go through');
   reportDeposits(report, await ctx.exchange.syncDeposits());
-  return 'Scenario 2 finished: the verified payment of 2 RLUSD was paid and cleared.';
+  return {
+    summary: 'Scenario 2 finished: the verified payment of 2 RLUSD was paid and cleared.',
+    explanation: {
+      sentences: [
+        'The agent read the instruction, sent the travel package to the exchange first, and paid 2 RLUSD with a co-signature from the policy service.',
+        'The exchange cleared the payment because its credential, travel package and amount all matched.',
+      ],
+      decidedBy: 'policy',
+      evidence: { label: 'The cleared payment on the ledger', hash: paid.hash },
+    },
+  };
 }
 
-async function splitPayments(ctx: DemoContext, report: Report): Promise<string> {
+async function splitPayments(ctx: DemoContext, report: Report): Promise<RunOutcome> {
   const since = new Date().toISOString();
   report({ type: 'step', text: 'The agent reads three payments of 2 RLUSD against a 5 RLUSD daily limit' });
   const results = await ctx.createAgent(agentReporter(report)).run(SPLIT_PAYOUTS);
@@ -144,31 +173,58 @@ async function splitPayments(ctx: DemoContext, report: Report): Promise<string> 
   if (statuses !== 'paid, paid, refused') throw new Error(`Expected paid, paid, refused; got ${statuses}`);
   reportDeposits(report, await ctx.exchange.syncDeposits());
   await reportRefusals(ctx, report, since);
-  return 'Scenario 3 finished: two payments cleared and the third was refused as a split payment.';
+  return {
+    summary: 'Scenario 3 finished: two payments cleared and the third was refused as a split payment.',
+    explanation: {
+      sentences: [
+        'The first two payments of 2 RLUSD were co-signed and cleared, which used 4 of the 5 RLUSD daily limit.',
+        'The third would have taken the day to 6 RLUSD, so the policy service refused to co-sign it and nothing reached the ledger.',
+      ],
+      decidedBy: 'policy',
+      evidence: { label: 'The refusal on the compliance desk', path: '/compliance?filter=refused' },
+    },
+  };
 }
 
-async function revokeAgent(ctx: DemoContext, report: Report): Promise<string> {
+async function revokeAgent(ctx: DemoContext, report: Report): Promise<{ summary: string; hash: string | undefined }> {
   report({ type: 'step', text: 'The business revokes its agent with the business key' });
-  reportRegistrySteps(report, await ctx.registry.revokeAgent(ctx.wallets.agent.address));
-  return 'The agent is revoked. Its credential is no longer on the ledger.';
+  const steps = await ctx.registry.revokeAgent(ctx.wallets.agent.address);
+  reportRegistrySteps(report, steps);
+  return {
+    summary: 'The agent is revoked. Its credential is no longer on the ledger.',
+    hash: steps.find((step) => step.hash !== undefined)?.hash,
+  };
 }
 
-async function revokeScenario(ctx: DemoContext, report: Report): Promise<string> {
+async function revokeScenario(ctx: DemoContext, report: Report): Promise<RunOutcome> {
   const since = new Date().toISOString();
-  await revokeAgent(ctx, report);
+  const revoked = await revokeAgent(ctx, report);
   report({ type: 'step', text: 'The agent receives a new instruction and tries to pay' });
   const results = await ctx.createAgent(agentReporter(report)).run(AFTER_REVOCATION_PAYOUT);
   if (results[0]?.status !== 'refused') throw new Error('A revoked agent was not refused');
   reportDeposits(report, await ctx.exchange.syncDeposits());
   await reportRefusals(ctx, report, since);
-  return 'Scenario 4 finished: the agent was revoked and its next payment was refused.';
+  return {
+    summary: 'Scenario 4 finished: the agent was revoked and its next payment was refused.',
+    explanation: {
+      sentences: [
+        'The business deleted the agent credential from the ledger with its own key, which took effect in the next ledger.',
+        'When the agent tried to pay again, the policy service read the ledger, found no credential, and refused to co-sign.',
+      ],
+      decidedBy: 'policy',
+      evidence:
+        revoked.hash === undefined
+          ? { label: 'The refusal on the compliance desk', path: '/compliance?filter=refused' }
+          : { label: 'The revocation on the ledger', hash: revoked.hash },
+    },
+  };
 }
 
 async function changeLimits(
   ctx: DemoContext,
   report: Report,
   limits: { perPaymentLimit: string; dailyLimit: string },
-): Promise<string> {
+): Promise<RunOutcome> {
   const { client, wallets } = ctx;
   const current = await findCredential(client, agentCredentialQuery(wallets.agent.address, wallets.issuer.address));
   if (current === undefined) throw new Error('The agent is revoked. Reset the demo to register it again.');
@@ -182,35 +238,37 @@ async function changeLimits(
 
   report({ type: 'step', text: 'The registry re-issues the credential for the new mandate' });
   reportRegistrySteps(report, await ctx.registry.issueCredential(mandate));
-  return `Limits changed to ${limits.perPaymentLimit} RLUSD per payment and ${limits.dailyLimit} RLUSD per day. The credential now proves the new mandate.`;
+  return {
+    summary: `Limits changed to ${limits.perPaymentLimit} RLUSD per payment and ${limits.dailyLimit} RLUSD per day. The credential now proves the new mandate.`,
+  };
 }
 
 /** Runs one demo action against Testnet, reporting progress. Throws on any failure; nothing is retried. */
 export async function runDemo(request: RunRequest, client: Client, report: Report): Promise<void> {
   const ctx = createDemoContext(client, report);
-  let summary: string;
+  let outcome: RunOutcome;
   switch (request.kind) {
     case 'reset':
-      summary = await reset(ctx, report);
+      outcome = await reset(ctx, report);
       break;
     case 'scenario-1':
-      summary = await unknownAgent(ctx, report);
+      outcome = await unknownAgent(ctx, report);
       break;
     case 'scenario-2':
-      summary = await verifiedAgent(ctx, report);
+      outcome = await verifiedAgent(ctx, report);
       break;
     case 'scenario-3':
-      summary = await splitPayments(ctx, report);
+      outcome = await splitPayments(ctx, report);
       break;
     case 'scenario-4':
-      summary = await revokeScenario(ctx, report);
+      outcome = await revokeScenario(ctx, report);
       break;
     case 'revoke':
-      summary = await revokeAgent(ctx, report);
+      outcome = { summary: (await revokeAgent(ctx, report)).summary };
       break;
     case 'change-limits':
-      summary = await changeLimits(ctx, report, request);
+      outcome = await changeLimits(ctx, report, request);
       break;
   }
-  report({ type: 'done', text: summary });
+  report({ type: 'done', text: outcome.summary, explanation: outcome.explanation });
 }

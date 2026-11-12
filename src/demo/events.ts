@@ -1,11 +1,28 @@
 import { z } from 'zod';
 import { DecimalAmountSchema, toUnits } from '../domain/amount.ts';
 
+const HashSchema = z.string().regex(/^[0-9A-F]{64}$/);
+
+/** What a scenario showed, in two plain sentences, which control decided it, and where to see the evidence. */
+export const ExplanationSchema = z.strictObject({
+  sentences: z.tuple([z.string(), z.string()]),
+  decidedBy: z.enum(['ledger', 'policy']),
+  evidence: z.strictObject({
+    label: z.string(),
+    /** A transaction on the ledger explorer. */
+    hash: HashSchema.optional(),
+    /** A screen in this app, such as the compliance desk filtered to refusals. */
+    path: z.string().regex(/^\/[a-z0-9/?=&-]*$/).optional(),
+  }),
+});
+
+export type Explanation = z.infer<typeof ExplanationSchema>;
+
 /** Progress from a demo run. Plain data, so it can be printed or streamed and validated in the browser. */
 export const DemoEventSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('step'), text: z.string() }),
-  z.strictObject({ type: z.literal('line'), text: z.string(), hash: z.string().regex(/^[0-9A-F]{64}$/).optional() }),
-  z.strictObject({ type: z.literal('done'), text: z.string() }),
+  z.strictObject({ type: z.literal('line'), text: z.string(), hash: HashSchema.optional() }),
+  z.strictObject({ type: z.literal('done'), text: z.string(), explanation: ExplanationSchema.optional() }),
   z.strictObject({ type: z.literal('failed'), text: z.string() }),
 ]);
 
