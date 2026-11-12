@@ -89,8 +89,26 @@ function ChangeLimitsForm({
   );
 }
 
-/** Change limits and Revoke, in the agent page header. Both need an active agent: only Restore sample data registers a revoked agent again. */
-export function MandateActions({
+
+/** Opens a dialog, or asks for the access code first when none is saved. */
+function useActionDialog(): { isOpen: boolean; open: () => void; close: () => void; busy: boolean } {
+  const { busy, locked, unlock } = useLiveActions();
+  const [isOpen, setOpen] = useState(false);
+  return {
+    isOpen,
+    busy,
+    open: () => {
+      if (locked) unlock();
+      else setOpen(true);
+    },
+    close: () => {
+      setOpen(false);
+    },
+  };
+}
+
+/** Change limits, signed with the business key. Needs an active agent with spending rules. */
+export function ChangeLimitsButton({
   perPaymentLimit,
   dailyLimit,
   agentActive,
@@ -99,59 +117,62 @@ export function MandateActions({
   dailyLimit: string | undefined;
   agentActive: boolean;
 }) {
-  const { busy, locked, run, unlock } = useLiveActions();
-  const [dialog, setDialog] = useState<'limits' | 'revoke' | undefined>(undefined);
-  const disabled = !agentActive || busy || perPaymentLimit === undefined || dailyLimit === undefined;
-  const open = (which: 'limits' | 'revoke') => () => {
-    if (locked) unlock();
-    else setDialog(which);
-  };
-  const close = (): void => {
-    setDialog(undefined);
-  };
-
+  const dialog = useActionDialog();
   return (
-    <div className="flex flex-wrap gap-3">
-      <Button color="secondary" size="md" isDisabled={disabled} onClick={open('limits')}>
+    <>
+      <Button
+        color="secondary"
+        size="md"
+        isDisabled={!agentActive || dialog.busy || perPaymentLimit === undefined || dailyLimit === undefined}
+        onClick={dialog.open}
+      >
         Change limits
       </Button>
-      <Button color="primary-destructive" size="md" isDisabled={disabled} onClick={open('revoke')}>
-        Revoke
-      </Button>
-
       <ActionDialog
-        isOpen={dialog === 'limits'}
+        isOpen={dialog.isOpen}
         onOpenChange={(next) => {
-          if (!next) close();
+          if (!next) dialog.close();
         }}
         title="Change the agent limits"
       >
         {perPaymentLimit !== undefined && dailyLimit !== undefined && (
-          <ChangeLimitsForm perPaymentLimit={perPaymentLimit} dailyLimit={dailyLimit} onDone={close} />
+          <ChangeLimitsForm perPaymentLimit={perPaymentLimit} dailyLimit={dailyLimit} onDone={dialog.close} />
         )}
       </ActionDialog>
+    </>
+  );
+}
 
+/** Revoke the agent: the business key deletes its credential. Needs an active agent. */
+export function RevokeButton({ agentActive }: { agentActive: boolean }) {
+  const dialog = useActionDialog();
+  const { run } = useLiveActions();
+  return (
+    <>
+      <Button color="primary-destructive" size="md" isDisabled={!agentActive || dialog.busy} onClick={dialog.open}>
+        Revoke
+      </Button>
       <ActionDialog
-        isOpen={dialog === 'revoke'}
+        isOpen={dialog.isOpen}
         onOpenChange={(next) => {
-          if (!next) close();
+          if (!next) dialog.close();
         }}
         title="Revoke this agent?"
       >
         <DialogText title="Revoke this agent?">
           The business key deletes the agent credential from the ledger. From the next ledger, within seconds, the agent deposit
-          address rejects the agent and the approval service refuses every payment it asks to approve. Restoring the sample data
-          registers it again.
+          address rejects the agent and the approval service refuses every payment it asks to approve. You can register it again
+          afterwards.
         </DialogText>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button color="secondary" size="md" onClick={close}>
+          <Button color="secondary" size="md" onClick={dialog.close}>
             Cancel
           </Button>
           <Button
             color="primary-destructive"
             size="md"
             onClick={() => {
-              close();
+              dialog.close();
               run({ kind: 'revoke' }, 'Revoke agent');
             }}
           >
@@ -159,6 +180,46 @@ export function MandateActions({
           </Button>
         </div>
       </ActionDialog>
-    </div>
+    </>
+  );
+}
+
+/** Registers a revoked agent again by restoring the sample workspace: its rules, a new credential and its RLUSD. */
+export function RegisterAgainButton() {
+  const dialog = useActionDialog();
+  const { run } = useLiveActions();
+  return (
+    <>
+      <Button color="primary" size="md" isDisabled={dialog.busy} onClick={dialog.open}>
+        Register again
+      </Button>
+      <ActionDialog
+        isOpen={dialog.isOpen}
+        onOpenChange={(next) => {
+          if (!next) dialog.close();
+        }}
+        title="Register the agent again?"
+      >
+        <DialogText title="Register the agent again?">
+          This restores the sample workspace: the business signs the sample spending rules, Tšepo issues a new credential, and the
+          agent gets its RLUSD back. Everyone sees the same sample workspace, so this changes it for all visitors.
+        </DialogText>
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button color="secondary" size="md" onClick={dialog.close}>
+            Cancel
+          </Button>
+          <Button
+            color="primary"
+            size="md"
+            onClick={() => {
+              dialog.close();
+              run({ kind: 'reset' }, 'Register the agent again');
+            }}
+          >
+            Register again
+          </Button>
+        </div>
+      </ActionDialog>
+    </>
   );
 }

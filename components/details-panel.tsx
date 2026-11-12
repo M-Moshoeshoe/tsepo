@@ -5,15 +5,19 @@ import { useState, type ReactNode } from 'react';
 import { SlideoutMenu } from '@/components/application/slideout-menus/slideout-menu';
 
 /**
- * The payment details slideout. It opens when the address names a payment;
- * closing it returns to the list with the same filter.
+ * The details panel used by every list: a side sheet on desktop, full width on
+ * phones. It opens when the address names an item, so a link can open it;
+ * closing it returns to the list with the same filters.
  */
-export function PaymentSlideout({
+export function DetailsPanel({
+  label,
   closeHref,
   header,
   footer,
   children,
 }: {
+  /** The accessible name of the panel, such as "Payment details". */
+  label: string;
   closeHref: string;
   header: ReactNode;
   footer?: ReactNode;
@@ -26,7 +30,7 @@ export function PaymentSlideout({
     <SlideoutMenu
       isOpen={open}
       isDismissable
-      dialogLabel="Payment details"
+      dialogLabel={label}
       // Applies to the overlay and the panel: keeps both above the sticky tabs and table headers.
       className="z-50"
       onOpenChange={(next) => {

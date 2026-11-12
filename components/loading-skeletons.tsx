@@ -59,27 +59,19 @@ export function AgentSkeleton() {
       </div>
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="grid gap-10">
-          <div className="grid gap-6 rounded-xl bg-secondary p-6">
-            <h2 className="text-lg font-semibold text-primary">Spending rules</h2>
-            <div className="grid gap-5 sm:grid-cols-3">
-              <Rows count={3}>{(index) => <Skeleton key={index} className="h-12" />}</Rows>
-            </div>
+          <div className="grid gap-5 rounded-xl bg-secondary p-6">
+            <h2 className="text-lg font-semibold text-primary">Today</h2>
+            <Skeleton className="h-8 w-48" />
             <Skeleton className="h-2 w-full" />
           </div>
           <div className="grid gap-4">
-            <h2 className="text-lg font-semibold text-primary">Approved recipients</h2>
-            <TableSkeleton columns="grid-cols-4" rows={2} />
+            <h2 className="text-lg font-semibold text-primary">Instructions</h2>
+            <Rows count={2}>{(index) => <Skeleton key={index} className="h-40 rounded-xl" />}</Rows>
           </div>
         </div>
-        <div className="grid gap-10">
-          <div className="grid gap-4">
-            <h2 className="text-lg font-semibold text-primary">Business</h2>
-            <FactRows count={4} />
-          </div>
-          <div className="grid gap-4">
-            <h2 className="text-lg font-semibold text-primary">Identity</h2>
-            <FactRows count={3} />
-          </div>
+        <div className="grid gap-4">
+          <h2 className="text-lg font-semibold text-primary">Identity</h2>
+          <FactRows count={4} />
         </div>
       </div>
     </div>
@@ -104,18 +96,33 @@ export function DeskSkeleton() {
   );
 }
 
-/** The Business Overview while it loads: the figures, then recent activity. */
+/** The Business Overview while it loads: the agent card, then recent payments. */
 export function OverviewSkeleton() {
   return (
-    <div className="grid gap-10" aria-busy="true">
+    <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]" aria-busy="true">
+      <div className="grid gap-5 rounded-xl bg-secondary p-6">
+        <Skeleton className="h-6 w-56" />
+        <Reading />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-2 w-full" />
+      </div>
+      <div className="grid gap-4">
+        <h2 className="text-lg font-semibold text-primary">Recent payments</h2>
+        <Rows count={5}>{(index) => <Skeleton key={index} className="h-12" />}</Rows>
+      </div>
+    </div>
+  );
+}
+
+/** A Business list page while it loads, such as Payments or Spending rules. */
+export function BusinessListSkeleton() {
+  return (
+    <div className="grid gap-6" aria-busy="true">
       <Reading />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Rows count={4}>{(index) => <Skeleton key={index} className="h-24 rounded-xl" />}</Rows>
+      <div className="flex gap-6 border-b border-secondary pb-2.5">
+        <Rows count={4}>{(index) => <Skeleton key={index} className="h-5 w-20" />}</Rows>
       </div>
-      <div className="grid max-w-3xl gap-4">
-        <h2 className="text-lg font-semibold text-primary">Recent activity</h2>
-        <Rows count={4}>{(index) => <Skeleton key={index} className="h-12" />}</Rows>
-      </div>
+      <TableSkeleton columns="grid-cols-[5rem_1fr_6rem_8rem]" rows={6} />
     </div>
   );
 }

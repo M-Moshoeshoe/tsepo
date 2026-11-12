@@ -1,5 +1,5 @@
 import type { PayoutIntent } from '../agent/payout-parser.ts';
-import type { PayoutRecord, RunRecord } from '../agent/records.ts';
+import type { PayoutRecord } from '../agent/records.ts';
 
 export type StepState = 'done' | 'failed' | 'not-reached';
 
@@ -18,13 +18,7 @@ export interface PayoutActivity {
   steps: PayoutStep[];
 }
 
-export interface RunActivity {
-  startedAt: string;
-  instruction: string;
-  payouts: PayoutActivity[];
-}
-
-/** Turns the events of one payout into its four steps: package sent, co-signed, submitted, result. */
+/** Turns the events of one payout into its four steps: Travel Rule details sent, approved, submitted, settled. */
 export function payoutSteps(events: readonly PayoutRecord[]): Omit<PayoutActivity, 'intent'> {
   const find = (status: PayoutRecord['status']): PayoutRecord | undefined => events.find((event) => event.status === status);
   const sent = find('package-sent');
@@ -48,7 +42,7 @@ export function payoutSteps(events: readonly PayoutRecord[]): Omit<PayoutActivit
     { id: 'submit', label: 'Submitted', state: signed?.hash === undefined ? 'not-reached' : 'done', hash: signed?.hash },
     {
       id: 'result',
-      label: 'Result',
+      label: 'Settled on the XRP Ledger',
       state: paid !== undefined ? 'done' : refused !== undefined || failed !== undefined ? 'failed' : 'not-reached',
       hash: paid?.hash ?? failed?.hash,
     },
@@ -58,17 +52,4 @@ export function payoutSteps(events: readonly PayoutRecord[]): Omit<PayoutActivit
   if (refused !== undefined) return { outcome: 'refused', reasons: refused.reasons, steps };
   if (failed !== undefined) return { outcome: 'failed', reasons: failed.reasons, steps };
   return { outcome: events.length === 0 ? 'not-started' : 'in-progress', reasons: [], steps };
-}
-
-/** The activity of one run: each payout read from the instruction, with the events recorded since the run began. */
-export function runActivity(run: RunRecord, events: readonly PayoutRecord[]): RunActivity {
-  const since = events.filter((event) => event.updatedAt >= run.startedAt);
-  return {
-    startedAt: run.startedAt,
-    instruction: run.instruction,
-    payouts: run.intents.map((intent) => ({
-      intent,
-      ...payoutSteps(since.filter((event) => event.reference === intent.reference)),
-    })),
-  };
 }

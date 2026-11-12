@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { DeskTable } from '../../../../components/compliance/desk-table.tsx';
 import { DeskTabs } from '../../../../components/compliance/desk-tabs.tsx';
 import { PaymentDetails, PaymentHeader } from '../../../../components/compliance/payment-details.tsx';
-import { PaymentSlideout } from '../../../../components/compliance/payment-slideout.tsx';
+import { DetailsPanel } from '../../../../components/details-panel.tsx';
 import { CopyableMono, ExplorerLink, SampleDataTag } from '../../../../components/display.tsx';
 import { EmptyMessage } from '../../../../components/empty-message.tsx';
 import { Term } from '../../../../components/term.tsx';
@@ -72,14 +72,15 @@ export default async function IncomingPaymentsPage({
       </div>
 
       {view.detail !== undefined && (
-        <PaymentSlideout
+        <DetailsPanel
+          label="Payment details"
           key={view.detail.entry.id}
           closeHref={deskHref({ filter, earlier })}
           header={<PaymentHeader detail={view.detail} />}
           footer={view.detail.entry.hash === undefined ? undefined : <ExplorerLink hash={view.detail.entry.hash} />}
         >
           <PaymentDetails detail={view.detail} />
-        </PaymentSlideout>
+        </DetailsPanel>
       )}
     </div>
   );

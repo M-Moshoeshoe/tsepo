@@ -1,4 +1,23 @@
 import { formatUnits, toUnits } from '../domain/amount.ts';
+import { sastDay } from '../domain/time.ts';
+import type { PolicyLogEntry } from '../policy/records.ts';
+
+/** The action the approval service logs when the sample workspace clears today's totals. */
+const SAMPLE_TOTALS_CLEARED = 'clear-daily-totals-for-demo';
+
+/**
+ * When today's totals were last cleared for the sample workspace, if that
+ * happened today (SAST). The today meter says so, because a cleared total
+ * counts less than was paid today.
+ */
+export function totalsClearedToday(log: readonly PolicyLogEntry[], now: Date): string | undefined {
+  const today = sastDay(now);
+  return log
+    .filter((entry) => entry.kind === 'admin' && entry.action === SAMPLE_TOTALS_CLEARED && sastDay(new Date(entry.at)) === today)
+    .map((entry) => entry.at)
+    .sort()
+    .at(-1);
+}
 
 export interface DailyUsage {
   used: string;

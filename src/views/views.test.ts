@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { makeMandate, makePackage, makeParties } from '../../test/fixtures.ts';
 import type { PayoutRecord } from '../agent/records.ts';
 import { DepositReason, PolicyReason } from '../domain/reasons.ts';
-import { payoutSteps, runActivity } from './activity.ts';
+import { payoutSteps } from './activity.ts';
+import { instructionsFrom } from './payments.ts';
 import { depositChecks, ledgerRejectionChecks, refusalChecks } from './checks.ts';
 import { depositStatus, formatSast, formatSastDate, formatSastTime, LEDGER_REJECTION_STATUS, reasonText, refusalStatus } from './status.ts';
 
@@ -114,7 +115,7 @@ describe('payout activity', () => {
     expect(result.steps[3]?.hash).toBe('H1');
   });
 
-  it('stops at co-signing for a refused payout', () => {
+  it('stops at approval for a refused payout', () => {
     const result = payoutSteps([event('package-sent'), event('refused', { reasons: [PolicyReason.CredentialMissing] })]);
     expect(result.outcome).toBe('refused');
     expect(result.reasons).toEqual([PolicyReason.CredentialMissing]);
@@ -129,6 +130,6 @@ describe('payout activity', () => {
       intents: [{ payee: 'Naledi Mokoena', amount: '2', purpose: 'Logo', reference: 'INV-1' }],
     };
     const earlier = event('paid', { updatedAt: '2026-11-11T10:00:00.000Z' });
-    expect(runActivity(run, [earlier]).payouts[0]?.outcome).toBe('not-started');
+    expect(instructionsFrom([run], [earlier])[0]?.payments[0]?.status).toBe('not-started');
   });
 });

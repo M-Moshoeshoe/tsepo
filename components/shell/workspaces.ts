@@ -1,4 +1,4 @@
-import { Building07, CoinsHand, Home02, User01 } from '@untitledui/icons';
+import { Building07, CoinsHand, Home02, Receipt, Sliders01, User01 } from '@untitledui/icons';
 import type { FC } from 'react';
 
 export type WorkspaceId = 'business' | 'exchange';
@@ -32,6 +32,8 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
     nav: [
       { label: 'Overview', href: '/business', icon: Home02 },
       { label: 'Agent', href: '/business/agent', icon: User01 },
+      { label: 'Payments', href: '/business/payments', icon: Receipt },
+      { label: 'Spending rules', href: '/business/rules', icon: Sliders01 },
     ],
   },
   exchange: {

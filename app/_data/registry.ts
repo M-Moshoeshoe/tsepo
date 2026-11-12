@@ -1,6 +1,5 @@
 import 'server-only';
 import { LedgerEntry, unixTimeToRippleTime } from 'xrpl';
-import { agentRecords } from '../../src/agent/records.ts';
 import { DEMO_AGENT_NAME, DEMO_BUSINESS } from '../../src/config/demo.ts';
 import { AGENT_MANDATE_CREDENTIAL_TYPE, checkCredential } from '../../src/domain/credential-check.ts';
 import { mandateFingerprint } from '../../src/domain/fingerprint.ts';
@@ -14,8 +13,9 @@ import {
   type CredentialEvent,
   type FoundCredential,
 } from '../../src/ledger/reads.ts';
-import { runActivity, type RunActivity } from '../../src/views/activity.ts';
-import { dailyUsage, type DailyUsage } from '../../src/views/usage.ts';
+import type { BusinessPayment, Instruction } from '../../src/views/payments.ts';
+import { dailyUsage, totalsClearedToday, type DailyUsage } from '../../src/views/usage.ts';
+import { readBusinessRecords } from './business.ts';
 import { withDemo } from './ledger.ts';
 
 export type AgentStatus =
@@ -40,6 +40,8 @@ export interface RegistryView {
         perPaymentLimit: string;
         dailyLimit: string;
         usage: DailyUsage;
+        /** When the sample workspace last cleared today's totals, if it did today. */
+        totalsClearedAt: string | undefined;
         expiresAt: string;
         fingerprint: string;
       }
@@ -50,7 +52,10 @@ export interface RegistryView {
     quorum: number;
     masterKeyDisabled: boolean;
   } | undefined;
-  activity: RunActivity | undefined;
+  /** Every instruction the agent received, newest first. */
+  instructions: Instruction[];
+  /** Every payment, newest first. */
+  payments: BusinessPayment[];
 }
 
 /** Whether the agent is active, revoked, mismatched or not registered, from what the ledger and the policy service hold. */
@@ -103,9 +108,7 @@ export async function loadRegistry(): Promise<RegistryView> {
 
     const accountNames = new Map([[wallets.exchange.address, 'Sample Exchange']]);
 
-    const records = agentRecords(ctx.agentStore);
-    const [runs, events] = await Promise.all([records.runs.list(), records.events.readAll()]);
-    const latestRun = runs.sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
+    const { instructions, payments, policyLog } = await readBusinessRecords(ctx);
 
     return {
       business: { ...DEMO_BUSINESS, ledgerAddress: wallets.business.address },
@@ -130,6 +133,7 @@ export async function loadRegistry(): Promise<RegistryView> {
               perPaymentLimit: mandate.perPaymentLimit,
               dailyLimit: mandate.dailyLimit,
               usage: dailyUsage(usedToday, mandate.dailyLimit),
+              totalsClearedAt: totalsClearedToday(policyLog, new Date()),
               expiresAt: mandate.expiresAt,
               fingerprint: mandateFingerprint(mandate),
             },
@@ -145,7 +149,8 @@ export async function loadRegistry(): Promise<RegistryView> {
               quorum: signerList.SignerQuorum,
               masterKeyDisabled: account !== undefined && (account.flags & LedgerEntry.AccountRootFlags.lsfDisableMaster) !== 0,
             },
-      activity: latestRun === undefined ? undefined : runActivity(latestRun, events),
+      instructions,
+      payments,
     };
   });
 }

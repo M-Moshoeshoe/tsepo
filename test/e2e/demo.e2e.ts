@@ -29,7 +29,7 @@ import {
  */
 
 const RUN_TIMEOUT = 240_000;
-const PRODUCT_PAGES = ['/business', '/business/agent', '/exchange/payments'];
+const PRODUCT_PAGES = ['/business', '/business/agent', '/business/payments', '/business/rules', '/exchange/payments'];
 let browser: Browser;
 let page: Page;
 
@@ -114,8 +114,9 @@ void describe('empty states', () => {
     try {
       const fresh = await openPage(browser, 1280, 'http://localhost:3101');
       const expected: [string, string][] = [
-        ['/business', 'No activity yet.'],
+        ['/business', 'No payments yet.'],
         ['/business/agent', 'No payments yet.'],
+        ['/business/payments', 'No payments yet.'],
         ['/exchange/payments', 'No payments yet.'],
       ];
       for (const [path, message] of expected) {
@@ -192,6 +193,35 @@ void describe('the interface', () => {
     }
     assert.deepEqual([...reached].sort(), SCENARIOS.map((story) => `Run live: ${story.title}`).sort());
     await view.context().close();
+  });
+
+  void it("opens a business payment from the list, with Thuso's note, the decision and a valid evidence file", async () => {
+    const list = await openPage(browser, 1280, BASE_URL, '/business/payments?range=all');
+    await list.getByRole('grid').getByRole('row').nth(1).click();
+    const details = list.getByRole('dialog', { name: 'Payment details' });
+    await details.getByText(/^Decided by the (approval service|XRP Ledger)$/).first().waitFor();
+    await details.getByText('Thuso', { exact: true }).first().waitFor();
+    const href = await details.getByRole('link', { name: 'Download evidence' }).getAttribute('href');
+    assert.ok(href !== null && /^\/business\/payments\/\d+-[A-Za-z0-9-]+\/evidence$/.test(href), `unexpected evidence link ${String(href)}`);
+    const response = await fetch(`${BASE_URL}${href}`);
+    assert.equal(response.status, 200);
+    assert.ok((response.headers.get('content-disposition') ?? '').startsWith('attachment; filename="tsepo-evidence-'));
+    const evidence = (await response.json()) as { kind: string; network: string };
+    assert.equal(evidence.kind, 'tsepo-payment-evidence');
+    assert.equal(evidence.network, 'XRP Ledger Testnet');
+    await list.context().close();
+  });
+
+  void it('refuses an evidence request for a malformed or unknown payment', async () => {
+    assert.equal((await fetch(`${BASE_URL}/business/payments/not-a-payment!/evidence`)).status, 400);
+    assert.equal((await fetch(`${BASE_URL}/business/payments/1-NO-SUCH-PAYMENT/evidence`)).status, 404);
+  });
+
+  void it('explains who must approve each payment on the spending rules page', async () => {
+    const rules = await openPage(browser, 1280, BASE_URL, '/business/rules');
+    await rules.getByText('Your agent can never pay alone.', { exact: false }).waitFor();
+    await rules.getByRole('button', { name: 'Revoke', exact: true }).waitFor();
+    await rules.context().close();
   });
 
   void it('switches between the Business and Exchange workspaces', async () => {

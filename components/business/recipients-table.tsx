@@ -24,7 +24,7 @@ export function RecipientsTable({ recipients }: { recipients: RecipientRow[] }) 
             Paid through
           </th>
           <th scope="col" className={`${HEAD} text-right`}>
-            Destination tag
+            Account number at the exchange
           </th>
           <th scope="col" className={`${HEAD} max-sm:hidden`}>
             Account

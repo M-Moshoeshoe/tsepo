@@ -1,68 +1,91 @@
 import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
-import { SectionTitle, StatusBadge } from '../../../components/display.tsx';
-import { ActivityFeed } from '../../../components/home/activity-feed.tsx';
-import { formatSast } from '../../../src/views/status.ts';
-import { loadHome, type HomeView } from '../../_data/home.ts';
+import { Button } from '@/components/base/buttons/button';
+import { AgentStatusBadge } from '../../../components/business/agent-status.tsx';
+import { RegisterAgainButton } from '../../../components/business/agent-actions.tsx';
+import { PaymentList } from '../../../components/business/payment-list.tsx';
+import { PaymentPanel } from '../../../components/business/payment-panel.tsx';
+import { TodayMeter } from '../../../components/business/today-meter.tsx';
+import { SectionTitle } from '../../../components/display.tsx';
+import { EmptyMessage } from '../../../components/empty-message.tsx';
+import { findPayment, parsePaymentQuery, paymentsHref } from '../../../src/views/payments.ts';
+import { storyTitle } from '../../../src/views/scenarios.ts';
+import { formatSastDate } from '../../../src/views/status.ts';
+import { loadRegistry, type RegistryView } from '../../_data/registry.ts';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Overview, Lesedi Design Studio - Tšepo' };
 
-function Metric({ label, value, note }: { label: string; value: ReactNode; note: ReactNode }) {
+const PATH = '/business';
+
+function AgentCard({ view }: { view: RegistryView }) {
+  const { agent, mandate } = view;
   return (
-    <div className="grid content-start gap-2 rounded-xl bg-secondary p-5">
-      <dt className="text-sm text-tertiary">{label}</dt>
-      <dd className="grid gap-1">
-        <span className="text-display-xs font-semibold text-primary tabular-nums">{value}</span>
-        <span className="text-sm text-tertiary">{note}</span>
-      </dd>
-    </div>
+    <section aria-labelledby="agent-card-title" className="grid content-start gap-5 rounded-xl bg-secondary p-5 lg:p-6">
+      <div className="grid gap-1.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="agent-card-title" className="text-lg font-semibold text-primary">
+            {agent.name}
+          </h2>
+          <AgentStatusBadge status={agent.status} />
+        </div>
+        <p className="text-sm text-tertiary">Pays contractors for {view.business.registeredName}.</p>
+      </div>
+      {mandate === undefined || agent.status.state !== 'active' ? (
+        <div className="grid justify-items-start gap-3">
+          <p className="text-sm text-secondary">
+            {agent.status.state === 'revoked'
+              ? 'This agent is revoked. Its credential is deleted, so it cannot pay.'
+              : 'This agent has no valid spending rules, so it cannot pay.'}
+          </p>
+          <RegisterAgainButton />
+        </div>
+      ) : (
+        <>
+          <TodayMeter usage={mandate.usage} perPaymentLimit={mandate.perPaymentLimit} totalsClearedAt={mandate.totalsClearedAt} />
+          <p className="text-sm text-tertiary">Spending rules expire on {formatSastDate(mandate.expiresAt)}.</p>
+        </>
+      )}
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        <Button href="/business/agent" color="link-color" size="md">
+          Agent details
+        </Button>
+        <Button href="/business/rules" color="link-color" size="md">
+          Spending rules
+        </Button>
+      </div>
+    </section>
   );
 }
 
-const AGENT_STATUS: Record<HomeView['agentStatus']['state'], { tone: 'cleared' | 'held' | 'refused' | 'neutral'; text: string }> = {
-  active: { tone: 'cleared', text: 'Active' },
-  revoked: { tone: 'refused', text: 'Revoked' },
-  mismatch: { tone: 'held', text: 'Credential does not match' },
-  'not-registered': { tone: 'neutral', text: 'Not registered' },
-};
+/** The Business Overview: what the agent may spend today, and its latest payments. */
+export default async function OverviewPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const query = parsePaymentQuery(await searchParams);
+  const view = await loadRegistry();
+  const recent = view.payments.slice(0, 5);
+  const open = findPayment(view.instructions, query.payment);
 
-function Metrics({ view }: { view: HomeView }) {
-  const status = AGENT_STATUS[view.agentStatus.state];
-  const since =
-    view.lastResetAt === undefined ? 'since the start' : `since the sample data was restored at ${formatSast(view.lastResetAt)}`;
   return (
-    <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Metric
-        label="Agent status"
-        value={
-          <StatusBadge tone={status.tone} size="md">
-            {status.text}
-          </StatusBadge>
-        }
-        note={view.agentName}
-      />
-      <Metric
-        label="Counted toward today's limit"
-        value={view.usage === undefined ? 'None' : `${view.usage.used} RLUSD`}
-        note={view.usage === undefined ? 'The agent has no spending rules.' : `of ${view.usage.limit} RLUSD, ${view.usage.left} left`}
-      />
-      <Metric label="Accepted payments" value={view.clearedSinceReset} note={`Payments ${since}`} />
-      <Metric label="Stopped attempts" value={view.stoppedSinceReset.attempts} note={view.stoppedSinceReset.sentence} />
-    </dl>
-  );
-}
-
-/** The Business Overview: the agent's state today and its latest payments. */
-export default async function OverviewPage() {
-  const view = await loadHome();
-  return (
-    <div className="grid gap-10">
-      <Metrics view={view} />
-      <section aria-labelledby="recent-title" className="grid max-w-3xl min-w-0 gap-4">
-        <SectionTitle id="recent-title" title="Recent activity" />
-        <ActivityFeed entries={view.recent} />
+    <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <AgentCard view={view} />
+      <section aria-labelledby="recent-title" className="grid min-w-0 gap-4">
+        <SectionTitle
+          id="recent-title"
+          title="Recent payments"
+          aside={
+            recent.length > 0 && (
+              <Button href="/business/payments" color="link-color" size="md">
+                All payments
+              </Button>
+            )
+          }
+        />
+        {recent.length === 0 ? (
+          <EmptyMessage title="No payments yet.">{`Your agent's payments appear here. Run "${storyTitle('scenario-2')}" in the guided tour to see one.`}</EmptyMessage>
+        ) : (
+          <PaymentList label="Recent payments" items={recent.map((payment) => ({ payment, href: paymentsHref(PATH, { payment: payment.id }) }))} />
+        )}
       </section>
+      {open !== undefined && <PaymentPanel open={open} closeHref={PATH} />}
     </div>
   );
 }
