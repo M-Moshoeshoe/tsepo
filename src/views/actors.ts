@@ -24,7 +24,7 @@ export function decisionNote(actor: Actor, tone: Tone | 'neutral'): string {
         ? 'It needed the approval service to sign, and the exchange checks accepted it.'
         : 'It reached the agent deposit address, and the exchange held it for review.';
     case 'policy':
-      return "Shared by the agent's approval service. The payment never reached the ledger.";
+      return "Shared by the agent's approval service. The money never moved.";
     case 'ledger':
       return 'The XRP Ledger rejected it because the sender holds no agent credential.';
   }

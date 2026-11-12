@@ -1,7 +1,9 @@
 import 'server-only';
 import type { Directive9Package } from '../../src/domain/directive9.ts';
 import { depositChecks, ledgerRejectionChecks, refusalChecks, type Check } from '../../src/views/checks.ts';
-import { applyFilter, countByFilter, itemsSince, type DeskFilter } from '../../src/views/desk.ts';
+import type { DatePreset } from '../../src/views/date-range.ts';
+import { applyFilter, countByFilter, itemsInRange, outcomesByDay, type DeskFilter, type OutcomeDay } from '../../src/views/desk.ts';
+import type { Category } from '../../src/views/status.ts';
 import { paymentEvents, type PaymentEvent } from '../../src/views/payment-events.ts';
 import { collectDeskEntries, type DeskEntry } from './desk-entries.ts';
 import { withDemo } from './ledger.ts';
@@ -18,30 +20,29 @@ export interface DeskDetail {
 export interface DeskQuery {
   entryId: string | undefined;
   filter: DeskFilter;
-  /** Show runs from before the last reset too. */
-  earlier: boolean;
+  range: DatePreset;
 }
 
 export interface DeskView {
   laneAddress: string;
-  lastResetAt: string | undefined;
-  /** Entries hidden because they are from before the last reset. */
-  earlierCount: number;
   counts: Record<DeskFilter, number>;
+  /** Outcomes per SAST day in the date range, for the chart. Its totals equal the counts. */
+  outcomes: { days: OutcomeDay[]; totals: Record<Category, number> };
+  /** Every entry ever recorded, before any filter, to tell "none yet" from "none match". */
+  total: number;
   /** The entries under the chosen filter, newest first. */
   entries: DeskEntry[];
   /** The entry the person opened, if any. */
   detail: DeskDetail | undefined;
 }
 
-/** The compliance desk: payments into the agent lane and attempts stopped before they reached it. */
+/** Incoming payments: payments to the agent deposit address and attempts stopped before they reached it. */
 export async function loadDesk(query: DeskQuery): Promise<DeskView> {
   return withDemo(async (ctx) => {
     const laneAddress = ctx.wallets.exchange.address;
-    const { entries: all, deposits, lastResetAt } = await collectDeskEntries(ctx);
-
-    const sinceReset = itemsSince(all, lastResetAt);
-    const windowed = query.earlier ? itemsSince(all, undefined) : sinceReset;
+    const { entries: all, deposits } = await collectDeskEntries(ctx);
+    const now = new Date();
+    const windowed = itemsInRange(all, query.range, now);
     const entry = all.find((item) => item.id === query.entryId);
 
     let detail: DeskDetail | undefined;
@@ -61,9 +62,9 @@ export async function loadDesk(query: DeskQuery): Promise<DeskView> {
 
     return {
       laneAddress,
-      lastResetAt,
-      earlierCount: all.length - sinceReset.length,
       counts: countByFilter(windowed),
+      outcomes: outcomesByDay(all, query.range, now),
+      total: all.length,
       entries: applyFilter(windowed, query.filter),
       detail,
     };

@@ -15,9 +15,9 @@ export interface Status {
 }
 
 export const CATEGORY_CHIPS: Record<Category, string> = {
-  cleared: 'Cleared',
-  held: 'Held',
-  refused: 'Refused',
+  cleared: 'Accepted',
+  held: 'Held for review',
+  refused: 'Announced, not sent',
   rejected: 'Rejected by the ledger',
 };
 
@@ -58,11 +58,11 @@ const UNVERIFIED_SENDER: readonly string[] = [
 ];
 
 export function depositStatus(deposit: { status: 'Cleared' | 'Held'; reasons: readonly string[] }): Status {
-  if (deposit.status === 'Cleared') return status('cleared', 'Cleared');
+  if (deposit.status === 'Cleared') return status('cleared', 'Accepted');
   if (deposit.reasons.some((reason) => UNVERIFIED_SENDER.includes(reason))) {
-    return status('held', 'Held: no verified sender for this payment');
+    return status('held', 'Held for review: no verified sender for this payment');
   }
-  return status('held', 'Held: the payment does not match its Travel Rule details');
+  return status('held', 'Held for review: the payment does not match its Travel Rule details');
 }
 
 /**

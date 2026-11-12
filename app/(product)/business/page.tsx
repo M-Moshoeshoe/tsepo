@@ -5,9 +5,11 @@ import { RegisterAgainButton } from '../../../components/business/agent-actions.
 import { PaymentList } from '../../../components/business/payment-list.tsx';
 import { PaymentPanel } from '../../../components/business/payment-panel.tsx';
 import { TodayMeter } from '../../../components/business/today-meter.tsx';
+import { ColumnChart } from '../../../components/charts/column-chart.tsx';
 import { SectionTitle } from '../../../components/display.tsx';
 import { EmptyMessage } from '../../../components/empty-message.tsx';
-import { findPayment, parsePaymentQuery, paymentsHref } from '../../../src/views/payments.ts';
+import { dayLabels } from '../../../src/views/date-range.ts';
+import { findPayment, parsePaymentQuery, paymentsHref, spendByDay } from '../../../src/views/payments.ts';
 import { storyTitle } from '../../../src/views/scenarios.ts';
 import { formatSastDate } from '../../../src/views/status.ts';
 import { loadRegistry, type RegistryView } from '../../_data/registry.ts';
@@ -63,6 +65,8 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const view = await loadRegistry();
   const recent = view.payments.slice(0, 5);
   const open = findPayment(view.instructions, query.payment);
+  const spending = spendByDay(view.payments, new Date());
+  const overLimit = view.mandate !== undefined && spending.some((day) => Number(day.paid) > Number(view.mandate?.dailyLimit));
 
   return (
     <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
@@ -85,6 +89,27 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           <PaymentList label="Recent payments" items={recent.map((payment) => ({ payment, href: paymentsHref(PATH, { payment: payment.id }) }))} />
         )}
       </section>
+      {view.mandate !== undefined && (
+        <section aria-label="Spending, last 14 days" className="rounded-xl p-4 ring-1 ring-secondary ring-inset lg:p-5 xl:col-span-2">
+          <ColumnChart
+            id="spending"
+            title="Spending, last 14 days"
+            description={`RLUSD the agent paid each day over the last 14 days, against today's daily limit of ${view.mandate.dailyLimit} RLUSD.`}
+            series={[{ key: 'paid', label: 'Paid', fill: 'fill-fg-brand-primary', swatch: 'bg-fg-brand-primary' }]}
+            columns={spending.map((day) => {
+              const labels = dayLabels(day.day);
+              return { key: day.day, label: labels.short, full: labels.full, values: [Number(day.paid)] };
+            })}
+            unit="RLUSD"
+            limit={{ value: Number(view.mandate.dailyLimit), label: `Daily limit ${view.mandate.dailyLimit} RLUSD` }}
+            note={
+              overLimit
+                ? "Only paid payments count. The sample workspace starts each guided tour story from a fresh daily total, so a sample day can add up to more than the limit. No single total ever passed it."
+                : "Only paid payments count. The line shows today's daily limit."
+            }
+          />
+        </section>
+      )}
       {open !== undefined && <PaymentPanel open={open} closeHref={PATH} />}
     </div>
   );

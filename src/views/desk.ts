@@ -1,3 +1,5 @@
+import { sastDay } from '../domain/time.ts';
+import { daysInRange, inRange, type DatePreset } from './date-range.ts';
 import { storyTitle } from './scenarios.ts';
 import { CATEGORY_CHIPS, type Category, type Status } from './status.ts';
 
@@ -17,9 +19,37 @@ export function parseDeskFilter(value: string | undefined): DeskFilter {
   return DESK_FILTERS.some((filter) => filter.id === value) ? (value as DeskFilter) : 'all';
 }
 
-/** Items at or after `since`, newest first. With no `since`, every item. */
-export function itemsSince<T extends DeskItem>(items: readonly T[], since: string | undefined): T[] {
-  return items.filter((item) => since === undefined || item.at >= since).sort((a, b) => b.at.localeCompare(a.at));
+/** Items in the date range, newest first. */
+export function itemsInRange<T extends DeskItem>(items: readonly T[], range: DatePreset, now: Date): T[] {
+  return items.filter((item) => inRange(item.at, range, now)).sort((a, b) => b.at.localeCompare(a.at));
+}
+
+/** One SAST day of the outcomes chart: how many items ended in each outcome. */
+export interface OutcomeDay {
+  day: string;
+  counts: Record<Category, number>;
+}
+
+/** The outcome order, fixed everywhere: the chart, its legend and its table. */
+export const OUTCOMES: readonly Category[] = ['cleared', 'held', 'refused', 'rejected'];
+
+/**
+ * Outcomes per SAST day across the date range, oldest first, with every day
+ * present even when empty. The totals equal countByFilter for the same items,
+ * so the chart and the table always agree.
+ */
+export function outcomesByDay(items: readonly DeskItem[], range: DatePreset, now: Date): { days: OutcomeDay[]; totals: Record<Category, number> } {
+  const shown = itemsInRange(items, range, now);
+  const earliest = shown.at(-1)?.at;
+  const days = daysInRange(range, now, earliest).map((day) => ({ day, counts: { cleared: 0, held: 0, refused: 0, rejected: 0 } }));
+  const byDay = new Map(days.map((entry) => [entry.day, entry]));
+  const totals: Record<Category, number> = { cleared: 0, held: 0, refused: 0, rejected: 0 };
+  for (const item of shown) {
+    totals[item.status.category] += 1;
+    const bucket = byDay.get(sastDay(new Date(item.at)));
+    if (bucket !== undefined) bucket.counts[item.status.category] += 1;
+  }
+  return { days, totals };
 }
 
 export function countByFilter(items: readonly DeskItem[]): Record<DeskFilter, number> {
@@ -59,41 +89,3 @@ export function emptyDeskText(filter: DeskFilter): { title: string; next: string
 
 /** The name shown for a sender that no business registered. */
 export const UNREGISTERED_AGENT = 'Unregistered agent';
-
-export interface StoppedSummary {
-  /** Attempts stopped by the policy service or the ledger. */
-  attempts: number;
-  byPolicy: number;
-  byLedger: number;
-  /** "3 refused by the policy service, 1 rejected by the XRP Ledger." plus who made repeated attempts. */
-  sentence: string;
-}
-
-function times(count: number, noun: string): string {
-  return `${String(count)} ${noun}`;
-}
-
-/**
- * Counts stopped attempts honestly. An unregistered agent that asks the
- * policy service and then pays the ledger directly is one agent with two
- * attempts, and the sentence says so.
- */
-export function stoppedSummary(items: readonly (DeskItem & { sender: string; senderName: string })[]): StoppedSummary {
-  const stopped = items.filter((item) => item.status.category === 'refused' || item.status.category === 'rejected');
-  const byPolicy = stopped.filter((item) => item.status.category === 'refused').length;
-  const byLedger = stopped.length - byPolicy;
-  const parts = [`${times(byPolicy, 'refused')} by the approval service`, `${times(byLedger, 'rejected')} by the XRP Ledger`];
-  let sentence = `${parts.join(', ')}.`;
-
-  const perUnregistered = new Map<string, number>();
-  for (const item of stopped) {
-    if (item.senderName === UNREGISTERED_AGENT) perUnregistered.set(item.sender, (perUnregistered.get(item.sender) ?? 0) + 1);
-  }
-  const repeated = [...perUnregistered.values()].filter((count) => count > 1);
-  if (repeated.length === 1 && repeated[0] !== undefined) {
-    sentence += ` One unregistered agent made ${String(repeated[0])} of these attempts.`;
-  } else if (repeated.length > 1) {
-    sentence += ` ${String(repeated.length)} unregistered agents made more than one attempt each.`;
-  }
-  return { attempts: stopped.length, byPolicy, byLedger, sentence };
-}

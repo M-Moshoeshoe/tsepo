@@ -111,7 +111,7 @@ async function runStories(browser: Browser): Promise<void> {
   await page.keyboard.press('Escape');
   await page.getByRole('dialog').waitFor({ state: 'detached' });
 
-  await page.getByRole('navigation', { name: 'Filter payments' }).getByRole('link', { name: /Refused/ }).click();
+  await page.getByRole('navigation', { name: 'Filter payments' }).getByRole('link', { name: /Announced, not sent/ }).click();
   await page.waitForURL(/filter=refused/);
   await page.waitForLoadState('networkidle');
   await shot(page, 'payments-refused-1280');

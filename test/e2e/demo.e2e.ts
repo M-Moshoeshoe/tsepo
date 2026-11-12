@@ -96,14 +96,18 @@ void describe('routes', () => {
 });
 
 void describe('empty states', () => {
-  void it('show a plain message, not an error, under every incoming payments filter after a restore', { timeout: RUN_TIMEOUT }, async () => {
+  void it('show rows or a plain message, never an error, under every incoming payments filter and date preset after a restore', { timeout: RUN_TIMEOUT }, async () => {
     assertFinished(await runThroughApi({ kind: 'reset' }), 'Restore sample data');
     const desk = await openPage(browser, 1280);
     for (const filter of DESK_FILTERS) {
-      await desk.goto(`${BASE_URL}/exchange/payments${filter.id === 'all' ? '' : `?filter=${filter.id}`}`, { waitUntil: 'networkidle' });
-      const text = await desk.locator('#main').innerText();
-      assert.equal(text.includes(PAGE_ERROR_TEXT), false, `the ${filter.label} filter crashed`);
-      assert.equal(text.includes(emptyDeskText(filter.id).title), true, `the ${filter.label} filter has no empty message`);
+      for (const range of ['today', 'all']) {
+        await desk.goto(`${BASE_URL}/exchange/payments?filter=${filter.id}&range=${range}`, { waitUntil: 'networkidle' });
+        const text = await desk.locator('#main').innerText();
+        assert.equal(text.includes(PAGE_ERROR_TEXT), false, `the ${filter.label} filter crashed for ${range}`);
+        const rows = await desk.getByRole('grid').count();
+        const empty = text.includes('No payments match these filters.') || text.includes(emptyDeskText(filter.id).title);
+        assert.ok(rows > 0 || empty, `the ${filter.label} filter shows neither rows nor a message for ${range}`);
+      }
     }
     await desk.context().close();
   });
@@ -237,7 +241,7 @@ void describe('the interface', () => {
     const desk = await openPage(browser, 1280, BASE_URL, '/exchange/payments?filter=refused');
     const current = desk.getByRole('navigation', { name: 'Filter payments' }).locator('a[aria-current="page"]');
     assert.equal(await current.count(), 1);
-    assert.ok((await current.innerText()).startsWith('Refused'));
+    assert.ok((await current.innerText()).startsWith('Announced, not sent'));
     await desk.context().close();
   });
 
@@ -246,7 +250,7 @@ void describe('the interface', () => {
     const table = await desk.getByRole('grid').innerText();
     assert.ok(table.includes("Shared by the agent's approval service"));
     assert.ok(table.includes('The exchange checks'));
-    await desk.getByRole('row').filter({ hasText: 'Cleared' }).first().click();
+    await desk.getByRole('row').filter({ hasText: 'Accepted' }).first().click();
     const details = desk.getByRole('dialog', { name: 'Payment details' });
     await details.getByText('It needed the approval service to sign, and the exchange checks accepted it.').waitFor();
     await desk.context().close();
@@ -264,6 +268,20 @@ void describe('the interface', () => {
         await view.context().close();
       }
     }
+  });
+
+  void it('draws the outcomes chart with a hidden table whose totals equal the filter counts', async () => {
+    const desk = await openPage(browser, 1280, BASE_URL, '/exchange/payments?range=all');
+    const figure = desk.locator('figure').filter({ hasText: 'Outcomes by day' });
+    await figure.locator('svg[role="img"]').waitFor();
+    const totalRow = figure.locator('table tr').last();
+    const totals = (await totalRow.locator('td').allInnerTexts()).map(Number);
+    const tabs = desk.getByRole('navigation', { name: 'Filter payments' }).getByRole('link');
+    const counts = (await tabs.allInnerTexts()).map((text) => Number(/(\d+)/.exec(text)?.[1] ?? '-1'));
+    // Tabs are All, then the four outcomes in chart order.
+    assert.deepEqual(totals, counts.slice(1));
+    assert.ok((await desk.getByRole('grid').innerText()).includes('Received before the payment'));
+    await desk.context().close();
   });
 
   void it('serves a favicon from the Tšepo mark', async () => {

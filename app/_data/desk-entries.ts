@@ -9,6 +9,7 @@ import type { Actor } from '../../src/demo/events.ts';
 import { UNREGISTERED_AGENT } from '../../src/views/desk.ts';
 import { decidedBy } from '../../src/views/payment-events.ts';
 import { depositStatus, LEDGER_REJECTION_STATUS, refusalStatus, type Status } from '../../src/views/status.ts';
+import { travelRuleTiming, type TravelRuleTiming } from '../../src/views/travel-rule.ts';
 
 export interface DeskEntry {
   id: string;
@@ -25,12 +26,13 @@ export interface DeskEntry {
   hash: string | undefined;
   invoiceId: string | undefined;
   ledgerResult: string | undefined;
+  /** When the Travel Rule details arrived, relative to the payment. */
+  travelRule: TravelRuleTiming;
 }
 
 export interface DeskEntries {
   entries: DeskEntry[];
   deposits: DepositRecord[];
-  lastResetAt: string | undefined;
 }
 
 /** The latest revocation of the agent credential at or before `at`. */
@@ -42,13 +44,16 @@ function revokedBefore(history: CredentialEvent[], at: string): string | undefin
 /** Every payment into the agent lane and every attempt stopped before it, in no particular order. */
 export async function collectDeskEntries(ctx: DemoContext): Promise<DeskEntries> {
   const { client, wallets, exchange } = ctx;
-  const [deposits, refusals, rejections, history, lastResetAt] = await Promise.all([
+  const [deposits, refusals, rejections, history] = await Promise.all([
     exchange.deposits(),
     exchange.refusedAttempts(),
     exchange.ledgerRejections(),
     getCredentialHistory(client, agentCredentialQuery(wallets.agent.address, wallets.issuer.address)),
-    ctx.demo.lastResetAt(),
   ]);
+  // Refused attempts never reached the ledger; whether their Travel Rule details arrived is in the exchange store.
+  const announced = await Promise.all(
+    refusals.map(async (refusal) => refusal.invoiceId !== undefined && (await exchange.packageFor(refusal.invoiceId)) !== undefined),
+  );
 
   const nameOf = (address: string | undefined): string => {
     if (address === wallets.agent.address) return DEMO_AGENT_NAME;
@@ -71,8 +76,9 @@ export async function collectDeskEntries(ctx: DemoContext): Promise<DeskEntries>
       hash: deposit.hash,
       invoiceId: deposit.invoiceId,
       ledgerResult: deposit.ledgerResult,
+      travelRule: travelRuleTiming('deposit', deposit.reasons, deposit.packageReference !== undefined),
     })),
-    ...refusals.map((refusal) => {
+    ...refusals.map((refusal, index) => {
       const revokedAt =
         refusal.agent === wallets.agent.address && refusal.reasons.includes(PolicyReason.CredentialMissing)
           ? revokedBefore(history, refusal.at)
@@ -91,6 +97,7 @@ export async function collectDeskEntries(ctx: DemoContext): Promise<DeskEntries>
         hash: undefined,
         invoiceId: refusal.invoiceId,
         ledgerResult: undefined,
+        travelRule: travelRuleTiming('refusal', refusal.reasons, announced[index] === true),
       };
     }),
     ...rejections.map((rejection) => ({
@@ -107,8 +114,9 @@ export async function collectDeskEntries(ctx: DemoContext): Promise<DeskEntries>
       hash: rejection.hash,
       invoiceId: undefined,
       ledgerResult: rejection.ledgerResult,
+      travelRule: travelRuleTiming('rejection', [], false),
     })),
   ];
 
-  return { entries, deposits, lastResetAt };
+  return { entries, deposits };
 }

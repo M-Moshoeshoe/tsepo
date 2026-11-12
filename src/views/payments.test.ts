@@ -3,14 +3,15 @@ import type { PayoutRecord, RunRecord } from '../agent/records.ts';
 import { PolicyReason } from '../domain/reasons.ts';
 import {
   filterPayments,
-  inRange,
   instructionsFrom,
   parsePaymentQuery,
   paymentDecision,
   paymentId,
   paymentsFrom,
   paymentsHref,
+  spendByDay,
 } from './payments.ts';
+import { inRange } from './date-range.ts';
 import { totalsClearedToday } from './usage.ts';
 
 const HASH_A = 'A'.repeat(64);
@@ -113,6 +114,18 @@ describe('payment filters', () => {
     expect(paymentsHref('/business/payments', { status: 'paid', range: 'today', payment: 'x' })).toBe(
       '/business/payments?status=paid&range=today&payment=x',
     );
+  });
+});
+
+describe('spending by day', () => {
+  it('sums paid amounts per SAST day over 14 days, with empty days at zero', () => {
+    const payments = paymentsFrom(instructionsFrom([first, second, third], events));
+    const series = spendByDay(payments, new Date('2026-11-12T20:00:00.000Z'));
+    expect(series).toHaveLength(14);
+    expect(series[0]).toEqual({ day: '2026-10-30', paid: '0' });
+    // Three paid payments of 2 RLUSD; the refused ones moved no money.
+    expect(series.at(-1)).toEqual({ day: '2026-11-12', paid: '6' });
+    expect(series.at(-1)?.paid).toBe(filterPayments(payments, { status: 'all', range: 'today' }, new Date('2026-11-12T20:00:00.000Z')).paidTotal);
   });
 });
 

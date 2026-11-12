@@ -13,9 +13,9 @@ const lane = parties.lane.address;
 
 describe('status words', () => {
   it('uses the exact words for each case', () => {
-    expect(depositStatus({ status: 'Cleared', reasons: [] }).label).toBe('Cleared');
+    expect(depositStatus({ status: 'Cleared', reasons: [] }).label).toBe('Accepted');
     expect(depositStatus({ status: 'Held', reasons: [DepositReason.PackageMissing] }).label).toBe(
-      'Held: no verified sender for this payment',
+      'Held for review: no verified sender for this payment',
     );
     expect(refusalStatus([PolicyReason.OverDailyLimit, PolicyReason.SplitPaymentPattern]).label).toBe(
       'Refused by the approval service: payments split to get around the daily limit',
@@ -44,9 +44,9 @@ describe('status words', () => {
     }
   });
 
-  it('gives short chips for the table', () => {
-    expect(depositStatus({ status: 'Held', reasons: [DepositReason.PackageMissing] }).chip).toBe('Held');
-    expect(refusalStatus([PolicyReason.SplitPaymentPattern]).chip).toBe('Refused');
+  it('gives plain outcome chips for the table', () => {
+    expect(depositStatus({ status: 'Held', reasons: [DepositReason.PackageMissing] }).chip).toBe('Held for review');
+    expect(refusalStatus([PolicyReason.SplitPaymentPattern]).chip).toBe('Announced, not sent');
     expect(LEDGER_REJECTION_STATUS.chip).toBe('Rejected by the ledger');
     expect(LEDGER_REJECTION_STATUS.category).toBe('rejected');
   });

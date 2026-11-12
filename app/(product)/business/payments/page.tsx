@@ -3,7 +3,8 @@ import { PaymentPanel } from '../../../../components/business/payment-panel.tsx'
 import { PaymentsTable } from '../../../../components/business/payments-table.tsx';
 import { EmptyMessage } from '../../../../components/empty-message.tsx';
 import { FilterTabs, SegmentedLinks } from '../../../../components/filter-tabs.tsx';
-import { DATE_PRESETS, parsePaymentQuery, paymentsHref, STATUS_FILTERS } from '../../../../src/views/payments.ts';
+import { DATE_PRESETS } from '../../../../src/views/date-range.ts';
+import { parsePaymentQuery, paymentsHref, STATUS_FILTERS } from '../../../../src/views/payments.ts';
 import { storyTitle } from '../../../../src/views/scenarios.ts';
 import { loadPayments } from '../../../_data/business.ts';
 

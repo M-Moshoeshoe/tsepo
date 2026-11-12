@@ -122,7 +122,7 @@ export function PaymentDetails({ detail }: { detail: DeskDetail }) {
         <CheckTimeline checks={detail.checks} />
       </SlideoutSection>
 
-      <PackageDetails pkg={detail.pkg} />
+      <PackageDetails pkg={detail.pkg} timing={entry.travelRule} />
     </div>
   );
 }

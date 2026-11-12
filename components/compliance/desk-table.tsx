@@ -3,7 +3,9 @@
 import { Table } from '@/components/application/table/table';
 import { actorName } from '../../src/views/actors.ts';
 import { formatSastDate, formatSastTime } from '../../src/views/status.ts';
+import type { DatePreset } from '../../src/views/date-range.ts';
 import type { DeskFilter } from '../../src/views/desk.ts';
+import { TRAVEL_RULE_LABELS } from '../../src/views/travel-rule.ts';
 import type { DeskEntry } from '../../app/_data/desk-entries.ts';
 import { deskHref } from '../../src/views/desk-href.ts';
 import { Amount, ShortAddress, StatusBadge } from '../display.tsx';
@@ -13,24 +15,25 @@ const CELL = 'px-4 py-2.5 lg:px-5';
 
 /**
  * A compact table of payments and stopped attempts, newest first. Each row is
- * a link that opens the payment details. Sender and Decided by step aside on
- * narrow screens; both are in the details.
+ * a link that opens the payment details. Agent, Travel Rule and Decided by step
+ * aside on narrow screens; all three are in the details.
  */
-export function DeskTable({ entries, filter, earlier }: { entries: DeskEntry[]; filter: DeskFilter; earlier: boolean }) {
+export function DeskTable({ entries, filter, range }: { entries: DeskEntry[]; filter: DeskFilter; range: DatePreset }) {
   return (
     <Table size="sm" aria-label="Payments to the agent deposit address and attempts stopped before they reached it, newest first">
       <Table.Header>
         <Table.Head id="time" label="Time (SAST)" isRowHeader className={HEAD} />
-        <Table.Head id="sender" label="Sender" className={`${HEAD} max-sm:hidden`} />
+        <Table.Head id="sender" label="Agent" className={`${HEAD} max-sm:hidden`} />
         <Table.Head id="amount" label="Amount" className={`${HEAD} *:justify-end`} />
-        <Table.Head id="status" label="Status" className={HEAD} />
+        <Table.Head id="status" label="Outcome" className={HEAD} />
+        <Table.Head id="travel" label="Travel Rule" className={`${HEAD} max-lg:hidden`} />
         <Table.Head id="decided" label="Decided by" className={`${HEAD} max-md:hidden`} />
       </Table.Header>
       <Table.Body items={entries}>
         {(entry) => (
           <Table.Row
             id={entry.id}
-            href={deskHref({ filter, earlier, entry: entry.id })}
+            href={deskHref({ filter, range, entry: entry.id })}
             routerOptions={{ scroll: false }}
             textValue={`${formatSastTime(entry.at)}, ${entry.senderName}, ${entry.status.chip}`}
             className="h-auto cursor-pointer"
@@ -55,6 +58,7 @@ export function DeskTable({ entries, filter, earlier }: { entries: DeskEntry[]; 
                 {entry.status.chip}
               </StatusBadge>
             </Table.Cell>
+            <Table.Cell className={`${CELL} text-secondary max-lg:hidden`}>{TRAVEL_RULE_LABELS[entry.travelRule]}</Table.Cell>
             <Table.Cell className={`${CELL} max-md:hidden`}>
               <span className="grid">
                 <span>{actorName(entry.decidedBy, true)}</span>

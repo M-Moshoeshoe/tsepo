@@ -1,8 +1,9 @@
 import type { PayoutIntent } from '../agent/payout-parser.ts';
 import type { PayoutRecord, RunRecord } from '../agent/records.ts';
 import { formatUnits, toUnits } from '../domain/amount.ts';
-import { sastDay } from '../domain/time.ts';
 import { payoutSteps, type PayoutActivity, type PayoutStep } from './activity.ts';
+import { sastDay } from '../domain/time.ts';
+import { DEFAULT_RANGE, inRange, lastDays, parseRange, type DatePreset } from './date-range.ts';
 import { reasonText } from './status.ts';
 
 /** What the business sees for one payment. It ends at ledger settlement; the exchange's own checks are not shown here. */
@@ -98,7 +99,6 @@ export function paymentsFrom(instructions: readonly Instruction[]): BusinessPaym
 }
 
 export type StatusFilter = 'all' | 'paid' | 'not-approved' | 'failed';
-export type DatePreset = 'today' | '7d' | '30d' | 'all';
 
 export const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -107,21 +107,12 @@ export const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
   { id: 'failed', label: 'Failed' },
 ];
 
-export const DATE_PRESETS: { id: DatePreset; label: string }[] = [
-  { id: 'today', label: 'Today' },
-  { id: '7d', label: 'Last 7 days' },
-  { id: '30d', label: 'Last 30 days' },
-  { id: 'all', label: 'All time' },
-];
-
 export interface PaymentQuery {
   status: StatusFilter;
   range: DatePreset;
   /** The payment open in the details panel, if any. */
   payment: string | undefined;
 }
-
-export const DEFAULT_RANGE: DatePreset = '7d';
 
 function pick<T extends string>(options: { id: T }[], value: unknown, fallback: T): T {
   return options.find((option) => option.id === value)?.id ?? fallback;
@@ -133,7 +124,7 @@ export function parsePaymentQuery(params: Record<string, string | string[] | und
   const payment = one('payment');
   return {
     status: pick(STATUS_FILTERS, one('status'), 'all'),
-    range: pick(DATE_PRESETS, one('range'), DEFAULT_RANGE),
+    range: parseRange(one('range')),
     payment: payment !== undefined && /^\d{1,15}-[A-Za-z0-9-]{1,32}$/.test(payment) ? payment : undefined,
   };
 }
@@ -146,16 +137,6 @@ export function paymentsHref(path: string, query: Partial<PaymentQuery>): string
   if (query.payment !== undefined) params.set('payment', query.payment);
   const text = params.toString();
   return text === '' ? path : `${path}?${text}`;
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** True when `at` falls in the preset, counted in whole SAST days, today included. */
-export function inRange(at: string, range: DatePreset, now: Date): boolean {
-  if (range === 'all') return true;
-  const days = range === 'today' ? 1 : range === '7d' ? 7 : 30;
-  const first = sastDay(new Date(now.getTime() - (days - 1) * DAY_MS));
-  return sastDay(new Date(at)) >= first;
 }
 
 function matchesStatus(payment: BusinessPayment, status: StatusFilter): boolean {
@@ -195,6 +176,22 @@ export function paymentDecision(payment: Pick<BusinessPayment, 'status' | 'reaso
     case 'not-started':
       return undefined;
   }
+}
+
+/**
+ * RLUSD paid on each of the last `days` SAST days, oldest first, every day
+ * present. Only paid payments count: a payment the approval service refused
+ * moved no money.
+ */
+export function spendByDay(payments: readonly BusinessPayment[], now: Date, days = 14): { day: string; paid: string }[] {
+  const totals = new Map(lastDays(days, now).map((day) => [day, 0n]));
+  for (const payment of payments) {
+    if (payment.status !== 'paid') continue;
+    const day = sastDay(new Date(payment.at));
+    const current = totals.get(day);
+    if (current !== undefined) totals.set(day, current + toUnits(payment.intent.amount));
+  }
+  return [...totals].map(([day, units]) => ({ day, paid: formatUnits(units) }));
 }
 
 export const STATUS_LABELS: Record<BusinessPaymentStatus, string> = {
