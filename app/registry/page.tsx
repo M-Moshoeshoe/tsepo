@@ -4,7 +4,7 @@ import { AgentActivity } from '../../components/registry/agent-activity.tsx';
 import { MandateActions } from '../../components/registry/mandate-actions.tsx';
 import { Badge } from '../../components/ui/badge.tsx';
 import { toUnits } from '../../src/domain/amount.ts';
-import { formatUtc } from '../../src/views/status.ts';
+import { formatSast } from '../../src/views/status.ts';
 import { loadRegistry, type AgentStatus, type RegistryView } from '../_data/registry.ts';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ function StatusBadge({ status }: { status: AgentStatus }) {
       return (
         <span className="flex flex-wrap items-center gap-2">
           <Badge tone="refused">Revoked</Badge>
-          {status.at !== undefined && <span className="text-sm text-muted">at {formatUtc(status.at)}</span>}
+          {status.at !== undefined && <span className="text-sm text-muted">at {formatSast(status.at)}</span>}
         </span>
       );
     case 'mismatch':
@@ -37,7 +37,7 @@ function DailyUse({ used, limit }: { used: string; limit: string }) {
         <span className="tabular-nums">
           {used} of {limit} RLUSD
         </span>{' '}
-        <span className="text-muted">co-signed today (UTC)</span>
+        <span className="text-muted">co-signed today (SAST)</span>
       </p>
       <div className="h-1.5 w-full max-w-64 rounded-md bg-background" role="img" aria-label={`${share} percent of the daily limit used`}>
         <div className="h-full rounded-md bg-primary" style={{ width: `${share}%` }} />
@@ -106,11 +106,15 @@ function MandateSection({ view }: { view: RegistryView }) {
             {
               term: 'Approved recipients',
               value: (
-                <ul className="grid gap-2">
+                <ul className="grid gap-3">
                   {mandate.approvedRecipients.map((recipient) => (
-                    <li key={recipient.address}>
-                      {recipient.label}
-                      <Mono className="block text-xs text-muted">{recipient.address}</Mono>
+                    <li key={`${recipient.address}-${String(recipient.destinationTag)}`} className="grid gap-0.5">
+                      <span className="font-medium">{recipient.name}</span>
+                      <span className="text-muted">
+                        {recipient.paidThrough === undefined ? 'paid directly' : `paid through ${recipient.paidThrough}`}
+                        {recipient.destinationTag !== undefined && <span className="tabular-nums"> (tag {recipient.destinationTag})</span>}
+                      </span>
+                      <Mono className="text-xs">{recipient.address}</Mono>
                     </li>
                   ))}
                 </ul>
@@ -118,7 +122,7 @@ function MandateSection({ view }: { view: RegistryView }) {
             },
             { term: 'Per-payment limit', value: <Amount value={mandate.perPaymentLimit} /> },
             { term: 'Daily limit', value: <DailyUse used={mandate.usedToday} limit={mandate.dailyLimit} /> },
-            { term: 'Expires', value: formatUtc(mandate.expiresAt) },
+            { term: 'Expires', value: formatSast(mandate.expiresAt) },
             { term: 'Fingerprint', value: <Mono className="text-xs">{mandate.fingerprint}</Mono> },
           ]}
         />
@@ -136,10 +140,7 @@ export default async function RegistryPage() {
   const view = await loadRegistry();
   return (
     <div className="grid gap-6">
-      <div>
-        <p className="text-sm text-muted">Business console</p>
-        <h1 className="text-2xl font-semibold text-ink">Agent registry</h1>
-      </div>
+      <h1 className="text-2xl font-semibold text-ink">Agent registry</h1>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="grid content-start gap-6">
           <BusinessSection business={view.business} />

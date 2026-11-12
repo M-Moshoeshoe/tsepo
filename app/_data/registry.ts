@@ -26,7 +26,7 @@ export interface RegistryView {
   };
   mandate:
     | {
-        approvedRecipients: { label: string; address: string }[];
+        approvedRecipients: { name: string; address: string; destinationTag: number | undefined; paidThrough: string | undefined }[];
         perPaymentLimit: string;
         dailyLimit: string;
         usedToday: string;
@@ -68,10 +68,7 @@ export async function loadRegistry(): Promise<RegistryView> {
       status = check.valid ? { state: 'active' } : { state: 'mismatch' };
     }
 
-    const labels = new Map([
-      [wallets.exchange.address, 'Demo Exchange, agent lane'],
-      [wallets.contractor.address, 'Contractor account'],
-    ]);
+    const accountNames = new Map([[wallets.exchange.address, 'Demo Exchange']]);
 
     const records = agentRecords(ctx.agentStore);
     const [runs, events] = await Promise.all([records.runs.list(), records.events.readAll()]);
@@ -90,9 +87,11 @@ export async function loadRegistry(): Promise<RegistryView> {
         mandate === undefined
           ? undefined
           : {
-              approvedRecipients: mandate.approvedRecipients.map((address) => ({
-                address,
-                label: labels.get(address) ?? 'Approved account',
+              approvedRecipients: mandate.approvedRecipients.map((recipient) => ({
+                name: recipient.name,
+                address: recipient.address,
+                destinationTag: recipient.destinationTag,
+                paidThrough: accountNames.get(recipient.address),
               })),
               perPaymentLimit: mandate.perPaymentLimit,
               dailyLimit: mandate.dailyLimit,
