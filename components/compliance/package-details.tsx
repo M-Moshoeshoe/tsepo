@@ -1,7 +1,7 @@
 import type { Directive9Package } from '../../src/domain/directive9.ts';
 import { formatSast } from '../../src/views/status.ts';
 import { TRAVEL_RULE_LABELS, TRAVEL_RULE_TONES, type TravelRuleTiming } from '../../src/views/travel-rule.ts';
-import { Amount, CopyableMono, Facts, SampleDataTag, StatusBadge } from '../display.tsx';
+import { Amount, CopyableMono, Facts, StatusBadge } from '../display.tsx';
 import { Term } from '../term.tsx';
 
 /** The travel information (FIC Directive 9) the exchange received before the payment. */
@@ -12,7 +12,6 @@ export function PackageDetails({ pkg, timing }: { pkg: Directive9Package | undef
         <h3 className="text-sm font-semibold text-primary">
           <Term term="travel-rule">Travel Rule</Term> details (FIC Directive 9)
         </h3>
-        <SampleDataTag />
       </div>
       <div>
         <StatusBadge tone={TRAVEL_RULE_TONES[timing]}>{TRAVEL_RULE_LABELS[timing]}</StatusBadge>

@@ -46,7 +46,7 @@ export async function openPage(browser: Browser, width: number, base = BASE_URL,
 /** Opens the guided tour panel from the header, unless it is open already, and returns it. */
 export async function openTour(page: Page): Promise<Locator> {
   const tour = page.getByRole('complementary', { name: 'Guided tour' });
-  if (!(await tour.isVisible())) await page.getByRole('button', { name: 'Guided tour' }).click();
+  if (!(await tour.isVisible())) await page.getByRole('button', { name: 'Take the 3-minute tour' }).click();
   await tour.waitFor();
   return tour;
 }
@@ -82,7 +82,7 @@ export async function startServer(port: number, env: Record<string, string>): Pr
   const base = `http://localhost:${String(port)}`;
   for (let attempt = 0; attempt < 60; attempt += 1) {
     try {
-      const response = await fetch(`${base}/icon.svg`);
+      const response = await fetch(`${base}/favicon.ico`);
       if (response.ok) return child;
     } catch {
       // Not listening yet.

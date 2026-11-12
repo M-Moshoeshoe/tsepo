@@ -10,10 +10,10 @@ import { TourProvider, useTour } from '../tour/tour-provider.tsx';
 import { AccessCodeDialog } from './access-code-dialog.tsx';
 import { AppFooter } from './app-footer.tsx';
 import { AppHeader } from './app-header.tsx';
-import { Brand } from './brand.tsx';
 import { LiveActionsProvider } from './live-actions.tsx';
 import { RunResult } from './run-result.tsx';
-import { SidebarContent } from './sidebar.tsx';
+import { SidebarContent, WorkspaceBrand } from './sidebar.tsx';
+import { SampleBanner } from './sample-banner.tsx';
 
 /** Sidebar width in pixels, shared by the fixed sidebar and the space it leaves. */
 const SIDEBAR_WIDTH = 248;
@@ -23,6 +23,7 @@ function PageColumn({ children }: { children: ReactNode }) {
   const { open } = useTour();
   return (
     <div className={cx('flex min-w-0 flex-col lg:pl-62', open && 'xl:pr-100')}>
+      <SampleBanner />
       <AppHeader />
       <RunResult />
       <main id="main" className="min-w-0 px-4 pt-4 lg:px-8">
@@ -50,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <TourProvider>
         <LiveActionsProvider onUnlock={unlock}>
           <div className="min-h-dvh bg-primary">
-            <MobileNavigationHeader logo={<Brand />}>
+            <MobileNavigationHeader logo={<WorkspaceBrand />}>
               <SidebarContent />
             </MobileNavigationHeader>
 

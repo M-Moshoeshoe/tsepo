@@ -79,15 +79,6 @@ export function StatusBadge({
   );
 }
 
-/** Marks fictional businesses and people, so nobody takes them for real ones. */
-export function SampleDataTag() {
-  return (
-    <Badge type="pill-color" color="gray" size="sm">
-      Sample data
-    </Badge>
-  );
-}
-
 /** A two-column list of facts that stacks on narrow screens. */
 export function Facts({ items }: { items: { term: ReactNode; value: ReactNode; key?: string }[] }) {
   return (
@@ -118,10 +109,11 @@ export function SectionTitle({ title, aside, id }: { title: string; aside?: Reac
 }
 
 /**
- * The Tšepo mark: an open ring held around a solid core, a promise kept open
- * around a fixed centre. Accent colour only; it stays legible at 20px.
+ * Thuso's mark, the AI assistant: an open ring held around a solid core. In
+ * the accent colour, which the theme keeps for marks; it appears only where the
+ * AI acted. The Tšepo logo itself is the shield in public/tsepo-mark.png.
  */
-export function Mark({ className }: { className?: string }) {
+export function AssistantMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={cx('shrink-0 text-accent', className)} aria-hidden>
       <path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
@@ -130,7 +122,3 @@ export function Mark({ className }: { className?: string }) {
   );
 }
 
-/** Marks content produced by the AI assistant (Claude), with the same mark. */
-export function AssistantMark() {
-  return <Mark className="size-4" />;
-}

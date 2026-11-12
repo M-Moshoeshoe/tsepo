@@ -1,5 +1,5 @@
 import { ASSISTANT_NAME } from '../src/views/assistant.ts';
-import { Mark } from './display.tsx';
+import { AssistantMark } from './display.tsx';
 
 /**
  * Something Thuso, the agent's AI reading step, says about what it did. The
@@ -8,7 +8,7 @@ import { Mark } from './display.tsx';
 export function AssistantNote({ children }: { children: string }) {
   return (
     <p className="flex items-start gap-2.5 rounded-lg bg-secondary px-3 py-2.5 text-sm text-secondary">
-      <Mark className="mt-0.5 size-4" />
+      <AssistantMark className="mt-0.5 size-4" />
       <span>
         <span className="font-semibold text-primary">{ASSISTANT_NAME}</span>
         <span className="sr-only">, the agent&apos;s AI assistant, says:</span> {children}

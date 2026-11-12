@@ -4,7 +4,7 @@ import { DeskTable } from '../../../../components/compliance/desk-table.tsx';
 import { DeskTabs } from '../../../../components/compliance/desk-tabs.tsx';
 import { PaymentDetails, PaymentHeader } from '../../../../components/compliance/payment-details.tsx';
 import { DetailsPanel } from '../../../../components/details-panel.tsx';
-import { CopyableMono, ExplorerLink, SampleDataTag } from '../../../../components/display.tsx';
+import { CopyableMono, ExplorerLink } from '../../../../components/display.tsx';
 import { EmptyMessage } from '../../../../components/empty-message.tsx';
 import { SegmentedLinks } from '../../../../components/filter-tabs.tsx';
 import { Term } from '../../../../components/term.tsx';
@@ -40,10 +40,7 @@ export default async function IncomingPaymentsPage({ searchParams }: { searchPar
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <div className="grid gap-1">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-lg font-semibold text-primary">Sample Exchange</h2>
-          <SampleDataTag />
-        </div>
+        <h2 className="text-lg font-semibold text-primary">Sample Exchange</h2>
         <p className="text-sm text-tertiary">
           The XRP Ledger accepts payments to this <Term term="agent-deposit-address">agent deposit address</Term> only from agents
           with a valid Tšepo credential.

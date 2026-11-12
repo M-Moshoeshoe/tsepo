@@ -35,7 +35,7 @@ export function AppHeader() {
       <TestnetBadge />
       <div className="ml-auto">
         <Button color={open ? 'secondary' : 'primary'} size="md" iconLeading={Compass03} onClick={toggle} aria-expanded={open} aria-controls="guided-tour">
-          Guided tour
+          Take the 3-minute tour
         </Button>
       </div>
     </header>

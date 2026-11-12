@@ -12,6 +12,8 @@ export const GLOSSARY = {
   'signatures-needed':
     'The total key weight a payment needs. Here 2: the agent and the approval service together, or the business key alone.',
   testnet: 'XRP Ledger Testnet: a public test network. Test funds only; no real money moves.',
+  'sample-workspace':
+    'The businesses and people here are invented. The payments and credentials are real, on the XRP Ledger Testnet, with test funds.',
   tecNO_PERMISSION: 'The ledger result when the sender has no permission to pay that address, here because it holds no credential.',
   tecBAD_CREDENTIALS: 'The ledger result when a payment presents a credential that is missing, expired or not accepted.',
 } as const;

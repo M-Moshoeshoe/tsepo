@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Page not found - Tšepo' };
 export default function NotFound() {
   return (
     <main id="main" className="mx-auto grid min-h-dvh max-w-xl content-center gap-6 px-4 py-16">
-      <Brand />
+      <Brand href="/" />
       <div className="grid gap-2">
         <h1 className="text-display-xs font-semibold text-primary">This page does not exist</h1>
         <p className="text-md text-tertiary">The address may be mistyped, or the page may have moved.</p>

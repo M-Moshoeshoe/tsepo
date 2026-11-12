@@ -14,6 +14,11 @@ const REPOSITORY = 'https://github.com/M-Moshoeshoe/tsepo';
 const FOOT_LINK =
   'flex items-center gap-2 rounded-md text-tertiary outline-focus-ring hover:text-secondary focus-visible:outline-2';
 
+/** The logo, linking to the current workspace's overview. */
+export function WorkspaceBrand() {
+  return <Brand href={workspaceFor(usePathname()).home} />;
+}
+
 /** The sidebar content, shared by the desktop sidebar and the phone slideout. */
 export function SidebarContent() {
   const pathname = usePathname();
@@ -23,7 +28,7 @@ export function SidebarContent() {
   return (
     <div className="flex h-full flex-col bg-secondary px-3 pt-5 pb-4">
       <div className="px-2">
-        <Brand />
+        <Brand href={workspace.home} />
       </div>
 
       <div className="mt-6">

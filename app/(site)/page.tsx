@@ -13,7 +13,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-dvh bg-primary">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-6 lg:px-8">
-        <Brand />
+        <Brand href="/" />
         <Button href="/business" color="link-color" size="md">
           Open the product
         </Button>

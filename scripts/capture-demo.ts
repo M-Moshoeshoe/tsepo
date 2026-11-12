@@ -36,7 +36,7 @@ function tour(page: Page) {
 /** Opens the guided tour and enters the access code in its welcome step. The code is never printed. */
 async function unlock(page: Page): Promise<void> {
   if (ACCESS_CODE === '') throw new Error('DEMO_ACCESS_CODE is not set in the environment');
-  await page.getByRole('button', { name: 'Guided tour' }).click();
+  await page.getByRole('button', { name: 'Take the 3-minute tour' }).click();
   await tour(page).getByLabel('Access code').fill(ACCESS_CODE);
   await tour(page).getByRole('button', { name: 'Unlock live steps' }).click();
   await tour(page).getByText('Live steps unlocked').waitFor();

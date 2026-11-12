@@ -5,7 +5,7 @@ import { AgentStatusBadge } from '../../../../components/business/agent-status.t
 import { Instructions } from '../../../../components/business/instructions.tsx';
 import { PaymentPanel } from '../../../../components/business/payment-panel.tsx';
 import { TodayMeter } from '../../../../components/business/today-meter.tsx';
-import { CopyableMono, ExplorerLink, Facts, SampleDataTag, SectionTitle } from '../../../../components/display.tsx';
+import { CopyableMono, ExplorerLink, Facts, SectionTitle } from '../../../../components/display.tsx';
 import { Term } from '../../../../components/term.tsx';
 import { findPayment, parsePaymentQuery, paymentsHref } from '../../../../src/views/payments.ts';
 import { formatSast, formatSastDate } from '../../../../src/views/status.ts';
@@ -77,7 +77,7 @@ function Identity({ view }: { view: RegistryView }) {
   const { agent, business, mandate } = view;
   return (
     <section aria-labelledby="identity-title" className="grid content-start gap-4">
-      <SectionTitle id="identity-title" title="Identity" aside={<SampleDataTag />} />
+      <SectionTitle id="identity-title" title="Identity" />
       <Facts
         items={[
           { term: 'Works for', value: `${business.registeredName}, registration (CIPC) ${business.registrationNumber}` },

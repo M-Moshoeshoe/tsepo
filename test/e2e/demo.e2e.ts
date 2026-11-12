@@ -284,11 +284,20 @@ void describe('the interface', () => {
     await desk.context().close();
   });
 
-  void it('serves a favicon from the Tšepo mark', async () => {
-    const icon = await fetch(`${BASE_URL}/icon.svg`);
-    assert.equal(icon.status, 200);
-    assert.ok((await icon.text()).includes('#C7841A'));
+  void it('serves the Tšepo shield as favicon, app icon and Apple touch icon', async () => {
+    const files = [
+      ['/favicon.ico', 'image/x-icon'],
+      ['/icon.png', 'image/png'],
+      ['/apple-icon.png', 'image/png'],
+      ['/tsepo-mark.png', 'image/png'],
+    ] as const;
+    for (const [path, type] of files) {
+      const response = await fetch(`${BASE_URL}${path}`);
+      assert.equal(response.status, 200, path);
+      assert.ok((response.headers.get('content-type') ?? '').startsWith(type), `${path} is ${String(response.headers.get('content-type'))}`);
+    }
     const html = await (await fetch(`${BASE_URL}/exchange/payments`)).text();
-    assert.ok(/<link rel="icon" href="\/icon\.svg/.test(html));
+    assert.ok(/<link rel="icon" href="\/icon\.png/.test(html));
+    assert.ok(/<link rel="apple-touch-icon" href="\/apple-icon\.png/.test(html));
   });
 });
