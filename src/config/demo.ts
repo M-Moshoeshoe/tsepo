@@ -38,3 +38,6 @@ export function demoMandate(wallets: Wallets): Mandate {
     expiresAt: DEMO_MANDATE_EXPIRY,
   });
 }
+
+/** The name the business gave its payout agent, shown in place of its address. */
+export const DEMO_AGENT_NAME = 'Lesedi payout agent';

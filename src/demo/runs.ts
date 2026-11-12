@@ -246,6 +246,23 @@ async function changeLimits(
 /** Runs one demo action against Testnet, reporting progress. Throws on any failure; nothing is retried. */
 export async function runDemo(request: RunRequest, client: Client, report: Report): Promise<void> {
   const ctx = createDemoContext(client, report);
+  const startedAt = new Date().toISOString();
+  const isScenario = request.kind.startsWith('scenario-');
+  let outcome: RunOutcome;
+  try {
+    outcome = await dispatch(ctx, request, report);
+  } catch (error: unknown) {
+    if (isScenario) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      await ctx.demo.recordRun({ kind: request.kind, at: startedAt, outcome: 'stopped', summary: message.slice(0, 400) });
+    }
+    throw error;
+  }
+  if (isScenario) await ctx.demo.recordRun({ kind: request.kind, at: startedAt, outcome: 'finished', summary: outcome.summary });
+  report({ type: 'done', text: outcome.summary, explanation: outcome.explanation });
+}
+
+async function dispatch(ctx: DemoContext, request: RunRequest, report: Report): Promise<RunOutcome> {
   let outcome: RunOutcome;
   switch (request.kind) {
     case 'reset':
@@ -270,5 +287,5 @@ export async function runDemo(request: RunRequest, client: Client, report: Repor
       outcome = await changeLimits(ctx, report, request);
       break;
   }
-  report({ type: 'done', text: outcome.summary, explanation: outcome.explanation });
+  return outcome;
 }
