@@ -3,7 +3,9 @@ import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { DemoBar } from '../components/demo-bar.tsx';
 import { RunProvider } from '../components/run-provider.tsx';
+import { SiteFooter } from '../components/site-footer.tsx';
 import { SiteHeader } from '../components/site-header.tsx';
+import { ToastProvider } from '../components/toast-provider.tsx';
 import './globals.css';
 
 const plexSans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex-sans' });
@@ -24,13 +26,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           Skip to content
         </a>
-        <RunProvider>
-          <SiteHeader />
-          <DemoBar />
-          <main id="main" className="mx-auto max-w-[1232px] px-4 py-6">
-            {children}
-          </main>
-        </RunProvider>
+        <ToastProvider>
+          <RunProvider>
+            <SiteHeader />
+            <DemoBar />
+            <main id="main" className="mx-auto max-w-[1232px] px-4 py-6">
+              {children}
+            </main>
+            <SiteFooter />
+          </RunProvider>
+        </ToastProvider>
       </body>
     </html>
   );
