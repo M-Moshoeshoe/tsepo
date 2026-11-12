@@ -1,0 +1,65 @@
+@import 'tailwindcss';
+
+/* Design tokens. These values are exact and are the only colours the interface uses. */
+@theme {
+  --color-ink: #0b1f2e;
+  --color-muted: #4a5a68;
+  --color-primary: #0b5563;
+  --color-primary-hover: #08404b;
+  /* Accent: logo and AI assistant mark only. Never text or buttons. */
+  --color-accent: #c7841a;
+  --color-background: #f5f7f7;
+  --color-surface: #ffffff;
+  --color-border: #d5dcdf;
+  --color-cleared: #11693a;
+  --color-cleared-bg: #e3f4ea;
+  --color-held: #7a4d00;
+  --color-held-bg: #fff1d6;
+  --color-refused: #a1251b;
+  --color-refused-bg: #fde7e4;
+
+  --radius-md: 6px;
+  --spacing: 4px;
+
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* The check timeline is the only animated element. */
+@keyframes check-tick {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.check-animate {
+  opacity: 0;
+  animation: check-tick 240ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check-animate {
+    opacity: 1;
+    animation: none;
+  }
+}

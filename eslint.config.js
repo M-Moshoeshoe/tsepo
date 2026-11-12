@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['node_modules/', 'dist/', 'coverage/', '.data/'] },
+  { ignores: ['node_modules/', 'dist/', 'coverage/', '.data/', '.next/', 'next-env.d.ts', 'screenshots/'] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {
@@ -16,7 +16,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.js'],
+    files: ['**/*.js', '**/*.mjs'],
     ...tseslint.configs.disableTypeChecked,
   },
 );

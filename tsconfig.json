@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2024",
-    "lib": ["es2024"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "types": ["node"],
-
+    "lib": [
+      "es2024",
+      "dom",
+      "dom.iterable"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -14,7 +19,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "useUnknownInCatchVariables": true,
-
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
@@ -22,7 +26,32 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "incremental": true,
+    "allowJs": true,
+    "esModuleInterop": true
   },
-  "include": ["src", "spikes", "scenarios", "test", "vitest.config.ts"]
+  "include": [
+    "src",
+    "spikes",
+    "scenarios",
+    "test",
+    "app",
+    "components",
+    "vitest.config.ts",
+    "next.config.ts",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
 }
