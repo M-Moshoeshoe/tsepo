@@ -71,6 +71,16 @@ accepts deposits only from agents that hold a valid credential.
   differences: seeds go in `.env.local`, not `.env`; multisig signing is
   handled by our own code, which the wallet skill does not cover.
 
+## Repository and checks
+
+- Remote: `https://github.com/M-Moshoeshoe/tsepo`. Push with plain `git`.
+  Do not use the GitHub CLI.
+- No GitHub Actions workflows. Checks (typecheck, lint, tests) run
+  locally and in the Netlify build.
+- Before adding Next.js or a linter, confirm it supports the pinned
+  TypeScript version. If it does not, pin the latest TypeScript 6 release
+  and record why.
+
 ## Commands
 
 - `npm run typecheck`: type check the project.

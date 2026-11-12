@@ -1,0 +1,42 @@
+import { isValidSecret } from 'xrpl';
+import { z } from 'zod';
+import { DEFAULT_SOURCE_TAG } from '../../src/ledger/testnet.ts';
+import { ROLE_NAMES, ROLES, type Role } from './roles.ts';
+
+export const ENV_FILE = '.env.local';
+
+const SeedSchema = z.string().refine(isValidSecret, { message: 'Not a valid seed' });
+
+const SettingsSchema = z.object({
+  AGENT_SOURCE_TAG: z.coerce.number().int().min(0).max(0xffffffff).default(DEFAULT_SOURCE_TAG),
+});
+
+export interface Env {
+  sourceTag: number;
+  seeds: Record<Role, string>;
+}
+
+/** True when the variable holds a usable seed. Never reveals the value. */
+export function hasValidSeed(variable: string): boolean {
+  return SeedSchema.safeParse(process.env[variable]).success;
+}
+
+/**
+ * Reads and validates settings from the environment. Errors name the
+ * variables that are wrong and never include their values.
+ */
+export function loadEnv(): Env {
+  const invalid: string[] = ROLE_NAMES.map((role) => ROLES[role].seedVar).filter((name) => !hasValidSeed(name));
+  const settings = SettingsSchema.safeParse(process.env);
+  if (!settings.success) invalid.push('AGENT_SOURCE_TAG');
+
+  if (invalid.length > 0 || !settings.success) {
+    throw new Error(`Missing or invalid in ${ENV_FILE}: ${invalid.join(', ')}. Run npm run spike:accounts first.`);
+  }
+
+  const seeds = Object.fromEntries(
+    ROLE_NAMES.map((role) => [role, SeedSchema.parse(process.env[ROLES[role].seedVar])]),
+  ) as Record<Role, string>;
+
+  return { sourceTag: settings.data.AGENT_SOURCE_TAG, seeds };
+}
