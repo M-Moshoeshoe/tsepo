@@ -67,7 +67,7 @@ async function overview(browser: Browser): Promise<void> {
 async function scenarioThree(browser: Browser): Promise<void> {
   // Motion on, so the toast, the skeleton shimmer and the timeline behave as people see them.
   const page = await openPage(browser, 1280, 'no-preference');
-  await visit(page, '/registry');
+  await visit(page, '/agent');
 
   await runFromBar(page, 'Reset demo');
   await page.getByRole('status').getByText('Demo reset').waitFor();
@@ -98,12 +98,44 @@ async function scenarioThree(browser: Browser): Promise<void> {
   await page.context().close();
 }
 
+/** Phase 3C step 1: the application shell at both widths, with its menus open. */
+async function shell(browser: Browser): Promise<void> {
+  const desktop = await openPage(browser, 1280);
+  await desktop.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+  await desktop.getByRole('button', { name: 'Run scenario' }).click();
+  await desktop.getByRole('dialog', { name: 'Enter the demo access code' }).waitFor();
+  await shot(desktop, 'shell-1280-locked', false);
+  await desktop.getByRole('dialog').locator('input[type="password"]').fill(ACCESS_CODE);
+  await desktop.getByRole('button', { name: 'Unlock the demo' }).click();
+  await desktop.getByRole('dialog').waitFor({ state: 'detached' });
+  await desktop.getByText('Demo unlocked').first().waitFor();
+  // The menu shot comes first: a full-page shot resizes the page, which upsets the next click.
+  await desktop.getByRole('button', { name: 'Run scenario' }).click();
+  await desktop.getByRole('menu', { name: 'Run scenario' }).waitFor();
+  await shot(desktop, 'shell-1280-run-menu', false);
+  await desktop.keyboard.press('Escape');
+  await desktop.getByRole('menu').waitFor({ state: 'detached' });
+  await shot(desktop, 'shell-1280');
+  await desktop.context().close();
+
+  const phone = await openPage(browser, 390);
+  await phone.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+  await shot(phone, 'shell-390');
+  await phone.getByRole('button', { name: 'Expand navigation menu' }).click();
+  await phone.getByRole('dialog').waitFor();
+  await shot(phone, 'shell-390-menu-open', false);
+  await phone.context().close();
+}
+
 const mode = process.argv[2] ?? 'screens';
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 try {
-  if (mode === 'all') await scenarioThree(browser);
-  await overview(browser);
+  if (mode === 'shell') await shell(browser);
+  else {
+    if (mode === 'all') await scenarioThree(browser);
+    await overview(browser);
+  }
 } finally {
   await browser.close();
 }
