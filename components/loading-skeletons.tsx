@@ -60,7 +60,7 @@ export function AgentSkeleton() {
       <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="grid gap-10">
           <div className="grid gap-6 rounded-xl bg-secondary p-6">
-            <h2 className="text-lg font-semibold text-primary">Mandate</h2>
+            <h2 className="text-lg font-semibold text-primary">Spending rules</h2>
             <div className="grid gap-5 sm:grid-cols-3">
               <Rows count={3}>{(index) => <Skeleton key={index} className="h-12" />}</Rows>
             </div>
@@ -77,7 +77,7 @@ export function AgentSkeleton() {
             <FactRows count={4} />
           </div>
           <div className="grid gap-4">
-            <h2 className="text-lg font-semibold text-primary">Credential</h2>
+            <h2 className="text-lg font-semibold text-primary">Identity</h2>
             <FactRows count={3} />
           </div>
         </div>
@@ -86,12 +86,12 @@ export function AgentSkeleton() {
   );
 }
 
-/** The compliance desk while it loads: tabs and table rows in their real places. */
+/** Incoming payments while they load: tabs and table rows in their real places. */
 export function DeskSkeleton() {
   return (
     <div className="grid gap-6" aria-busy="true">
       <div className="grid gap-1">
-        <h2 className="text-lg font-semibold text-primary">Demo Exchange, agent lane</h2>
+        <h2 className="text-lg font-semibold text-primary">Sample Exchange</h2>
         <Reading />
       </div>
       <div className="grid gap-4">
@@ -104,17 +104,17 @@ export function DeskSkeleton() {
   );
 }
 
-/** Home while it loads: metrics, then the runbook. */
-export function HomeSkeleton() {
+/** The Business Overview while it loads: the figures, then recent activity. */
+export function OverviewSkeleton() {
   return (
     <div className="grid gap-10" aria-busy="true">
       <Reading />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Rows count={4}>{(index) => <Skeleton key={index} className="h-24 rounded-xl" />}</Rows>
       </div>
-      <div className="grid gap-4">
-        <h2 className="text-lg font-semibold text-primary">Demo runbook</h2>
-        <TableSkeleton columns="grid-cols-4" rows={4} />
+      <div className="grid max-w-3xl gap-4">
+        <h2 className="text-lg font-semibold text-primary">Recent activity</h2>
+        <Rows count={4}>{(index) => <Skeleton key={index} className="h-12" />}</Rows>
       </div>
     </div>
   );

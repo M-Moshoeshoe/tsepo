@@ -27,6 +27,9 @@ describe('empty desk text', () => {
       expect(text.title.length).toBeGreaterThan(0);
       expect(text.next.length).toBeGreaterThan(0);
     }
-    expect(emptyDeskText('all')).toEqual({ title: 'No payments yet.', next: 'Run scenario 2 to see a cleared payment.' });
+    expect(emptyDeskText('all')).toEqual({
+      title: 'No payments yet.',
+      next: 'Run "Your agent pays Naledi for a logo" in the guided tour to see one.',
+    });
   });
 });

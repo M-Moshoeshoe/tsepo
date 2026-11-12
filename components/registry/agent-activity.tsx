@@ -1,4 +1,5 @@
 import type { PayoutActivity, PayoutStep, RunActivity } from '../../src/views/activity.ts';
+import { storyTitle } from '../../src/views/scenarios.ts';
 import { formatSast, reasonText } from '../../src/views/status.ts';
 import { CopyButton } from '../copy-button.tsx';
 import { Amount, AssistantMark, ExplorerLink, StatusBadge } from '../display.tsx';
@@ -59,10 +60,10 @@ export function AgentActivity({ activity }: { activity: RunActivity | undefined 
     <div className="grid gap-5">
       <p className="flex items-start gap-2 text-sm text-tertiary">
         <AssistantMark />
-        Claude only reads the instruction. The policy service decides limits and approvals, never the model.
+        The AI only reads the instruction. The approval service decides limits and approvals, never the model.
       </p>
       {activity === undefined ? (
-        <EmptyMessage title="No payments yet.">Run scenario 2 to see a cleared payment.</EmptyMessage>
+        <EmptyMessage title="No payments yet.">{`Run "${storyTitle('scenario-2')}" in the guided tour to see one.`}</EmptyMessage>
       ) : (
         <>
           <div className="grid gap-2">

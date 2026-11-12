@@ -17,7 +17,7 @@ interface RunContextValue {
    * Controls stay disabled while busy, so nobody acts on data that is about to change.
    */
   busy: boolean;
-  /** The demo access code for this browser session, once entered. */
+  /** The access code for this browser session, once entered. */
   accessCode: string | undefined;
   saveAccessCode: (code: string) => void;
   forgetAccessCode: () => void;
@@ -55,7 +55,7 @@ const STORAGE_KEY = 'tsepo-demo-access-code';
 
 /** Maintenance actions confirm with a toast; scenarios explain themselves in the run panel instead. */
 const TOASTS: Partial<Record<RunKind, string>> = {
-  reset: 'Demo reset',
+  reset: 'Sample data restored',
   'change-limits': 'Limits updated',
   revoke: 'Agent revoked',
 };
@@ -78,7 +78,7 @@ function writeStoredCode(code: string | undefined): void {
   }
 }
 
-/** Runs one demo action at a time and keeps its live progress for every component that shows it. */
+/** Runs one live action at a time and keeps its live progress for every component that shows it. */
 export function RunProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const notify = useToast();

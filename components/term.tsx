@@ -4,18 +4,19 @@ import type { ReactNode } from 'react';
 import { Button, Dialog, DialogTrigger, OverlayArrow, Popover } from 'react-aria-components';
 import { GLOSSARY, type GlossaryTerm } from '../src/views/glossary.ts';
 
+const UNDERLINED =
+  'cursor-help rounded-sm font-[inherit] text-[inherit] underline decoration-fg-quaternary decoration-dotted underline-offset-4 outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2';
+
 /**
  * A word of jargon with a one-line explanation. It opens on tap, click, Enter
  * or Space, and closes on Escape or a tap outside, so it works with a keyboard
- * and on touch screens.
+ * and on touch screens. `className` replaces the dotted underline, for a term
+ * shown as a badge.
  */
-export function Term({ term, children }: { term: GlossaryTerm; children: ReactNode }) {
+export function Term({ term, children, className }: { term: GlossaryTerm; children: ReactNode; className?: string }) {
   return (
     <DialogTrigger>
-      <Button
-        className="cursor-help rounded-sm font-[inherit] text-[inherit] underline decoration-fg-quaternary decoration-dotted underline-offset-4 outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
-        aria-label={`${typeof children === 'string' ? children : term}, what this means`}
-      >
+      <Button className={className ?? UNDERLINED} aria-label={`${typeof children === 'string' ? children : term}, what this means`}>
         {children}
       </Button>
       <Popover

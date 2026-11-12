@@ -6,6 +6,7 @@ import { after, before, describe, it } from 'node:test';
 import type { Browser, Page } from 'playwright';
 import type { DemoEvent } from '../../src/demo/events.ts';
 import { DESK_FILTERS, emptyDeskText } from '../../src/views/desk.ts';
+import { SCENARIOS } from '../../src/views/scenarios.ts';
 import {
   BASE_URL,
   PAGE_ERROR_TEXT,
@@ -14,18 +15,21 @@ import {
   lastEvent,
   openBrowser,
   openPage,
+  openTour,
   runThroughApi,
   startServer,
   stopServer,
+  unlockInTour,
 } from './helpers.ts';
 
 /**
- * End-to-end checks for Batch 1, against a running production build and the
- * XRP Ledger Testnet. Start the app first (npm run build && npm start), then
- * run npm run test:e2e. About nine runs and five Claude calls.
+ * End-to-end checks against a running production build and the XRP Ledger
+ * Testnet. Start the app first (npm run build && npm start), then run
+ * npm run test:e2e. About nine runs and five Claude calls.
  */
 
 const RUN_TIMEOUT = 240_000;
+const PRODUCT_PAGES = ['/business', '/business/agent', '/exchange/payments'];
 let browser: Browser;
 let page: Page;
 
@@ -40,7 +44,7 @@ function assertFinished(events: DemoEvent[], label: string): void {
 
 before(async () => {
   browser = await openBrowser();
-  page = await openPage(browser, 1280);
+  page = await openPage(browser, 1280, BASE_URL, '/business');
 });
 
 after(async () => {
@@ -48,30 +52,58 @@ after(async () => {
 });
 
 void describe('access code', () => {
-  void it('refuses a wrong code with a clear message and does not save it', async () => {
-    await page.getByRole('button', { name: 'Run scenario', exact: true }).click();
-    const dialog = page.getByRole('dialog', { name: 'Enter the demo access code' });
-    await dialog.locator('input[type="password"]').fill('wrong-code-123');
-    await dialog.getByRole('button', { name: 'Unlock the demo' }).click();
-    await dialog.getByText('That access code was not accepted. Check it and try again.').waitFor();
-    assert.equal(await page.getByText('Demo locked').isVisible(), true);
+  void it('refuses a wrong code in the tour with a clear message, and unlocks only for the right one', async () => {
+    const tour = await openTour(page);
+    await tour.getByLabel('Access code').fill('wrong-code-123');
+    await tour.getByRole('button', { name: 'Unlock live steps' }).click();
+    await tour.getByText('That access code was not accepted. Check it and try again.').waitFor();
+    assert.equal(await tour.getByText('Live steps unlocked').isVisible(), false);
 
-    await dialog.locator('input[type="password"]').fill(accessCode());
-    await dialog.getByRole('button', { name: 'Unlock the demo' }).click();
-    await dialog.waitFor({ state: 'detached' });
-    assert.equal(await page.getByText('Demo unlocked').isVisible(), true);
+    await tour.getByLabel('Access code').fill(accessCode());
+    await tour.getByRole('button', { name: 'Unlock live steps' }).click();
+    await tour.getByText('Live steps unlocked').waitFor();
+  });
+});
+
+void describe('routes', () => {
+  void it('redirects the old addresses and keeps the filter', async () => {
+    const cases: [string, string][] = [
+      ['/agent', '/business/agent'],
+      ['/compliance?filter=refused', '/exchange/payments?filter=refused'],
+      ['/exchange', '/exchange/payments'],
+    ];
+    for (const [from, to] of cases) {
+      const response = await fetch(`${BASE_URL}${from}`, { redirect: 'manual' });
+      assert.ok([307, 308].includes(response.status), `${from} answered ${String(response.status)}`);
+      assert.equal(response.headers.get('location'), to);
+    }
+  });
+
+  void it('shows a plain page for an address that does not exist', async () => {
+    const response = await fetch(`${BASE_URL}/no-such-page`);
+    assert.equal(response.status, 404);
+    assert.ok((await response.text()).includes('This page does not exist'));
+  });
+
+  void it('never shows the word demo on any page', async () => {
+    for (const path of ['/', ...PRODUCT_PAGES, '/business?tour']) {
+      const view = await openPage(browser, 1280, BASE_URL, path);
+      const text = await view.locator('body').innerText();
+      assert.equal(/\bdemo\b/i.test(text), false, `${path} says "demo"`);
+      await view.context().close();
+    }
   });
 });
 
 void describe('empty states', () => {
-  void it('show a plain message, not an error, on every desk tab after a reset', { timeout: RUN_TIMEOUT }, async () => {
-    assertFinished(await runThroughApi({ kind: 'reset' }), 'Reset');
+  void it('show a plain message, not an error, under every incoming payments filter after a restore', { timeout: RUN_TIMEOUT }, async () => {
+    assertFinished(await runThroughApi({ kind: 'reset' }), 'Restore sample data');
     const desk = await openPage(browser, 1280);
     for (const filter of DESK_FILTERS) {
-      await desk.goto(`${BASE_URL}/compliance${filter.id === 'all' ? '' : `?filter=${filter.id}`}`, { waitUntil: 'networkidle' });
+      await desk.goto(`${BASE_URL}/exchange/payments${filter.id === 'all' ? '' : `?filter=${filter.id}`}`, { waitUntil: 'networkidle' });
       const text = await desk.locator('#main').innerText();
-      assert.equal(text.includes(PAGE_ERROR_TEXT), false, `the ${filter.label} tab crashed`);
-      assert.equal(text.includes(emptyDeskText(filter.id).title), true, `the ${filter.label} tab has no empty message`);
+      assert.equal(text.includes(PAGE_ERROR_TEXT), false, `the ${filter.label} filter crashed`);
+      assert.equal(text.includes(emptyDeskText(filter.id).title), true, `the ${filter.label} filter has no empty message`);
     }
     await desk.context().close();
   });
@@ -82,9 +114,9 @@ void describe('empty states', () => {
     try {
       const fresh = await openPage(browser, 1280, 'http://localhost:3101');
       const expected: [string, string][] = [
-        ['/', 'No activity yet.'],
-        ['/agent', 'No payments yet.'],
-        ['/compliance', 'No payments yet.'],
+        ['/business', 'No activity yet.'],
+        ['/business/agent', 'No payments yet.'],
+        ['/exchange/payments', 'No payments yet.'],
       ];
       for (const [path, message] of expected) {
         await fresh.goto(`http://localhost:3101${path}`, { waitUntil: 'networkidle' });
@@ -100,12 +132,12 @@ void describe('empty states', () => {
   });
 });
 
-void describe('scenarios in any order', () => {
-  void it('runs 2, then 3, then 4, then 2 with no reset in between', { timeout: RUN_TIMEOUT * 4 }, async () => {
+void describe('stories in any order', () => {
+  void it('runs 2, then 3, then 4, then 2 with no restore in between', { timeout: RUN_TIMEOUT * 4 }, async () => {
     for (const kind of ['scenario-2', 'scenario-3', 'scenario-4', 'scenario-2'] as const) {
       const events = await runThroughApi({ kind });
       assertFinished(events, kind);
-      assert.equal(stepTexts(events)[0], 'Preparing the demo', `${kind} did not prepare the demo first`);
+      assert.equal(stepTexts(events)[0], 'Setting up the sample workspace', `${kind} did not set up the sample workspace first`);
     }
   });
 
@@ -116,7 +148,7 @@ void describe('scenarios in any order', () => {
     assert.ok(events.every((event) => !event.text.includes('payment(s)')));
   });
 
-  void it('lists each transaction once in scenario 1', { timeout: RUN_TIMEOUT }, async () => {
+  void it('lists each transaction once in the unknown agent story', { timeout: RUN_TIMEOUT }, async () => {
     const events = await runThroughApi({ kind: 'scenario-1' });
     assertFinished(events, 'scenario-1');
     const hashes = events.flatMap((event) => (event.type === 'line' && event.hash !== undefined ? [event.hash] : []));
@@ -125,47 +157,54 @@ void describe('scenarios in any order', () => {
 });
 
 void describe('change limits', () => {
-  void it('applies new limits through the real run path, and the next scenario restores the demo limits', { timeout: RUN_TIMEOUT * 2 }, async () => {
+  void it('applies new limits through the real run path, and the next story restores the sample limits', { timeout: RUN_TIMEOUT * 2 }, async () => {
     const changed = await runThroughApi({ kind: 'change-limits', perPaymentLimit: '3', dailyLimit: '6' });
     assertFinished(changed, 'Change limits');
-    assert.equal(lastEvent(changed)?.text, 'Limits changed to 3 RLUSD per payment and 6 RLUSD per day. The credential now proves the new mandate.');
+    assert.equal(lastEvent(changed)?.text, 'Limits changed to 3 RLUSD per payment and 6 RLUSD per day. The credential now proves the new spending rules.');
 
-    const agent = await openPage(browser, 1280, BASE_URL, '/agent');
-    assert.ok((await agent.locator('section[aria-labelledby="mandate-title"]').innerText()).includes('Daily limit: 6 RLUSD'));
+    const agent = await openPage(browser, 1280, BASE_URL, '/business/agent');
+    assert.ok((await agent.locator('section[aria-labelledby="rules-title"]').innerText()).includes('Daily limit: 6 RLUSD'));
     await agent.context().close();
 
     const split = await runThroughApi({ kind: 'scenario-3' });
     assertFinished(split, 'scenario-3 after changed limits');
-    assert.ok(split.some((event) => event.text.startsWith('The business restores the demo limits')));
+    assert.ok(split.some((event) => event.text.startsWith('The business restores the sample limits')));
   });
 });
 
 void describe('the interface', () => {
-  void it('announces a finished run to screen readers', { timeout: RUN_TIMEOUT }, async () => {
-    await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-    await page.getByRole('button', { name: 'Run Scenario 1: Unknown agent' }).click();
-    await page.getByRole('status').filter({ hasText: 'Scenario 1: Unknown agent finished.' }).waitFor({ timeout: RUN_TIMEOUT });
+  void it('runs a story from the tour and announces it to screen readers', { timeout: RUN_TIMEOUT }, async () => {
+    await page.goto(`${BASE_URL}/business`, { waitUntil: 'networkidle' });
+    const tour = await openTour(page);
+    await tour.getByRole('button', { name: 'Run live: An unknown agent tries to pay' }).click();
+    await page.getByRole('status').filter({ hasText: 'An unknown agent tries to pay finished.' }).waitFor({ timeout: RUN_TIMEOUT });
   });
 
-  void it('lets Tab reach every Run button in the runbook', async () => {
-    const home = await openPage(browser, 1280);
+  void it('lets Tab reach every story button in the tour', async () => {
+    const view = await openPage(browser, 1280, BASE_URL, '/business');
+    await unlockInTour(view);
+    await view.locator('#tour-title').focus();
     const reached = new Set<string>();
-    for (let stop = 0; stop < 60; stop += 1) {
-      await home.keyboard.press('Tab');
-      const label = await home.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
-      if (label.startsWith('Run Scenario')) reached.add(label);
+    for (let stop = 0; stop < 20; stop += 1) {
+      await view.keyboard.press('Tab');
+      const label = await view.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
+      if (label.startsWith('Run live: ')) reached.add(label);
     }
-    assert.deepEqual([...reached].sort(), [
-      'Run Scenario 1: Unknown agent',
-      'Run Scenario 2: Verified agent',
-      'Run Scenario 3: Split payments',
-      'Run Scenario 4: Revoke',
-    ]);
-    await home.context().close();
+    assert.deepEqual([...reached].sort(), SCENARIOS.map((story) => `Run live: ${story.title}`).sort());
+    await view.context().close();
   });
 
-  void it('makes the desk filters links in a nav, with aria-current on the chosen one', async () => {
-    const desk = await openPage(browser, 1280, BASE_URL, '/compliance?filter=refused');
+  void it('switches between the Business and Exchange workspaces', async () => {
+    const view = await openPage(browser, 1280, BASE_URL, '/business');
+    await view.getByRole('button', { name: /^Workspace: Lesedi Design Studio/ }).click();
+    await view.getByRole('menuitemradio', { name: /Sample Exchange/ }).click();
+    await view.waitForURL(/\/exchange\/payments$/);
+    await view.getByRole('navigation', { name: 'Exchange workspace' }).getByRole('link', { name: 'Incoming payments' }).waitFor();
+    await view.context().close();
+  });
+
+  void it('makes the incoming payments filters links in a nav, with aria-current on the chosen one', async () => {
+    const desk = await openPage(browser, 1280, BASE_URL, '/exchange/payments?filter=refused');
     const current = desk.getByRole('navigation', { name: 'Filter payments' }).locator('a[aria-current="page"]');
     assert.equal(await current.count(), 1);
     assert.ok((await current.innerText()).startsWith('Refused'));
@@ -173,19 +212,19 @@ void describe('the interface', () => {
   });
 
   void it('says who decided each payment, and labels refused attempts', async () => {
-    const desk = await openPage(browser, 1280, BASE_URL, '/compliance');
+    const desk = await openPage(browser, 1280, BASE_URL, '/exchange/payments');
     const table = await desk.getByRole('grid').innerText();
-    assert.ok(table.includes("Reported by the agent's policy service"));
-    assert.ok(table.includes('The exchange'));
+    assert.ok(table.includes("Shared by the agent's approval service"));
+    assert.ok(table.includes('The exchange checks'));
     await desk.getByRole('row').filter({ hasText: 'Cleared' }).first().click();
     const details = desk.getByRole('dialog', { name: 'Payment details' });
-    await details.getByText("It needed the policy service's signature, and the exchange accepted it.").waitFor();
+    await details.getByText('It needed the approval service to sign, and the exchange checks accepted it.').waitFor();
     await desk.context().close();
   });
 
   void it('has no critical or serious axe violations and one banner, on every page at both widths', { timeout: RUN_TIMEOUT }, async () => {
     for (const width of [1280, 390]) {
-      for (const path of ['/', '/agent', '/compliance', '/compliance?filter=held']) {
+      for (const path of ['/', ...PRODUCT_PAGES, '/exchange/payments?filter=held', '/business?tour']) {
         const view = await openPage(browser, width, BASE_URL, path);
         const violations = await axeViolations(view);
         const serious = violations.filter((violation) => violation.startsWith('critical') || violation.startsWith('serious'));
@@ -201,7 +240,7 @@ void describe('the interface', () => {
     const icon = await fetch(`${BASE_URL}/icon.svg`);
     assert.equal(icon.status, 200);
     assert.ok((await icon.text()).includes('#C7841A'));
-    const html = await (await fetch(`${BASE_URL}/compliance`)).text();
+    const html = await (await fetch(`${BASE_URL}/exchange/payments`)).text();
     assert.ok(/<link rel="icon" href="\/icon\.svg/.test(html));
   });
 });

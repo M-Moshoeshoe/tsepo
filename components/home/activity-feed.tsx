@@ -1,15 +1,16 @@
 import Link from 'next/link';
 import type { DeskEntry } from '../../app/_data/desk-entries.ts';
-import { deskHref } from '../../app/compliance/desk-href.ts';
 import { actorName } from '../../src/views/actors.ts';
+import { deskHref } from '../../src/views/desk-href.ts';
+import { storyTitle } from '../../src/views/scenarios.ts';
 import { formatSast } from '../../src/views/status.ts';
 import { Amount, StatusBadge } from '../display.tsx';
 import { EmptyMessage } from '../empty-message.tsx';
 
-/** The five newest payments and stopped attempts, each linking to its details on the compliance desk. */
+/** The five newest payments and stopped attempts, each linking to its details. */
 export function ActivityFeed({ entries }: { entries: DeskEntry[] }) {
   if (entries.length === 0) {
-    return <EmptyMessage title="No activity yet.">Run scenario 2 to see a cleared payment.</EmptyMessage>;
+    return <EmptyMessage title="No activity yet.">{`Run "${storyTitle('scenario-2')}" in the guided tour to see a payment.`}</EmptyMessage>;
   }
   return (
     <ol className="grid">

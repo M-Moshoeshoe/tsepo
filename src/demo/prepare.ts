@@ -72,7 +72,7 @@ export async function applyDemoMandate(ctx: DemoContext): Promise<void> {
   const action = { type: 'set-mandate' as const, mandate: ctx.mandate, issuedAt: new Date().toISOString() };
   const applied = await ctx.policy.applyAdminAction(signAdminAction(action, ctx.wallets.business));
   if (!applied.applied) {
-    throw new DemoError(`The policy service did not accept the demo limits: ${reasonText(applied.reason)}.`);
+    throw new DemoError(`The approval service did not accept the sample limits: ${reasonText(applied.reason)}.`);
   }
 }
 
@@ -97,9 +97,9 @@ async function readReadiness(ctx: DemoContext): Promise<DemoReadiness> {
  * on its behalf.
  */
 export async function prepareScenario(ctx: DemoContext, report: Report, needs: ScenarioNeeds): Promise<void> {
-  report({ type: 'step', text: 'Preparing the demo' });
+  report({ type: 'step', text: 'Setting up the sample workspace' });
   const steps = planPreparation(needs, await readReadiness(ctx));
-  if (steps.length === 0) report({ type: 'line', text: 'Nothing to prepare for this scenario' });
+  if (steps.length === 0) report({ type: 'line', text: 'Nothing to set up for this story' });
   for (const step of steps) {
     switch (step) {
       case 'return-rlusd':
@@ -107,17 +107,17 @@ export async function prepareScenario(ctx: DemoContext, report: Report, needs: S
         await returnRlusdToAgent(ctx, report);
         break;
       case 'restore-mandate':
-        report({ type: 'line', text: `The business restores the demo limits: ${ctx.mandate.perPaymentLimit} RLUSD per payment, ${ctx.mandate.dailyLimit} RLUSD per day` });
+        report({ type: 'line', text: `The business restores the sample limits: ${ctx.mandate.perPaymentLimit} RLUSD per payment, ${ctx.mandate.dailyLimit} RLUSD per day` });
         await applyDemoMandate(ctx);
         break;
       case 'register-agent':
-        report({ type: 'line', text: 'The registry registers the agent again for the demo mandate' });
+        report({ type: 'line', text: 'Tšepo registers the agent again with the sample spending rules' });
         for (const registryStep of await ctx.registry.registerAgent(ctx.mandate)) {
           report({ type: 'line', text: registryStep.hash === undefined ? registryStep.action : `${registryStep.action}: tesSUCCESS`, hash: registryStep.hash });
         }
         break;
       case 'clear-demo-records':
-        report({ type: 'line', text: "Clear today's demo totals and payout records, so this scenario starts fresh" });
+        report({ type: 'line', text: "Clear today's sample totals and payment records, so this story starts fresh" });
         await ctx.policy.clearDailyTotalsForDemo();
         await ctx.agentStore.clear('payouts');
         break;

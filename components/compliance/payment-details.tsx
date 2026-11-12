@@ -47,7 +47,7 @@ function SlideoutSection({ title, children }: { title: string; children: React.R
   );
 }
 
-/** Everything the desk knows about one payment: what happened, the checks and the travel package. */
+/** Everything the exchange knows about one payment: what happened, the checks and the Travel Rule details. */
 export function PaymentDetails({ detail }: { detail: DeskDetail }) {
   const { entry } = detail;
   return (
@@ -96,7 +96,7 @@ export function PaymentDetails({ detail }: { detail: DeskDetail }) {
             { term: 'Decided by', value: actorName(entry.decidedBy, true) },
             ...(entry.ledgerResult === undefined ? [] : [{ term: 'Ledger result', value: <LedgerResult code={entry.ledgerResult} /> }]),
             entry.hash === undefined
-              ? { term: 'Ledger', value: <span className="text-tertiary">Never submitted. The policy service refused to co-sign.</span> }
+              ? { term: 'Ledger', value: <span className="text-tertiary">Never submitted. The approval service refused to approve it.</span> }
               : { term: 'Transaction', value: <CopyableMono value={entry.hash} label="transaction hash" className="text-xs" /> },
             ...(entry.invoiceId === undefined
               ? []
@@ -105,10 +105,10 @@ export function PaymentDetails({ detail }: { detail: DeskDetail }) {
                     key: 'package-fingerprint',
                     term: (
                       <>
-                        Package <Term term="fingerprint">fingerprint</Term>
+                        Travel Rule <Term term="fingerprint">fingerprint</Term>
                       </>
                     ),
-                    value: <CopyableMono value={entry.invoiceId} label="package fingerprint" className="text-xs" />,
+                    value: <CopyableMono value={entry.invoiceId} label="Travel Rule fingerprint" className="text-xs" />,
                   },
                 ]),
             ...(entry.reasons.length === 0 || entry.kind === 'rejection'

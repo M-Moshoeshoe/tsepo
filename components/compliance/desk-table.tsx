@@ -5,7 +5,7 @@ import { actorName } from '../../src/views/actors.ts';
 import { formatSastDate, formatSastTime } from '../../src/views/status.ts';
 import type { DeskFilter } from '../../src/views/desk.ts';
 import type { DeskEntry } from '../../app/_data/desk-entries.ts';
-import { deskHref } from '../../app/compliance/desk-href.ts';
+import { deskHref } from '../../src/views/desk-href.ts';
 import { Amount, ShortAddress, StatusBadge } from '../display.tsx';
 
 const HEAD = 'px-4 lg:px-5';
@@ -18,7 +18,7 @@ const CELL = 'px-4 py-2.5 lg:px-5';
  */
 export function DeskTable({ entries, filter, earlier }: { entries: DeskEntry[]; filter: DeskFilter; earlier: boolean }) {
   return (
-    <Table size="sm" aria-label="Payments into the agent lane and attempts stopped before they reached it, newest first">
+    <Table size="sm" aria-label="Payments to the agent deposit address and attempts stopped before they reached it, newest first">
       <Table.Header>
         <Table.Head id="time" label="Time (SAST)" isRowHeader className={HEAD} />
         <Table.Head id="sender" label="Sender" className={`${HEAD} max-sm:hidden`} />
@@ -58,7 +58,7 @@ export function DeskTable({ entries, filter, earlier }: { entries: DeskEntry[]; 
             <Table.Cell className={`${CELL} max-md:hidden`}>
               <span className="grid">
                 <span>{actorName(entry.decidedBy, true)}</span>
-                {entry.kind === 'refusal' && <span className="text-xs text-tertiary">Reported by the agent&apos;s policy service</span>}
+                {entry.kind === 'refusal' && <span className="text-xs text-tertiary">Shared by the agent&apos;s approval service</span>}
               </span>
             </Table.Cell>
           </Table.Row>

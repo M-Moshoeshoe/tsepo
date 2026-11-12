@@ -42,7 +42,7 @@ describe('payment events', () => {
     const checks = refusalChecks([PolicyReason.OverDailyLimit, PolicyReason.SplitPaymentPattern], true);
     const events = paymentEvents({ kind: 'refusal', at, status, checks, packageReceivedAt: at });
     const cosign = events.find((event) => event.id === 'cosign');
-    expect(cosign).toMatchObject({ state: 'failed', detail: 'Refused by the policy service: payments split to get around the daily limit' });
+    expect(cosign).toMatchObject({ state: 'failed', detail: 'Refused by the approval service: payments split to get around the daily limit' });
     expect(events.find((event) => event.id === 'settled')?.state).toBe('not-reached');
   });
 
@@ -58,36 +58,38 @@ describe('payment events', () => {
 
   it('names who decided each kind of entry, the same way on every page', () => {
     expect([decidedBy('deposit'), decidedBy('refusal'), decidedBy('rejection')].map((actor) => actorName(actor))).toEqual([
-      'the exchange',
-      'the policy service',
+      'the exchange checks',
+      'the approval service',
       'the XRP Ledger',
     ]);
     expect(actorName('ledger', true)).toBe('The XRP Ledger');
   });
 
-  it('says a cleared payment needed the policy signature and was accepted at the exchange', () => {
-    expect(decisionNote('exchange', 'cleared')).toBe("It needed the policy service's signature, and the exchange accepted it.");
+  it('says an accepted payment needed the approval service and passed the exchange checks', () => {
+    expect(decisionNote('exchange', 'cleared')).toBe('It needed the approval service to sign, and the exchange checks accepted it.');
     expect(decisionNote('exchange', 'held')).toContain('held it for review');
   });
 
-  it("labels refused attempts as reported by the agent's policy service", () => {
-    expect(decisionNote('policy', 'refused')).toContain("Reported by the agent's policy service");
+  it("labels refused attempts as shared by the agent's approval service", () => {
+    expect(decisionNote('policy', 'refused')).toContain("Shared by the agent's approval service");
   });
 });
 
-describe('scenarios', () => {
-  it('names the actor that clears or stops each scenario, matching the desk', () => {
-    expect(SCENARIOS.map((scenario) => scenario.decidedBy)).toEqual(['ledger', 'exchange', 'policy', 'policy']);
-    // Scenario 2 is a cleared payment, which the desk shows as decided at the exchange.
-    expect(SCENARIOS[1]?.decidedBy).toBe(decidedBy('deposit'));
-    // Scenario 1 ends with the ledger rejection, which the desk shows as decided by the ledger.
-    expect(SCENARIOS[0]?.decidedBy).toBe(decidedBy('rejection'));
+describe('tour stories', () => {
+  const decider = (kind: string) => SCENARIOS.find((scenario) => scenario.kind === kind)?.decidedBy;
+
+  it('names the actor that clears or stops each story, matching the exchange payments list', () => {
+    // Paying Naledi is an accepted payment, decided by the exchange checks.
+    expect(decider('scenario-2')).toBe(decidedBy('deposit'));
+    // The unknown agent ends with the ledger rejection.
+    expect(decider('scenario-1')).toBe(decidedBy('rejection'));
+    expect([decider('scenario-3'), decider('scenario-4')]).toEqual(['policy', 'policy']);
   });
 
-  it('lists the four scenarios in order with one plain line each', () => {
-    expect(SCENARIOS.map((scenario) => scenario.number)).toEqual([1, 2, 3, 4]);
+  it('tells the four stories in tour order, with one plain line each', () => {
+    expect(SCENARIOS.map((scenario) => scenario.kind)).toEqual(['scenario-2', 'scenario-3', 'scenario-1', 'scenario-4']);
     for (const scenario of SCENARIOS) {
-      expect(scenario.proves).not.toMatch(/\n|[–—]|n't\b/);
+      expect(`${scenario.title} ${scenario.proves}`).not.toMatch(/\n|[–—]|n't\b|\b[Dd]emo\b|[Ss]cenario/);
     }
   });
 });

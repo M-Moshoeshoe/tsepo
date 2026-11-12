@@ -62,7 +62,7 @@ export function depositStatus(deposit: { status: 'Cleared' | 'Held'; reasons: re
   if (deposit.reasons.some((reason) => UNVERIFIED_SENDER.includes(reason))) {
     return status('held', 'Held: no verified sender for this payment');
   }
-  return status('held', 'Held: the payment does not match its travel package');
+  return status('held', 'Held: the payment does not match its Travel Rule details');
 }
 
 /**
@@ -72,53 +72,53 @@ export function depositStatus(deposit: { status: 'Cleared' | 'Held'; reasons: re
 export function refusalStatus(reasons: readonly string[], revokedAt?: string): Status {
   const has = (reason: string): boolean => reasons.includes(reason);
   if (has(PolicyReason.SplitPaymentPattern)) {
-    return status('refused', 'Refused by the policy service: payments split to get around the daily limit');
+    return status('refused', 'Refused by the approval service: payments split to get around the daily limit');
   }
   if (has(PolicyReason.CredentialMissing) && revokedAt !== undefined) {
-    return status('refused', `Refused: this agent's mandate was revoked at ${formatSastTime(revokedAt)}`);
+    return status('refused', `Refused: this agent was revoked at ${formatSastTime(revokedAt)}`);
   }
-  return status('refused', `Refused by the policy service: ${firstReasonText(reasons)}`);
+  return status('refused', `Refused by the approval service: ${firstReasonText(reasons)}`);
 }
 
 export const LEDGER_REJECTION_STATUS: Status = status('rejected', 'Rejected by the ledger: no verified agent credential');
 
 const REASON_TEXT: Record<string, string> = {
   [PolicyReason.MalformedPayment]: 'the payment was not well formed',
-  [PolicyReason.NotAPayment]: 'only payments can be co-signed',
+  [PolicyReason.NotAPayment]: 'only payments can be approved',
   [PolicyReason.UnsupportedPaymentFeature]: 'partial payments, paths and SendMax are not allowed',
   [PolicyReason.MemosNotAllowed]: 'memos are not allowed on agent payments',
-  [PolicyReason.ReferenceMissing]: 'the payment carries no travel package reference',
+  [PolicyReason.ReferenceMissing]: 'the payment carries no Travel Rule reference',
   [PolicyReason.PurposeMissing]: 'no purpose was given',
   [PolicyReason.FeeTooHigh]: 'the network fee is above the cap',
   [PolicyReason.AgentNotRegistered]: 'this agent is not registered',
   [PolicyReason.CredentialMissing]: 'the agent holds no credential on the ledger',
-  [PolicyReason.CredentialInvalid]: 'the agent credential does not prove the current mandate',
-  [PolicyReason.MandateExpired]: 'the mandate has expired',
+  [PolicyReason.CredentialInvalid]: 'the agent credential does not prove the current spending rules',
+  [PolicyReason.MandateExpired]: 'the spending rules have expired',
   [PolicyReason.WrongCurrency]: 'only RLUSD from the approved issuer is allowed',
   [PolicyReason.RecipientNotApproved]: 'the recipient is not approved',
   [PolicyReason.OverPerPaymentLimit]: 'the payment is over the per-payment limit',
   [PolicyReason.OverDailyLimit]: 'the payment would go over the daily limit',
   [PolicyReason.SplitPaymentPattern]: 'payments split to get around the daily limit',
   [PolicyReason.DuplicateReference]: 'the reference was already used for a different payment',
-  [PolicyReason.ServiceError]: 'the policy service could not complete its checks',
-  [DepositReason.PackageMissing]: 'no travel package was received for this payment',
-  [DepositReason.PackageAfterPayment]: 'the travel package arrived after the payment',
-  [DepositReason.SenderMismatch]: 'the sender is not the agent named in the package',
-  [DepositReason.BeneficiaryMismatch]: 'the beneficiary does not match the package',
-  [DepositReason.AmountMismatch]: 'the amount does not match the package',
-  [DepositReason.MandateFingerprintMismatch]: 'the mandate in the package does not match its fingerprint',
+  [PolicyReason.ServiceError]: 'the approval service could not complete its checks',
+  [DepositReason.PackageMissing]: 'no Travel Rule details were received for this payment',
+  [DepositReason.PackageAfterPayment]: 'the Travel Rule details arrived after the payment',
+  [DepositReason.SenderMismatch]: 'the sender is not the agent named in the Travel Rule details',
+  [DepositReason.BeneficiaryMismatch]: 'the beneficiary does not match the Travel Rule details',
+  [DepositReason.AmountMismatch]: 'the amount does not match the Travel Rule details',
+  [DepositReason.MandateFingerprintMismatch]: 'the spending rules in the Travel Rule details do not match their fingerprint',
   [DepositReason.CredentialNotPresented]: 'the payment presented no credential',
   [DepositReason.CredentialNotFound]: 'the presented credential is not on the ledger',
-  [DepositReason.CredentialMismatch]: 'the credential does not prove the mandate in the package',
+  [DepositReason.CredentialMismatch]: 'the credential does not prove the spending rules in the Travel Rule details',
   [AdminReason.MalformedAction]: 'the change was not well formed',
   [AdminReason.BadSignature]: 'the business signature did not verify',
-  [AdminReason.SignerNotPrincipal]: 'it was not signed by the business named in the mandate',
-  [AdminReason.PrincipalChangeNotAllowed]: 'a mandate cannot move to another business',
+  [AdminReason.SignerNotPrincipal]: 'it was not signed by the business named in the spending rules',
+  [AdminReason.PrincipalChangeNotAllowed]: 'spending rules cannot move to another business',
   [AdminReason.StaleAction]: 'a newer change was already applied',
   [AgentReason.AlreadyPaid]: 'it was already paid',
   [AgentReason.Unresolved]: 'an earlier attempt is not resolved yet',
   [AgentReason.PayeeUnknown]: 'the payee is not in the directory',
-  [AgentReason.NoMandate]: 'the agent has no mandate',
+  [AgentReason.NoMandate]: 'the agent has no spending rules',
 };
 
 /** Ledger result codes such as tecPATH_PARTIAL. */

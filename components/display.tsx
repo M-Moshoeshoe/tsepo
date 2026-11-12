@@ -79,11 +79,11 @@ export function StatusBadge({
   );
 }
 
-/** Marks sample business and travel data, so nobody takes it for a real company. */
-export function DemoDataTag() {
+/** Marks fictional businesses and people, so nobody takes them for real ones. */
+export function SampleDataTag() {
   return (
     <Badge type="pill-color" color="gray" size="sm">
-      Demo data
+      Sample data
     </Badge>
   );
 }

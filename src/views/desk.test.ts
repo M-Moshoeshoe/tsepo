@@ -57,11 +57,11 @@ describe('stopped summary', () => {
       attempts: 3,
       byPolicy: 2,
       byLedger: 1,
-      sentence: '2 refused by the policy service, 1 rejected by the XRP Ledger. One unregistered agent made 2 of these attempts.',
+      sentence: '2 refused by the approval service, 1 rejected by the XRP Ledger. One unregistered agent made 2 of these attempts.',
     });
   });
 
   it('adds nothing about repeated attempts when there are none', () => {
-    expect(stoppedSummary([]).sentence).toBe('0 refused by the policy service, 0 rejected by the XRP Ledger.');
+    expect(stoppedSummary([]).sentence).toBe('0 refused by the approval service, 0 rejected by the XRP Ledger.');
   });
 });

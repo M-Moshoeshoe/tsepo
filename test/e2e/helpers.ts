@@ -1,6 +1,6 @@
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { chromium, type Browser, type Page } from 'playwright';
+import { chromium, type Browser, type Locator, type Page } from 'playwright';
 import { z } from 'zod';
 import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunRequest } from '../../src/demo/events.ts';
 
@@ -41,6 +41,22 @@ export async function openPage(browser: Browser, width: number, base = BASE_URL,
   const page = await context.newPage();
   await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
   return page;
+}
+
+/** Opens the guided tour panel from the header, unless it is open already, and returns it. */
+export async function openTour(page: Page): Promise<Locator> {
+  const tour = page.getByRole('complementary', { name: 'Guided tour' });
+  if (!(await tour.isVisible())) await page.getByRole('button', { name: 'Guided tour' }).click();
+  await tour.waitFor();
+  return tour;
+}
+
+/** Enters the access code in the tour's welcome step, so live steps can run. The code is never printed. */
+export async function unlockInTour(page: Page): Promise<void> {
+  const tour = await openTour(page);
+  await tour.getByLabel('Access code').fill(accessCode());
+  await tour.getByRole('button', { name: 'Unlock live steps' }).click();
+  await tour.getByText('Live steps unlocked').waitFor();
 }
 
 const AxeResultSchema = z.array(z.object({ id: z.string(), impact: z.string().nullable().optional(), nodes: z.array(z.unknown()) }));

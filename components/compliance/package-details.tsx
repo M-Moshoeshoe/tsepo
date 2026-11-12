@@ -1,6 +1,6 @@
 import type { Directive9Package } from '../../src/domain/directive9.ts';
 import { formatSast } from '../../src/views/status.ts';
-import { Amount, CopyableMono, DemoDataTag, Facts } from '../display.tsx';
+import { Amount, CopyableMono, Facts, SampleDataTag } from '../display.tsx';
 import { Term } from '../term.tsx';
 
 /** The travel information (FIC Directive 9) the exchange received before the payment. */
@@ -9,12 +9,12 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
     <section className="grid gap-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-primary">
-          <Term term="travel-rule">Travel Rule</Term> package (Directive 9)
+          <Term term="travel-rule">Travel Rule</Term> details (FIC Directive 9)
         </h3>
-        <DemoDataTag />
+        <SampleDataTag />
       </div>
       {pkg === undefined ? (
-        <p className="text-sm text-tertiary">No travel package was received for this payment.</p>
+        <p className="text-sm text-tertiary">No Travel Rule details were received for this payment.</p>
       ) : (
         <Facts
           items={[
@@ -47,14 +47,14 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
             { term: 'Amount', value: <Amount value={pkg.transfer.amount} /> },
             { term: 'Purpose', value: pkg.transfer.purpose },
             {
-              term: 'Agent mandate',
+              term: 'Spending rules',
               value: (
                 <span className="grid gap-0.5">
                   <span className="tabular-nums">
                     {pkg.agent.mandate.perPaymentLimit} RLUSD per payment, {pkg.agent.mandate.dailyLimit} RLUSD per day
                   </span>
                   <span className="text-tertiary">Expires {formatSast(pkg.agent.mandate.expiresAt)}</span>
-                  <CopyableMono value={pkg.agent.mandateFingerprint} label="mandate fingerprint" className="text-xs" />
+                  <CopyableMono value={pkg.agent.mandateFingerprint} label="spending rules fingerprint" className="text-xs" />
                 </span>
               ),
             },

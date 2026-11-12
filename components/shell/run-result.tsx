@@ -183,7 +183,7 @@ export function RunResult() {
       </p>
       <div className="h-0.5 overflow-hidden" aria-hidden={!busy}>
         {busy && (
-          <div role="progressbar" aria-label="A demo run is in progress" className="h-full bg-brand-primary">
+          <div role="progressbar" aria-label="A live step is running" className="h-full bg-brand-primary">
             <div className="run-progress h-full w-1/3 bg-brand-solid" />
           </div>
         )}

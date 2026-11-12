@@ -5,7 +5,7 @@ import { Dialog, Modal, ModalOverlay } from '@/components/application/modals/mod
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { RunRequestSchema } from '../../src/demo/events.ts';
-import { useDemoActions } from '../shell/demo-actions.tsx';
+import { useLiveActions } from '../shell/live-actions.tsx';
 
 function ActionDialog({
   isOpen,
@@ -47,7 +47,7 @@ function ChangeLimitsForm({
   dailyLimit: string;
   onDone: () => void;
 }) {
-  const { run } = useDemoActions();
+  const { run } = useLiveActions();
   const [perPayment, setPerPayment] = useState(perPaymentLimit);
   const [daily, setDaily] = useState(dailyLimit);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -66,8 +66,9 @@ function ChangeLimitsForm({
   return (
     <form onSubmit={submit} className="grid gap-5" noValidate>
       <DialogText title="Change the agent limits">
-        The business key signs the new limits. The registry then issues a new credential that proves the new mandate. The policy
-        service refuses payments until the new credential is accepted, in about 10 seconds.
+        The business key signs the new limits; the agent has no way to change them. Tšepo then issues a new credential that
+        proves the new spending rules. The approval service refuses payments until the new credential is accepted, within
+        seconds.
       </DialogText>
       <Input label="Per-payment limit (RLUSD)" inputMode="decimal" autoFocus value={perPayment} onChange={setPerPayment} isInvalid={error !== undefined} />
       <Input label="Daily limit (RLUSD)" inputMode="decimal" value={daily} onChange={setDaily} isInvalid={error !== undefined} />
@@ -88,7 +89,7 @@ function ChangeLimitsForm({
   );
 }
 
-/** Change limits and Revoke, in the agent page header. Both need an active agent: only a reset registers a revoked agent again. */
+/** Change limits and Revoke, in the agent page header. Both need an active agent: only Restore sample data registers a revoked agent again. */
 export function MandateActions({
   perPaymentLimit,
   dailyLimit,
@@ -98,7 +99,7 @@ export function MandateActions({
   dailyLimit: string | undefined;
   agentActive: boolean;
 }) {
-  const { busy, locked, run, unlock } = useDemoActions();
+  const { busy, locked, run, unlock } = useLiveActions();
   const [dialog, setDialog] = useState<'limits' | 'revoke' | undefined>(undefined);
   const disabled = !agentActive || busy || perPaymentLimit === undefined || dailyLimit === undefined;
   const open = (which: 'limits' | 'revoke') => () => {
@@ -138,9 +139,9 @@ export function MandateActions({
         title="Revoke this agent?"
       >
         <DialogText title="Revoke this agent?">
-          The business key deletes the agent credential from the ledger. From the next ledger, in about 4 seconds, the agent lane
-          rejects the agent and the policy service refuses every payment it asks to co-sign. Only a reset registers the agent
-          again.
+          The business key deletes the agent credential from the ledger. From the next ledger, within seconds, the agent deposit
+          address rejects the agent and the approval service refuses every payment it asks to approve. Restoring the sample data
+          registers it again.
         </DialogText>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button color="secondary" size="md" onClick={close}>

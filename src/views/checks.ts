@@ -15,7 +15,7 @@ const LABELS: Record<Check['id'], string> = {
   credential: 'Credential valid',
   recipient: 'Recipient approved',
   limits: 'Within limits',
-  'package-first': 'Package arrived first',
+  'package-first': 'Travel Rule details arrived first',
   fingerprint: 'Fingerprint matches',
 };
 

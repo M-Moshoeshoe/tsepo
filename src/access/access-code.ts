@@ -27,7 +27,7 @@ export function minutesText(ms: number): string {
 }
 
 /**
- * Decides whether a provided code opens the demo. Wrong codes count against
+ * Decides whether a provided code unlocks live steps. Wrong codes count against
  * their own limit, so the code cannot be found by trying many. Never logs
  * either code.
  */
@@ -38,7 +38,7 @@ export function decideAccess(
   now: number,
 ): AccessDecision {
   if (!accessCodeConfigured(expected)) {
-    return { allowed: false, status: 503, error: 'Demo runs are switched off: no access code is configured on the server.' };
+    return { allowed: false, status: 503, error: 'Live steps are switched off: no access code is set on the server.' };
   }
   if (accessCodeMatches(expected, provided)) return { allowed: true };
   const wrong = wrongCodes.take(now);

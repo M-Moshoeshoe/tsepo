@@ -96,12 +96,12 @@ export async function loadRegistry(): Promise<RegistryView> {
     const signerRoles = new Map([
       [wallets.business.address, 'Business key (recovery)'],
       [wallets.agentSigner.address, 'Agent key'],
-      [wallets.policy.address, 'Policy service'],
+      [wallets.policy.address, 'Approval service'],
     ]);
 
     const status = agentStatus({ credential, history, mandate, issuer, agent });
 
-    const accountNames = new Map([[wallets.exchange.address, 'Demo Exchange']]);
+    const accountNames = new Map([[wallets.exchange.address, 'Sample Exchange']]);
 
     const records = agentRecords(ctx.agentStore);
     const [runs, events] = await Promise.all([records.runs.list(), records.events.readAll()]);

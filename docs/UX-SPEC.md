@@ -288,8 +288,9 @@ the shell.
     than one. Exchange: Incoming payments, Verify an agent,
     Reports.
   - Sidebar foot: "Source on GitHub" and "About Tšepo" (links to `/`).
-  - Header: the page title (the one `h1`), the **Testnet** badge in the
-    accent colour (tooltip: "XRP Ledger Testnet. Test funds only; no real
+  - Header: the page title (the one `h1`), the **Testnet** badge, an
+    Untitled UI brand badge (the theme keeps the accent colour for the
+    Tšepo and Thuso marks only) (tooltip: "XRP Ledger Testnet. Test funds only; no real
     money moves."), and the **Guided tour** button.
   - Slim footer: "Testnet only. Sample businesses and people are fictional."
     and the credits.
@@ -319,7 +320,7 @@ the shell.
      receiver details for every crypto transfer, from R0, so an exchange
      cannot accept a payment from an agent it cannot identify.
   4. **How it works**, four compact steps in a row (a column on phones),
-     each with a small line illustration in the accent colour:
+     each with a small line illustration in the brand colour:
      Register (the business sets the agent's spending rules), Record (the
      rules become a credential on the XRP Ledger; only a fingerprint goes
      on the ledger), Pay (the agent pays in RLUSD; an independent approval
@@ -611,8 +612,8 @@ with the "Sample data" tag.
 - **Each live step:** what will happen (two sentences); "Run live on
   Testnet" (about 20 seconds); a condensed progress list with Thuso's lines
   where the AI acts; on finish, "What happened" in two sentences and
-  "Show me the evidence", which navigates and highlights the record (an
-  accent ring, scrolled into view, details panel open, focus moved to it;
+  "Show me the evidence", which navigates and highlights the record (a
+  brand ring, scrolled into view, details panel open, focus moved to it;
   still for reduced motion).
 - **Without the code:** "Show the latest live run" opens the same evidence
   from the most recent run of that story, with its date.
@@ -951,7 +952,7 @@ tour.
 | Key cards (Who must approve) | Our own | Three small cards with weights and "Signatures needed: 2". |
 | Tables | Plain HTML tables for display; Untitled `Table` where rows are links | Keeps Tab order simple (the runbook lesson). |
 | Pagination | Untitled pagination (vendor) | Cut until after the deadline; sample volumes stay small. |
-| Landing footer, step illustrations | Our own | Line drawings in the accent colour, 64px. |
+| Landing footer, step illustrations | Our own | Line drawings in the brand colour, 64px. The accent colour stays on the marks only. |
 | Empty states, toasts, dialogs, tooltips | Existing | Copy changes only. |
 
 **Where charts go, and why each one earns its place:**

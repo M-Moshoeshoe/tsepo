@@ -30,14 +30,14 @@ function checkState(checks: Check[], id: Check['id']): EventState {
 }
 
 /**
- * The story of one payment for the slideout, in order: package received,
- * credential checked, co-signed, settled, and the outcome in the exact
+ * The story of one payment for the details panel, in order: Travel Rule details received,
+ * credential checked, approved, settled, and the outcome in the exact
  * status words. Steps that never happened are marked not reached.
  */
 export function paymentEvents(input: PaymentEventInput): PaymentEvent[] {
   const packageEvent: PaymentEvent = {
     id: 'package',
-    label: 'Travel package received',
+    label: 'Travel Rule details received',
     state: input.packageReceivedAt === undefined ? (input.kind === 'rejection' ? 'not-reached' : 'failed') : 'done',
     at: input.packageReceivedAt,
   };
@@ -55,7 +55,7 @@ export function paymentEvents(input: PaymentEventInput): PaymentEvent[] {
       return [
         packageEvent,
         credential,
-        { id: 'cosign', label: 'Co-signed by the policy service', state: 'done' },
+        { id: 'cosign', label: 'Approved by the approval service', state: 'done' },
         { id: 'settled', label: 'Settled on the XRP Ledger', state: 'done', at: input.at },
         outcome,
       ];
@@ -63,7 +63,7 @@ export function paymentEvents(input: PaymentEventInput): PaymentEvent[] {
       return [
         packageEvent,
         credential,
-        { id: 'cosign', label: 'Co-signed by the policy service', state: 'failed', at: input.at, detail: input.status.label },
+        { id: 'cosign', label: 'Approved by the approval service', state: 'failed', at: input.at, detail: input.status.label },
         { id: 'settled', label: 'Settled on the XRP Ledger', state: 'not-reached' },
       ];
     case 'rejection':

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/base/badges/badges';
 import { cx } from '@/utils/cx';
 import { DESK_FILTERS, type DeskFilter } from '../../src/views/desk.ts';
-import { deskHref } from '../../app/compliance/desk-href.ts';
+import { deskHref } from '../../src/views/desk-href.ts';
 
 /**
  * Filter links styled as underline tabs, with a count on each. They are

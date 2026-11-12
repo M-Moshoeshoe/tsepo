@@ -3,8 +3,8 @@ import type { Tone } from './status.ts';
 
 const NAMES: Record<Actor, string> = {
   ledger: 'the XRP Ledger',
-  policy: 'the policy service',
-  exchange: 'the exchange',
+  policy: 'the approval service',
+  exchange: 'the exchange checks',
 };
 
 /** "the XRP Ledger", or "The XRP Ledger" at the start of a sentence or a table cell. */
@@ -21,10 +21,10 @@ export function decisionNote(actor: Actor, tone: Tone | 'neutral'): string {
   switch (actor) {
     case 'exchange':
       return tone === 'cleared'
-        ? "It needed the policy service's signature, and the exchange accepted it."
-        : 'It reached the agent lane, and the exchange held it for review.';
+        ? 'It needed the approval service to sign, and the exchange checks accepted it.'
+        : 'It reached the agent deposit address, and the exchange held it for review.';
     case 'policy':
-      return "Reported by the agent's policy service. The payment never reached the ledger.";
+      return "Shared by the agent's approval service. The payment never reached the ledger.";
     case 'ledger':
       return 'The XRP Ledger rejected it because the sender holds no agent credential.';
   }

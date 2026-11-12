@@ -20,7 +20,7 @@ export class DemoError extends Error {
 const LOW_BALANCE_RESULTS: readonly string[] = ['tecPATH_PARTIAL', 'tecPATH_DRY', 'tecUNFUNDED_PAYMENT', 'tecINSUFFICIENT_FUNDS'];
 
 export const PLAIN_ERRORS = {
-  rlusdLow: "The agent's RLUSD balance is too low for this payment. Reset the demo to return the RLUSD to the agent.",
+  rlusdLow: "The agent's RLUSD balance is too low for this payment. Restore the sample data to return the RLUSD to the agent.",
   ledgerUnreachable: 'The XRP Ledger Testnet could not be reached. Try again in a minute.',
   claudeUnavailable: 'Claude is not available right now, so the agent could not read its instruction. Try again in a few minutes.',
   claudeUnreadable: 'Claude could not read the instruction, so the agent paid nothing.',
@@ -29,7 +29,7 @@ export const PLAIN_ERRORS = {
 } as const;
 
 export function claudeCapReached(limit: number): string {
-  return `The demo has used all ${limit} Claude calls for today. Scenarios 2, 3 and 4 work again after midnight UTC; Reset and scenario 1 still work.`;
+  return `The agent has used all ${limit} AI readings for today. The stories with your agent work again after 02:00 SAST; the unknown agent story and Restore sample data still work.`;
 }
 
 /** A plain sentence for a ledger result code that stopped a transaction. */

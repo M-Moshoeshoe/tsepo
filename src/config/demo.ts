@@ -19,8 +19,8 @@ export const DEMO_PAYEES = [
 /** The demo limits: 3 RLUSD per payment and 5 RLUSD per day. */
 export const DEMO_LIMITS = { perPaymentLimit: '3', dailyLimit: '5' } as const;
 
-/** 23:59:59 SAST on 31 December 2026. Fixed so that the mandate fingerprint stays the same across runs. */
-const DEMO_MANDATE_EXPIRY = '2026-12-31T21:59:59Z';
+/** 23:59:59 SAST on 31 December 2027. Fixed so that the mandate fingerprint stays the same across runs. */
+const DEMO_MANDATE_EXPIRY = '2027-12-31T21:59:59Z';
 
 export function demoMandate(wallets: Wallets): Mandate {
   return MandateSchema.parse({

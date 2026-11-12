@@ -31,7 +31,9 @@ export function guardRun(request: Request): Response | undefined {
   const run = runLimiter.take(Date.now());
   if (!run.allowed) {
     return Response.json(
-      { error: `The demo allows about ${String(RUNS_PER_HOUR)} runs an hour. Try again in ${minutesText(run.retryAfterMs)}.` },
+      {
+        error: `Live steps are limited to about ${String(RUNS_PER_HOUR)} an hour for all visitors. Try again in ${minutesText(run.retryAfterMs)}.`,
+      },
       { status: 429 },
     );
   }

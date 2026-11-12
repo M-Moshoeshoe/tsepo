@@ -129,7 +129,7 @@ describe('change limits, through the full run path', () => {
     expect(error).toBeUndefined();
     expect(events.at(-1)).toMatchObject({
       type: 'done',
-      text: 'Limits changed to 3 RLUSD per payment and 6 RLUSD per day. The credential now proves the new mandate.',
+      text: 'Limits changed to 3 RLUSD per payment and 6 RLUSD per day. The credential now proves the new spending rules.',
     });
     const applied = await context.policy.currentMandate(context.wallets.agent.address);
     expect(applied).toEqual({ ...context.mandate, dailyLimit: '6' });
@@ -143,7 +143,7 @@ describe('change limits, through the full run path', () => {
     const context = fakeContext({ credentialPresent: false });
     const { events, error } = await run(context, { kind: 'change-limits', perPaymentLimit: '3', dailyLimit: '6' });
     expect(error).toBeInstanceOf(Error);
-    expect((error as Error).message).toBe('The agent is revoked. Reset the demo to register it again.');
+    expect((error as Error).message).toBe('The agent is revoked. Restore the sample data to register it again.');
     expect(events.some((event) => event.type === 'done')).toBe(false);
     expect(context.syncs()).toBe(1);
   });

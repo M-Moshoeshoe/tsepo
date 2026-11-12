@@ -1,30 +1,24 @@
 'use client';
 
-import { Home02, LinkExternal01, ShieldTick, User01 } from '@untitledui/icons';
+import { InfoCircle, LinkExternal01 } from '@untitledui/icons';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NavItemBase } from '@/components/application/app-navigation/base-components/nav-item';
-import { Button } from '@/components/base/buttons/button';
 import GitHub from '@/components/foundations/social-icons/github';
-import { useRun } from '../run-provider.tsx';
 import { Brand } from './brand.tsx';
+import { WorkspaceSwitcher } from './workspace-switcher.tsx';
+import { currentLink, workspaceFor } from './workspaces.ts';
 
 const REPOSITORY = 'https://github.com/M-Moshoeshoe/tsepo';
 
-const NAV = [
-  { label: 'Home', href: '/', icon: Home02 },
-  { label: 'Agent', href: '/agent', icon: User01 },
-  { label: 'Compliance desk', href: '/compliance', icon: ShieldTick },
-];
-
-function isCurrent(pathname: string, href: string): boolean {
-  return href === '/' ? pathname === '/' : pathname.startsWith(href);
-}
+const FOOT_LINK =
+  'flex items-center gap-2 rounded-md text-tertiary outline-focus-ring hover:text-secondary focus-visible:outline-2';
 
 /** The sidebar content, shared by the desktop sidebar and the phone slideout. */
-export function SidebarContent({ onUnlock }: { onUnlock: () => void }) {
+export function SidebarContent() {
   const pathname = usePathname();
-  const { accessCode, forgetAccessCode, busy } = useRun();
-  const unlocked = accessCode !== undefined;
+  const workspace = workspaceFor(pathname);
+  const current = currentLink(pathname);
 
   return (
     <div className="flex h-full flex-col bg-secondary px-3 pt-5 pb-4">
@@ -32,11 +26,15 @@ export function SidebarContent({ onUnlock }: { onUnlock: () => void }) {
         <Brand />
       </div>
 
-      <nav aria-label="Main" className="mt-8">
+      <div className="mt-6">
+        <WorkspaceSwitcher />
+      </div>
+
+      <nav aria-label={`${workspace.type} workspace`} className="mt-4">
         <ul className="grid gap-0.5">
-          {NAV.map((item) => (
+          {workspace.nav.map((item) => (
             <li key={item.href}>
-              <NavItemBase type="link" href={item.href} icon={item.icon} current={isCurrent(pathname, item.href)}>
+              <NavItemBase type="link" href={item.href} icon={item.icon} current={current?.href === item.href}>
                 {item.label}
               </NavItemBase>
             </li>
@@ -44,34 +42,12 @@ export function SidebarContent({ onUnlock }: { onUnlock: () => void }) {
         </ul>
       </nav>
 
-      <div className="mt-auto grid gap-4 border-t border-secondary px-2 pt-4 text-sm">
-        <p className="flex items-center gap-2 text-tertiary">
-          <span className="size-2 rounded-full bg-fg-success-secondary" aria-hidden />
-          XRPL Testnet
-        </p>
-
-        <div className="grid gap-1">
-          <p className="flex items-center gap-2 font-medium text-secondary">
-            <span className={unlocked ? 'size-2 rounded-full bg-fg-success-secondary' : 'size-2 rounded-full bg-fg-quaternary'} aria-hidden />
-            {unlocked ? 'Demo unlocked' : 'Demo locked'}
-          </p>
-          {unlocked ? (
-            <Button color="link-gray" size="sm" onClick={forgetAccessCode} isDisabled={busy} className="justify-self-start">
-              Forget the access code
-            </Button>
-          ) : (
-            <Button color="link-color" size="sm" onClick={onUnlock} className="justify-self-start">
-              Enter the access code
-            </Button>
-          )}
-        </div>
-
-        <a
-          href={REPOSITORY}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2 rounded-md text-tertiary outline-focus-ring hover:text-secondary focus-visible:outline-2"
-        >
+      <div className="mt-auto grid gap-3 border-t border-secondary px-2 pt-4 text-sm">
+        <Link href="/" className={FOOT_LINK}>
+          <InfoCircle className="size-4" aria-hidden />
+          About Tšepo
+        </Link>
+        <a href={REPOSITORY} target="_blank" rel="noreferrer" className={FOOT_LINK}>
           <GitHub size={16} aria-hidden />
           Source on GitHub
           <LinkExternal01 className="size-3.5" aria-hidden />

@@ -17,10 +17,10 @@ describe('status words', () => {
       'Held: no verified sender for this payment',
     );
     expect(refusalStatus([PolicyReason.OverDailyLimit, PolicyReason.SplitPaymentPattern]).label).toBe(
-      'Refused by the policy service: payments split to get around the daily limit',
+      'Refused by the approval service: payments split to get around the daily limit',
     );
     expect(refusalStatus([PolicyReason.CredentialMissing], '2026-11-12T15:11:37Z').label).toBe(
-      "Refused: this agent's mandate was revoked at 17:11 SAST",
+      'Refused: this agent was revoked at 17:11 SAST',
     );
     expect(LEDGER_REJECTION_STATUS.label).toBe('Rejected by the ledger: no verified agent credential');
   });
@@ -33,7 +33,7 @@ describe('status words', () => {
 
   it('explains other refusals in plain words', () => {
     expect(refusalStatus([PolicyReason.AgentNotRegistered]).label).toBe(
-      'Refused by the policy service: this agent is not registered',
+      'Refused by the approval service: this agent is not registered',
     );
   });
 

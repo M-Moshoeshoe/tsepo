@@ -36,13 +36,13 @@ export function payoutSteps(events: readonly PayoutRecord[]): Omit<PayoutActivit
   const steps: PayoutStep[] = [
     {
       id: 'package',
-      label: 'Package sent',
+      label: 'Travel Rule details sent',
       state: sent === undefined ? 'not-reached' : 'done',
       detail: sent?.invoiceId,
     },
     {
       id: 'cosign',
-      label: 'Co-signed',
+      label: 'Approved',
       state: refused !== undefined ? 'failed' : signed === undefined ? 'not-reached' : 'done',
     },
     { id: 'submit', label: 'Submitted', state: signed?.hash === undefined ? 'not-reached' : 'done', hash: signed?.hash },

@@ -3,11 +3,11 @@ import { runEndAnnouncement } from './announcement.ts';
 
 describe('run end announcement', () => {
   it('says nothing while a run is going, because the steps stream into their own list', () => {
-    expect(runEndAnnouncement('Reset demo', 'running')).toBe('');
+    expect(runEndAnnouncement('Restore sample data', 'running')).toBe('');
   });
 
   it('says finished or stopped, with the plain reason', () => {
-    expect(runEndAnnouncement('Reset demo', 'done')).toBe('Reset demo finished.');
+    expect(runEndAnnouncement('Restore sample data', 'done')).toBe('Restore sample data finished.');
     expect(runEndAnnouncement('Scenario 3: Split payments', 'failed', 'The XRP Ledger Testnet could not be reached.')).toBe(
       'Scenario 3: Split payments stopped. The XRP Ledger Testnet could not be reached.',
     );

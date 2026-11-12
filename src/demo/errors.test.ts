@@ -11,8 +11,8 @@ const HASH = 'A'.repeat(64);
 
 describe('plain run errors', () => {
   it('keeps a plain sentence that the engine already wrote', () => {
-    expect(plainRunError(new DemoError('The agent is revoked. Reset the demo to register it again.'))).toBe(
-      'The agent is revoked. Reset the demo to register it again.',
+    expect(plainRunError(new DemoError('The agent is revoked. Restore the sample data to register it again.'))).toBe(
+      'The agent is revoked. Restore the sample data to register it again.',
     );
   });
 
@@ -36,7 +36,7 @@ describe('plain run errors', () => {
 
   it('says when the daily Claude cap is reached, and what still works', () => {
     expect(plainRunError(new CallBudgetExceededError(50))).toBe(
-      'The demo has used all 50 Claude calls for today. Scenarios 2, 3 and 4 work again after midnight UTC; Reset and scenario 1 still work.',
+      'The agent has used all 50 AI readings for today. The stories with your agent work again after 02:00 SAST; the unknown agent story and Restore sample data still work.',
     );
   });
 
