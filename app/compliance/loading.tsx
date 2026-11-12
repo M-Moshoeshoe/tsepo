@@ -1,5 +1,5 @@
-import { PageLoading } from '../../components/page-states.tsx';
+import { DeskSkeleton } from '../../components/loading-skeletons.tsx';
 
 export default function Loading() {
-  return <PageLoading title="Demo Exchange, agent lane" />;
+  return <DeskSkeleton />;
 }

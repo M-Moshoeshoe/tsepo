@@ -1,5 +1,6 @@
 import type { PayoutActivity, PayoutStep, RunActivity } from '../../src/views/activity.ts';
 import { formatSast, reasonText } from '../../src/views/status.ts';
+import { CopyButton } from '../copy-button.tsx';
 import { Amount, AssistantMark, EmptyState, ExplorerLink } from '../display.tsx';
 import { Timeline, type TimelineState } from '../timeline.tsx';
 import { Badge, type BadgeTone } from '../ui/badge.tsx';
@@ -40,8 +41,9 @@ function PayoutRow({ payout }: { payout: PayoutActivity }) {
           stateText: STEP_STATE[step.state].text,
           detail:
             step.hash === undefined ? undefined : (
-              <span>
+              <span className="flex flex-wrap items-center gap-2">
                 <ExplorerLink hash={step.hash}>Transaction</ExplorerLink>
+                <CopyButton value={step.hash} label="transaction hash" />
               </span>
             ),
         }))}
@@ -59,7 +61,7 @@ export function AgentActivity({ activity }: { activity: RunActivity | undefined 
         Claude only reads the instruction. The policy service decides limits and approvals, never the model.
       </p>
       {activity === undefined ? (
-        <EmptyState title="The agent has not received an instruction yet">Run scenario 2 to see it read an instruction and pay.</EmptyState>
+        <EmptyState title="No payments yet.">Run scenario 2 to see a cleared payment.</EmptyState>
       ) : (
         <>
           <div className="grid gap-2">

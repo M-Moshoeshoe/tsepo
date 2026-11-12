@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Amount, DemoDataTag, ExplorerLink, Facts, Mono, Section } from '../../components/display.tsx';
+import { Amount, CopyableMono, DemoDataTag, ExplorerLink, Facts, Section } from '../../components/display.tsx';
+import { Term } from '../../components/term.tsx';
 import { AgentActivity } from '../../components/registry/agent-activity.tsx';
 import { MandateActions } from '../../components/registry/mandate-actions.tsx';
 import { Badge } from '../../components/ui/badge.tsx';
@@ -55,7 +56,7 @@ function BusinessSection({ business }: { business: RegistryView['business'] }) {
           { term: 'Registered name', value: business.registeredName },
           { term: 'Registration number (CIPC)', value: <span className="tabular-nums">{business.registrationNumber}</span> },
           { term: 'Address', value: `${address.street}, ${address.city}, ${address.postalCode}, South Africa` },
-          { term: 'Ledger account', value: <Mono>{business.ledgerAddress}</Mono> },
+          { term: 'Ledger account', value: <CopyableMono value={business.ledgerAddress} label="business ledger account" /> },
         ]}
       />
     </Section>
@@ -67,22 +68,23 @@ function AgentSection({ agent }: { agent: RegistryView['agent'] }) {
     <Section title="Agent">
       <Facts
         items={[
-          { term: 'Ledger account', value: <Mono>{agent.address}</Mono> },
+          { term: 'Ledger account', value: <CopyableMono value={agent.address} label="agent ledger account" /> },
           { term: 'Status', value: <StatusBadge status={agent.status} /> },
           {
-            term: 'Credential',
+            key: 'credential',
+            term: <Term term="credential">Credential</Term>,
             value:
               agent.credentialId === undefined ? (
                 <span className="text-muted">No credential on the ledger</span>
               ) : (
                 <span className="grid gap-1">
                   <span>AGENT_MANDATE</span>
-                  <Mono className="text-xs text-muted">{agent.credentialId}</Mono>
+                  <CopyableMono value={agent.credentialId} label="credential ID" className="text-xs text-muted" />
                   {agent.credentialHash !== undefined && <ExplorerLink hash={agent.credentialHash}>Acceptance on the ledger</ExplorerLink>}
                 </span>
               ),
           },
-          { term: 'Issued by', value: <Mono>{agent.issuer}</Mono> },
+          { term: 'Issued by', value: <CopyableMono value={agent.issuer} label="issuer account" /> },
         ]}
       />
     </Section>
@@ -114,7 +116,7 @@ function MandateSection({ view }: { view: RegistryView }) {
                         {recipient.paidThrough === undefined ? 'paid directly' : `paid through ${recipient.paidThrough}`}
                         {recipient.destinationTag !== undefined && <span className="tabular-nums"> (tag {recipient.destinationTag})</span>}
                       </span>
-                      <Mono className="text-xs">{recipient.address}</Mono>
+                      <CopyableMono value={recipient.address} label={`account for ${recipient.name}`} className="text-xs" />
                     </li>
                   ))}
                 </ul>
@@ -123,7 +125,11 @@ function MandateSection({ view }: { view: RegistryView }) {
             { term: 'Per-payment limit', value: <Amount value={mandate.perPaymentLimit} /> },
             { term: 'Daily limit', value: <DailyUse used={mandate.usedToday} limit={mandate.dailyLimit} /> },
             { term: 'Expires', value: formatSast(mandate.expiresAt) },
-            { term: 'Fingerprint', value: <Mono className="text-xs">{mandate.fingerprint}</Mono> },
+            {
+              key: 'fingerprint',
+              term: <Term term="fingerprint">Fingerprint</Term>,
+              value: <CopyableMono value={mandate.fingerprint} label="mandate fingerprint" className="text-xs" />,
+            },
           ]}
         />
         <MandateActions

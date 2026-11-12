@@ -1,5 +1,5 @@
-import { PageLoading } from '../../components/page-states.tsx';
+import { RegistrySkeleton } from '../../components/loading-skeletons.tsx';
 
 export default function Loading() {
-  return <PageLoading title="Agent registry" />;
+  return <RegistrySkeleton />;
 }

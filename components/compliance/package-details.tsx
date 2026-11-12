@@ -1,13 +1,16 @@
 import type { Directive9Package } from '../../src/domain/directive9.ts';
 import { formatSast } from '../../src/views/status.ts';
-import { Amount, DemoDataTag, Facts, Mono } from '../display.tsx';
+import { Amount, CopyableMono, DemoDataTag, Facts } from '../display.tsx';
+import { Term } from '../term.tsx';
 
 /** The travel information (FIC Directive 9) the exchange received before the payment. */
 export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) {
   return (
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-ink">Directive 9 package</h3>
+        <h3 className="text-sm font-semibold text-ink">
+          <Term term="travel-rule">Travel Rule</Term> package (Directive 9)
+        </h3>
         <DemoDataTag />
       </div>
       {pkg === undefined ? (
@@ -27,7 +30,7 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
                     {pkg.originator.address.street}, {pkg.originator.address.city}, {pkg.originator.address.postalCode},{' '}
                     {pkg.originator.address.country}
                   </span>
-                  <Mono className="text-xs">{pkg.originator.ledgerAddress}</Mono>
+                  <CopyableMono value={pkg.originator.ledgerAddress} label="originator account" className="text-xs" />
                 </span>
               ),
             },
@@ -37,7 +40,7 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
                 <span className="grid gap-0.5">
                   <span>{pkg.beneficiary.name}</span>
                   <span className="text-muted tabular-nums">Destination tag {pkg.beneficiary.destinationTag}</span>
-                  <Mono className="text-xs">{pkg.beneficiary.ledgerAddress}</Mono>
+                  <CopyableMono value={pkg.beneficiary.ledgerAddress} label="beneficiary account" className="text-xs" />
                 </span>
               ),
             },
@@ -51,7 +54,7 @@ export function PackageDetails({ pkg }: { pkg: Directive9Package | undefined }) 
                     {pkg.agent.mandate.perPaymentLimit} RLUSD per payment, {pkg.agent.mandate.dailyLimit} RLUSD per day
                   </span>
                   <span className="text-muted">Expires {formatSast(pkg.agent.mandate.expiresAt)}</span>
-                  <Mono className="text-xs">{pkg.agent.mandateFingerprint}</Mono>
+                  <CopyableMono value={pkg.agent.mandateFingerprint} label="mandate fingerprint" className="text-xs" />
                 </span>
               ),
             },

@@ -4,11 +4,13 @@ import { CheckTimeline } from '../../components/compliance/check-timeline.tsx';
 import { DeskTable } from '../../components/compliance/desk-table.tsx';
 import { DetailSheet } from '../../components/compliance/detail-sheet.tsx';
 import { PackageDetails } from '../../components/compliance/package-details.tsx';
-import { Amount, EmptyState, ExplorerLink, Facts, Mono, Section } from '../../components/display.tsx';
+import { Amount, CopyableMono, EmptyState, ExplorerLink, Facts, Mono, Section } from '../../components/display.tsx';
+import { Term } from '../../components/term.tsx';
 import { Badge } from '../../components/ui/badge.tsx';
 import { cn } from '../../components/ui/cn.ts';
-import { DESK_FILTERS, parseDeskFilter, type DeskFilter } from '../../src/views/desk.ts';
-import { CATEGORY_CHIPS, formatSast, reasonText } from '../../src/views/status.ts';
+import { DESK_FILTERS, emptyDeskText, parseDeskFilter, type DeskFilter } from '../../src/views/desk.ts';
+import { isGlossaryTerm } from '../../src/views/glossary.ts';
+import { formatSast, reasonText } from '../../src/views/status.ts';
 import { loadDesk, type DeskDetail, type DeskView } from '../_data/compliance.ts';
 import { deskHref } from './desk-href.ts';
 
@@ -26,13 +28,35 @@ function Detail({ detail }: { detail: DeskDetail }) {
         <Facts
           items={[
             { term: 'Time', value: formatSast(entry.at) },
-            { term: 'Sender', value: <Mono>{entry.sender}</Mono> },
+            { term: 'Sender', value: <CopyableMono value={entry.sender} label="sender account" /> },
             { term: 'Amount', value: <Amount value={entry.amount} asset={entry.asset ?? 'RLUSD'} /> },
-            ...(entry.ledgerResult === undefined ? [] : [{ term: 'Ledger result', value: <Mono>{entry.ledgerResult}</Mono> }]),
+            ...(entry.ledgerResult === undefined ? [] : [{ term: 'Ledger result', value: <LedgerResult code={entry.ledgerResult} /> }]),
             ...(entry.hash === undefined
               ? [{ term: 'Ledger', value: <span className="text-muted">Never submitted. The policy service refused to co-sign.</span> }]
-              : [{ term: 'Transaction', value: <ExplorerLink hash={entry.hash} /> }]),
-            ...(entry.invoiceId === undefined ? [] : [{ term: 'Package reference', value: <Mono className="text-xs">{entry.invoiceId}</Mono> }]),
+              : [
+                  {
+                    term: 'Transaction',
+                    value: (
+                      <span className="grid gap-1">
+                        <CopyableMono value={entry.hash} label="transaction hash" className="text-xs" />
+                        <ExplorerLink hash={entry.hash} />
+                      </span>
+                    ),
+                  },
+                ]),
+            ...(entry.invoiceId === undefined
+              ? []
+              : [
+                  {
+                    key: 'package-fingerprint',
+                    term: (
+                      <>
+                        Package <Term term="fingerprint">fingerprint</Term>
+                      </>
+                    ),
+                    value: <CopyableMono value={entry.invoiceId} label="package fingerprint" className="text-xs" />,
+                  },
+                ]),
             ...(entry.reasons.length === 0 || entry.kind === 'rejection'
               ? []
               : [{ term: 'Reasons', value: entry.reasons.map(reasonText).join('; ') }]),
@@ -86,9 +110,14 @@ function EarlierToggle({ view, filter, earlier }: { view: DeskView; filter: Desk
   );
 }
 
-function emptyMessage(filter: DeskFilter, earlier: boolean): string {
-  const scope = earlier ? '' : ' since the last reset';
-  return filter === 'all' ? `Nothing has happened on the agent lane${scope}.` : `Nothing to show as ${CATEGORY_CHIPS[filter]}${scope}.`;
+/** A ledger result code, explained in plain words when it is jargon. */
+function LedgerResult({ code }: { code: string }) {
+  return <Mono>{isGlossaryTerm(code) ? <Term term={code}>{code}</Term> : code}</Mono>;
+}
+
+function EmptyDesk({ filter }: { filter: DeskFilter }) {
+  const text = emptyDeskText(filter);
+  return <EmptyState title={text.title}>{text.next}</EmptyState>;
 }
 
 export default async function CompliancePage({
@@ -107,7 +136,8 @@ export default async function CompliancePage({
       <div>
         <h1 className="text-2xl font-semibold text-ink">Demo Exchange, agent lane</h1>
         <p className="mt-1 text-sm text-muted">
-          Accepts deposits only from agents with a valid credential. Account <Mono className="text-xs text-muted">{view.laneAddress}</Mono>
+          This <Term term="agent-lane">agent lane</Term> accepts deposits only from agents with a valid credential. Account{' '}
+          <CopyableMono value={view.laneAddress} label="agent lane account" className="text-xs text-muted" />
         </p>
         <p className="mt-1 text-sm text-muted">
           {view.lastResetAt === undefined
@@ -120,7 +150,7 @@ export default async function CompliancePage({
           <FilterTabs view={view} filter={filter} earlier={earlier} />
           {view.groups.length === 0 ? (
             <div className="p-4">
-              <EmptyState title={emptyMessage(filter, earlier)}>Run a scenario from the demo controls to see it here.</EmptyState>
+              <EmptyDesk filter={filter} />
             </div>
           ) : (
             <DeskTable groups={view.groups} selectedId={view.detail?.entry.id} hrefFor={hrefFor} />
@@ -128,7 +158,7 @@ export default async function CompliancePage({
         </Section>
         <Section title="Details" className="hidden lg:block">
           {view.detail === undefined ? (
-            <EmptyState title="Nothing selected">Choose a payment or an attempt to see its checks.</EmptyState>
+            <EmptyState title="Nothing selected yet.">Choose a payment or an attempt in the list to see its checks.</EmptyState>
           ) : (
             <Detail detail={view.detail} />
           )}
