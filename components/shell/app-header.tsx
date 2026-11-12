@@ -1,11 +1,12 @@
 'use client';
 
-import { Compass03 } from '@untitledui/icons';
+import { Compass03, MessageChatSquare } from '@untitledui/icons';
 import { usePathname } from 'next/navigation';
 import { BadgeWithDot } from '@/components/base/badges/badges';
 import { Button } from '@/components/base/buttons/button';
 import { Term } from '../term.tsx';
 import { useTour } from '../tour/tour-provider.tsx';
+import { BUSINESS_ACTION, workspaceOf } from '../../src/views/navigation.ts';
 import { currentLink } from './workspaces.ts';
 
 /**
@@ -33,10 +34,15 @@ export function AppHeader() {
     <header className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 pt-6 pb-5 lg:px-8 lg:pt-8">
       <h1 className="text-display-xs font-semibold text-primary">{title}</h1>
       <TestnetBadge />
-      <div className="ml-auto">
-        <Button color={open ? 'secondary' : 'primary'} size="md" iconLeading={Compass03} onClick={toggle} aria-expanded={open} aria-controls="guided-tour">
+      <div className="ml-auto flex flex-wrap gap-3">
+        <Button color="secondary" size="md" iconLeading={Compass03} onClick={toggle} aria-expanded={open} aria-controls="guided-tour">
           Take the 3-minute tour
         </Button>
+        {workspaceOf(pathname) === 'business' && pathname !== BUSINESS_ACTION.href && (
+          <Button href={BUSINESS_ACTION.href} color="primary" size="md" iconLeading={MessageChatSquare}>
+            {BUSINESS_ACTION.label}
+          </Button>
+        )}
       </div>
     </header>
   );

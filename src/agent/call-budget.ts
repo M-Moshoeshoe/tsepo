@@ -4,7 +4,7 @@ import { collection, type DocumentStore } from '../storage/store.ts';
 import type { PayoutParser } from './payout-parser.ts';
 
 /** The most Claude calls the payout agent may make in one UTC day. */
-export const DAILY_MODEL_CALL_LIMIT = 50;
+export const DAILY_MODEL_CALL_LIMIT = 150;
 
 const CallCountSchema = z.strictObject({
   day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

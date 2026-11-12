@@ -15,9 +15,13 @@ function WorkspaceIcon({ id }: { id: WorkspaceId }) {
   );
 }
 
-/** Switches between the Business and Exchange workspaces, like an account switcher. */
+/**
+ * Switches between the Business and Receiving exchange workspaces, like an
+ * account switcher. Each workspace lists its pages, so any page is two clicks away.
+ */
 export function WorkspaceSwitcher() {
-  const current = workspaceFor(usePathname());
+  const pathname = usePathname();
+  const current = workspaceFor(pathname);
   return (
     <Dropdown.Root>
       <AriaButton
@@ -31,17 +35,20 @@ export function WorkspaceSwitcher() {
         </span>
         <ChevronSelectorVertical className="size-4 shrink-0 text-fg-quaternary" aria-hidden />
       </AriaButton>
-      <Dropdown.Popover placement="bottom start" className="w-72">
-        <Dropdown.Menu aria-label="Workspaces" selectionMode="single" selectedKeys={[current.id]}>
+      <Dropdown.Popover placement="bottom start" className="w-80">
+        <Dropdown.Menu aria-label="Workspaces and their pages" selectionMode="single" selectedKeys={[pathname]}>
           {Object.values(WORKSPACES).map((workspace) => (
-            <Dropdown.Item key={workspace.id} id={workspace.id} href={workspace.home} textValue={`${workspace.name}, ${workspace.type}`}>
-              <span className="grid">
-                <span className="truncate">
+            <Dropdown.Section key={workspace.id} aria-label={`${workspace.name} pages`} className="border-t border-secondary first:border-t-0">
+              <Dropdown.SectionHeader className="grid gap-0.5 px-4 pt-3 pb-1">
+                <span className="text-sm font-semibold text-primary">
                   {workspace.name} <span className="font-normal text-tertiary">({workspace.type})</span>
                 </span>
-                <span className="truncate text-xs font-normal text-tertiary">{workspace.forWhom}</span>
-              </span>
-            </Dropdown.Item>
+                <span className="text-xs text-tertiary">{workspace.forWhom}</span>
+              </Dropdown.SectionHeader>
+              {workspace.nav.map((link) => (
+                <Dropdown.Item key={link.href} id={link.href} href={link.href} icon={link.icon} label={link.label} textValue={`${workspace.name}: ${link.label}`} />
+              ))}
+            </Dropdown.Section>
           ))}
         </Dropdown.Menu>
       </Dropdown.Popover>

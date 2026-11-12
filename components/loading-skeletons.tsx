@@ -83,7 +83,7 @@ export function DeskSkeleton() {
   return (
     <div className="grid gap-6" aria-busy="true">
       <div className="grid gap-1">
-        <h2 className="text-lg font-semibold text-primary">Sample Exchange</h2>
+        <h2 className="text-lg font-semibold text-primary">Receiving exchange</h2>
         <Reading />
       </div>
       <div className="grid gap-4">

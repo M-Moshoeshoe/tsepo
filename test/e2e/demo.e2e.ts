@@ -6,7 +6,9 @@ import { after, before, describe, it } from 'node:test';
 import type { Browser, Page } from 'playwright';
 import type { DemoEvent } from '../../src/demo/events.ts';
 import { DESK_FILTERS, emptyDeskText } from '../../src/views/desk.ts';
+import { linksFrom } from '../../src/views/navigation.ts';
 import { SCENARIOS } from '../../src/views/scenarios.ts';
+import { pageRoutes } from '../routes.ts';
 import {
   BASE_URL,
   PAGE_ERROR_TEXT,
@@ -29,7 +31,7 @@ import {
  */
 
 const RUN_TIMEOUT = 240_000;
-const PRODUCT_PAGES = ['/business', '/business/agent', '/business/payments', '/business/rules', '/exchange/payments'];
+const PRODUCT_PAGES = pageRoutes().filter((route) => route !== '/' && route !== '/faq');
 let browser: Browser;
 let page: Page;
 
@@ -90,6 +92,27 @@ void describe('routes', () => {
       const view = await openPage(browser, 1280, BASE_URL, path);
       const text = await view.locator('body').innerText();
       assert.equal(/\bdemo\b/i.test(text), false, `${path} says "demo"`);
+      await view.context().close();
+    }
+  });
+});
+
+void describe('navigation', () => {
+  void it('renders every link the navigation promises, so every page is at most two clicks away', { timeout: RUN_TIMEOUT }, async () => {
+    for (const route of pageRoutes()) {
+      const view = await openPage(browser, 1280, BASE_URL, route);
+      const hrefs = new Set(await view.locator('a[href]').evaluateAll((anchors) => anchors.map((anchor) => new URL((anchor as HTMLAnchorElement).href).pathname)));
+      for (const link of linksFrom(route).filter((entry) => entry.clicks === 1)) {
+        assert.ok(hrefs.has(link.href), `${route} has no link to ${link.href}`);
+      }
+      const twoClicks = linksFrom(route).filter((entry) => entry.clicks === 2);
+      if (twoClicks.length > 0) {
+        await view.getByRole('button', { name: /^Workspace: / }).click();
+        const menu = new Set(
+          await view.getByRole('menuitemradio').evaluateAll((items) => items.map((item) => new URL((item as HTMLAnchorElement).href).pathname)),
+        );
+        for (const link of twoClicks) assert.ok(menu.has(link.href), `${route}: the workspace switcher has no ${link.href}`);
+      }
       await view.context().close();
     }
   });
@@ -245,9 +268,10 @@ void describe('the interface', () => {
     await list.context().close();
   });
 
-  void it('shows one sample banner and no per-item sample tags, and the logo opens the workspace overview', async () => {
+  void it('says Testnet and sample once, in the footer, and the logo opens the workspace overview', async () => {
     const page2 = await openPage(browser, 1280, BASE_URL, '/exchange/payments');
-    assert.equal(await page2.getByText('Testnet. Sample businesses and people.').count(), 1);
+    assert.equal(await page2.locator('footer').getByText('Testnet. Sample businesses and people.').count(), 1);
+    assert.equal(await page2.getByText('Node Engine Hackathon').count(), 0);
     assert.equal(await page2.getByText('Sample data', { exact: true }).count(), 0);
     await page2.getByRole('link', { name: 'Tšepo, go to the overview' }).first().click();
     await page2.waitForURL(/\/exchange\/payments$/);
@@ -286,7 +310,7 @@ void describe('the interface', () => {
   void it('switches between the Business and Exchange workspaces', async () => {
     const view = await openPage(browser, 1280, BASE_URL, '/business');
     await view.getByRole('button', { name: /^Workspace: Lesedi Design Studio/ }).click();
-    await view.getByRole('menuitemradio', { name: /Sample Exchange/ }).click();
+    await view.getByRole('menuitemradio', { name: 'Incoming payments' }).click();
     await view.waitForURL(/\/exchange\/payments$/);
     await view.getByRole('navigation', { name: 'Exchange workspace' }).getByRole('link', { name: 'Incoming payments' }).waitFor();
     await view.context().close();

@@ -1,17 +1,16 @@
-import { Building07, CoinsHand, Home02, Receipt, Sliders01, User01 } from '@untitledui/icons';
+import { Building07, CoinsHand, Home02, MessageChatSquare, Receipt, Sliders01, User01 } from '@untitledui/icons';
 import type { FC } from 'react';
+import { BUSINESS_NAV, EXCHANGE_NAV, WORKSPACE_HOMES, workspaceOf, type NavEntry, type WorkspaceId } from '../../src/views/navigation.ts';
 
-export type WorkspaceId = 'business' | 'exchange';
+export type { WorkspaceId } from '../../src/views/navigation.ts';
 
-export interface NavLink {
-  label: string;
-  href: string;
+export interface NavLink extends NavEntry {
   icon: FC<{ className?: string }>;
 }
 
 export interface Workspace {
   id: WorkspaceId;
-  /** The sample organisation that owns the workspace. */
+  /** The organisation that owns the workspace. */
   name: string;
   /** What kind of workspace it is, shown under the name. */
   type: string;
@@ -21,28 +20,34 @@ export interface Workspace {
   nav: NavLink[];
 }
 
-/** The two workspaces. Both organisations are fictional sample data. */
+const ICONS: Record<string, FC<{ className?: string }>> = {
+  '/business': Home02,
+  '/business/agent': User01,
+  '/business/instruct': MessageChatSquare,
+  '/business/payments': Receipt,
+  '/business/rules': Sliders01,
+  '/exchange/payments': CoinsHand,
+};
+
+const withIcons = (entries: NavEntry[]): NavLink[] => entries.map((entry) => ({ ...entry, icon: ICONS[entry.href] ?? Home02 }));
+
+/** The two workspaces. Both organisations and the people in them are fictional. */
 export const WORKSPACES: Record<WorkspaceId, Workspace> = {
   business: {
     id: 'business',
     name: 'Lesedi Design Studio',
     type: 'Business',
-    forWhom: 'For the finance lead who runs the agent',
-    home: '/business',
-    nav: [
-      { label: 'Overview', href: '/business', icon: Home02 },
-      { label: 'Agent', href: '/business/agent', icon: User01 },
-      { label: 'Payments', href: '/business/payments', icon: Receipt },
-      { label: 'Spending rules', href: '/business/rules', icon: Sliders01 },
-    ],
+    forWhom: 'The business that runs the agent and sets its spending rules.',
+    home: WORKSPACE_HOMES.business,
+    nav: withIcons(BUSINESS_NAV),
   },
   exchange: {
     id: 'exchange',
-    name: 'Sample Exchange',
+    name: 'Receiving exchange',
     type: 'Exchange',
-    forWhom: 'For the compliance officer who receives agent payments',
-    home: '/exchange/payments',
-    nav: [{ label: 'Incoming payments', href: '/exchange/payments', icon: CoinsHand }],
+    forWhom: 'The exchange where Naledi and other recipients hold their accounts. It accepts agent payments only from verified agents.',
+    home: WORKSPACE_HOMES.exchange,
+    nav: withIcons(EXCHANGE_NAV),
   },
 };
 
@@ -52,7 +57,7 @@ export const WORKSPACE_ICONS: Record<WorkspaceId, FC<{ className?: string }>> = 
 };
 
 export function workspaceFor(pathname: string): Workspace {
-  return pathname.startsWith('/exchange') ? WORKSPACES.exchange : WORKSPACES.business;
+  return WORKSPACES[workspaceOf(pathname)];
 }
 
 /** The current nav link: the longest href that the address starts with. */

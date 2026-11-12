@@ -29,7 +29,7 @@ export const PLAIN_ERRORS = {
 } as const;
 
 export function claudeCapReached(limit: number): string {
-  return `The agent has used all ${limit} AI readings for today. The stories with your agent work again after 02:00 SAST; the unknown agent story and Restore sample data still work.`;
+  return `The agent has used all ${limit} AI readings for today. Instructions and the stories with your agent work again after 02:00 SAST; the unknown agent story and Restore sample data still work.`;
 }
 
 /** A plain sentence for a ledger result code that stopped a transaction. */

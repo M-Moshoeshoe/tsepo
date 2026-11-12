@@ -35,8 +35,8 @@ describe('plain run errors', () => {
   });
 
   it('says when the daily Claude cap is reached, and what still works', () => {
-    expect(plainRunError(new CallBudgetExceededError(50))).toBe(
-      'The agent has used all 50 AI readings for today. The stories with your agent work again after 02:00 SAST; the unknown agent story and Restore sample data still work.',
+    expect(plainRunError(new CallBudgetExceededError(150))).toBe(
+      'The agent has used all 150 AI readings for today. Instructions and the stories with your agent work again after 02:00 SAST; the unknown agent story and Restore sample data still work.',
     );
   });
 

@@ -27,7 +27,7 @@ export interface DemoContext {
   registry: Registry;
   agentStore: DocumentStore;
   demo: DemoState;
-  /** Uses Claude, capped at 50 calls a day, to read payout lists unless another parser is given. */
+  /** Uses Claude, capped at 150 calls a day, to read payout lists unless another parser is given. */
   createAgent(onEvent: (event: AgentEvent) => void, parser?: PayoutParser): PayoutAgent;
 }
 

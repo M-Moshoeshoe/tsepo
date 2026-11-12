@@ -10,7 +10,7 @@ export function Instructions({ instructions, hrefFor }: { instructions: Instruct
   if (instructions.length === 0) {
     return (
       <EmptyMessage title="No payments yet.">
-        {`No instructions yet. Give the agent one above, or run "${storyTitle('scenario-2')}" in the tour.`}
+        {`No instructions yet. Give the agent one, or run "${storyTitle('scenario-2')}" in the tour.`}
       </EmptyMessage>
     );
   }

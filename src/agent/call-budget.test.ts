@@ -15,8 +15,8 @@ function countingParser(): PayoutParser & { calls: number } {
 }
 
 describe('daily call budget', () => {
-  it('is 50 calls a day', () => {
-    expect(DAILY_MODEL_CALL_LIMIT).toBe(50);
+  it('is 150 calls a day', () => {
+    expect(DAILY_MODEL_CALL_LIMIT).toBe(150);
   });
 
   it('allows calls up to the limit, then refuses without calling the model', async () => {

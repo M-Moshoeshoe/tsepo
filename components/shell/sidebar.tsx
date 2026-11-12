@@ -1,15 +1,17 @@
 'use client';
 
-import { InfoCircle, LinkExternal01 } from '@untitledui/icons';
+import { HelpCircle, InfoCircle, LinkExternal01 } from '@untitledui/icons';
+import type { FC } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NavItemBase } from '@/components/application/app-navigation/base-components/nav-item';
 import GitHub from '@/components/foundations/social-icons/github';
 import { Brand } from './brand.tsx';
 import { WorkspaceSwitcher } from './workspace-switcher.tsx';
+import { REPOSITORY, SHELL_FOOT } from '../../src/views/navigation.ts';
 import { currentLink, workspaceFor } from './workspaces.ts';
 
-const REPOSITORY = 'https://github.com/M-Moshoeshoe/tsepo';
+const FOOT_ICONS: Record<string, FC<{ className?: string }>> = { '/': InfoCircle, '/faq': HelpCircle };
 
 const FOOT_LINK =
   'flex items-center gap-2 rounded-md text-tertiary outline-focus-ring hover:text-secondary focus-visible:outline-2';
@@ -31,11 +33,11 @@ export function SidebarContent() {
         <Brand href={workspace.home} />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <WorkspaceSwitcher />
       </div>
 
-      <nav aria-label={`${workspace.type} workspace`} className="mt-4">
+      <nav aria-label={`${workspace.type} workspace`} className="mt-6">
         <ul className="grid gap-0.5">
           {workspace.nav.map((item) => (
             <li key={item.href}>
@@ -48,13 +50,18 @@ export function SidebarContent() {
       </nav>
 
       <div className="mt-auto grid gap-3 border-t border-secondary px-2 pt-4 text-sm">
-        <Link href="/" className={FOOT_LINK}>
-          <InfoCircle className="size-4" aria-hidden />
-          About Tšepo
-        </Link>
+        {SHELL_FOOT.map((entry) => {
+          const Icon = FOOT_ICONS[entry.href] ?? InfoCircle;
+          return (
+            <Link key={entry.href} href={entry.href} className={FOOT_LINK}>
+              <Icon className="size-4" aria-hidden />
+              {entry.label}
+            </Link>
+          );
+        })}
         <a href={REPOSITORY} target="_blank" rel="noreferrer" className={FOOT_LINK}>
           <GitHub size={16} aria-hidden />
-          Source on GitHub
+          GitHub
           <LinkExternal01 className="size-3.5" aria-hidden />
           <span className="sr-only">(opens in a new tab)</span>
         </a>
