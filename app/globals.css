@@ -63,3 +63,23 @@ body {
     animation: none;
   }
 }
+
+/* The phone details panel slides up from the bottom. */
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.sheet-up {
+  animation: sheet-up 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-up {
+    animation: none;
+  }
+}

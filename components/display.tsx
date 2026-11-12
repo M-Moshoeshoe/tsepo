@@ -8,9 +8,17 @@ export function Mono({ children, className }: { children: ReactNode; className?:
   return <span className={cn('font-mono text-[13px] break-all text-ink', className)}>{children}</span>;
 }
 
-/** An amount with tabular figures, so columns of numbers line up. */
-export function Amount({ value, className }: { value: string | undefined; className?: string }) {
-  return <span className={cn('tabular-nums', className)}>{value === undefined ? 'No RLUSD' : `${value} RLUSD`}</span>;
+/** An amount and its asset, with tabular figures so columns of numbers line up. */
+export function Amount({
+  value,
+  asset = 'RLUSD',
+  className,
+}: {
+  value: string | undefined;
+  asset?: string | undefined;
+  className?: string;
+}) {
+  return <span className={cn('tabular-nums', className)}>{value === undefined ? 'Not recorded' : `${value} ${asset}`}</span>;
 }
 
 export function ExplorerLink({ hash, children }: { hash: string; children?: ReactNode }) {
@@ -39,22 +47,27 @@ export function Section({
   children,
   id,
   className,
+  flush = false,
 }: {
   title: string;
   aside?: ReactNode;
   children: ReactNode;
   id?: string;
   className?: string;
+  /** Lets the content, such as a table, run to the section edges. */
+  flush?: boolean;
 }) {
+  // Ids cannot contain spaces: aria-labelledby would read them as several ids.
+  const headingId = `${id ?? title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-heading`;
   return (
-    <section id={id} aria-labelledby={`${id ?? title}-heading`} className={cn('rounded-md border border-border bg-surface', className)}>
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <h2 id={`${id ?? title}-heading`} className="text-base font-semibold text-ink">
+    <section id={id} aria-labelledby={headingId} className={cn('rounded-md border border-border bg-surface', className)}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <h2 id={headingId} className="text-base font-semibold text-ink">
           {title}
         </h2>
         {aside}
       </div>
-      <div className="p-4">{children}</div>
+      <div className={flush ? undefined : 'p-4'}>{children}</div>
     </section>
   );
 }
@@ -82,22 +95,24 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
   );
 }
 
-/** The Tšepo mark. The accent colour is used here and on the assistant mark only. */
-export function Logo() {
+/**
+ * The Tšepo mark: an open ring held around a solid core, a promise kept open
+ * around a fixed centre. Accent colour only; it stays legible at 20px.
+ */
+export function Mark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
-      <rect width="24" height="24" rx="6" className="fill-accent" />
-      <path d="M6.5 8h11M12 8v9.5" stroke="white" strokeWidth="2.4" strokeLinecap="round" fill="none" />
+    <svg viewBox="0 0 24 24" fill="none" className={cn('shrink-0 text-accent', className)} aria-hidden>
+      <path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="3.25" fill="currentColor" />
     </svg>
   );
 }
 
-/** Marks content produced by the AI assistant (Claude). */
+export function Logo() {
+  return <Mark className="size-6" />;
+}
+
+/** Marks content produced by the AI assistant (Claude), with the same mark. */
 export function AssistantMark() {
-  return (
-    <svg viewBox="0 0 16 16" className="size-4 shrink-0" aria-hidden>
-      <rect width="16" height="16" rx="4" className="fill-accent" />
-      <path d="M4.5 5.5h7M4.5 8h7M4.5 10.5h4" stroke="white" strokeWidth="1.4" strokeLinecap="round" fill="none" />
-    </svg>
-  );
+  return <Mark className="size-4" />;
 }
