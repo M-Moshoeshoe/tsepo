@@ -9,10 +9,13 @@ const SeedSchema = z.string().refine(isValidSecret, { message: 'Not a valid seed
 
 const SettingsSchema = z.object({
   AGENT_SOURCE_TAG: z.coerce.number().int().min(0).max(0xffffffff).default(DEFAULT_SOURCE_TAG),
+  /** Where the services keep their records. A persistent volume when deployed. */
+  TSEPO_DATA_DIR: z.preprocess((value) => (value === '' ? undefined : value), z.string().trim().min(1).default('.data')),
 });
 
 export interface Env {
   sourceTag: number;
+  dataDir: string;
   seeds: Record<Role, string>;
 }
 
@@ -28,7 +31,7 @@ export function hasValidSeed(variable: string): boolean {
 export function loadEnv(): Env {
   const invalid: string[] = ROLE_NAMES.map((role) => ROLES[role].seedVar).filter((name) => !hasValidSeed(name));
   const settings = SettingsSchema.safeParse(process.env);
-  if (!settings.success) invalid.push('AGENT_SOURCE_TAG');
+  if (!settings.success) invalid.push(...settings.error.issues.map((issue) => String(issue.path[0])));
 
   if (invalid.length > 0 || !settings.success) {
     throw new Error(`Missing or invalid in ${ENV_FILE}: ${invalid.join(', ')}. Run npm run spike:accounts first.`);
@@ -38,5 +41,5 @@ export function loadEnv(): Env {
     ROLE_NAMES.map((role) => [role, SeedSchema.parse(process.env[ROLES[role].seedVar])]),
   ) as Record<Role, string>;
 
-  return { sourceTag: settings.data.AGENT_SOURCE_TAG, seeds };
+  return { sourceTag: settings.data.AGENT_SOURCE_TAG, dataDir: settings.data.TSEPO_DATA_DIR, seeds };
 }

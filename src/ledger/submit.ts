@@ -13,6 +13,19 @@ export interface Outcome {
   deliveredAmount: unknown;
 }
 
+/** A validated transaction whose result was not tesSUCCESS. It is never retried. */
+export class LedgerResultError extends Error {
+  readonly result: string;
+  readonly hash: string;
+
+  constructor(result: string, hash: string) {
+    super(`Transaction ${hash} failed with ${result}. It will not be retried.`);
+    this.name = 'LedgerResultError';
+    this.result = result;
+    this.hash = hash;
+  }
+}
+
 /** Called with the transaction hash before it is submitted, so it can be recorded first. */
 export type BeforeSubmit = (hash: string) => void | Promise<void>;
 
@@ -89,9 +102,7 @@ async function submitValidated(client: Client, signed: Signed, beforeSubmit?: Be
 /** Submits and requires tesSUCCESS. A failure stops the caller and is never retried. */
 export async function submitAndConfirm(client: Client, signed: Signed, beforeSubmit?: BeforeSubmit): Promise<Outcome> {
   const outcome = await submitValidated(client, signed, beforeSubmit);
-  if (outcome.result !== 'tesSUCCESS') {
-    throw new Error(`Transaction ${outcome.hash} failed with ${outcome.result}. It will not be retried.`);
-  }
+  if (outcome.result !== 'tesSUCCESS') throw new LedgerResultError(outcome.result, outcome.hash);
   return outcome;
 }
 

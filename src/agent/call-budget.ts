@@ -11,6 +11,17 @@ const CallCountSchema = z.strictObject({
   count: z.number().int().nonnegative(),
 });
 
+/** Thrown instead of calling the model once today's calls are used up. */
+export class CallBudgetExceededError extends Error {
+  readonly limit: number;
+
+  constructor(limit: number) {
+    super(`The daily limit of ${limit} Claude calls is reached; no more calls until tomorrow (UTC)`);
+    this.name = 'CallBudgetExceededError';
+    this.limit = limit;
+  }
+}
+
 export interface CallBudget {
   /** Counts one call, or throws when today's limit is already reached. */
   take(): Promise<void>;
@@ -26,7 +37,7 @@ export function createDailyCallBudget(store: DocumentStore, limit: number, now: 
     async take() {
       const day = utcDay(now());
       const used = (await counts.get(day))?.count ?? 0;
-      if (used >= limit) throw new Error(`The daily limit of ${limit} Claude calls is reached; no more calls until tomorrow (UTC)`);
+      if (used >= limit) throw new CallBudgetExceededError(limit);
       await counts.put(day, { day, count: used + 1 });
     },
   };

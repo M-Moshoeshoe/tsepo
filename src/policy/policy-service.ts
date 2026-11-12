@@ -194,9 +194,10 @@ export function createPolicyService(deps: PolicyServiceDeps): PolicyService {
 
   async function applyAdminAction(input: unknown): Promise<AdminResult> {
     const at = clock();
-    const verification = verifyAdminAction(input);
     const parsed = SignedAdminActionSchema.safeParse(input);
-    if (!verification.valid || !parsed.success) return rejectAdmin(at, AdminReason.BadSignature);
+    if (!parsed.success) return rejectAdmin(at, AdminReason.MalformedAction);
+    const verification = verifyAdminAction(parsed.data);
+    if (!verification.valid) return rejectAdmin(at, AdminReason.BadSignature);
 
     const { mandate, issuedAt } = parsed.data.action;
     const { signer } = verification;

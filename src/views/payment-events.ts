@@ -1,3 +1,4 @@
+import type { Actor } from '../demo/events.ts';
 import type { Check } from './checks.ts';
 import type { Status } from './status.ts';
 
@@ -74,9 +75,9 @@ export function paymentEvents(input: PaymentEventInput): PaymentEvent[] {
   }
 }
 
-/** Who decided the outcome of a desk entry. */
-export function decidedBy(kind: PaymentEventInput['kind']): 'the exchange' | 'the policy service' | 'the ledger' {
-  if (kind === 'deposit') return 'the exchange';
-  if (kind === 'refusal') return 'the policy service';
-  return 'the ledger';
+/** Who cleared or stopped a desk entry. */
+export function decidedBy(kind: PaymentEventInput['kind']): Actor {
+  if (kind === 'deposit') return 'exchange';
+  if (kind === 'refusal') return 'policy';
+  return 'ledger';
 }

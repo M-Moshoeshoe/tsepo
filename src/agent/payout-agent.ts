@@ -4,6 +4,7 @@ import { AGENT_MANDATE_CREDENTIAL_TYPE } from '../domain/credential-check.ts';
 import { Directive9PackageSchema, packageFingerprint, type Directive9Package } from '../domain/directive9.ts';
 import { fingerprintToInvoiceId, mandateFingerprint } from '../domain/fingerprint.ts';
 import type { Mandate } from '../domain/mandate.ts';
+import { AgentReason } from '../domain/reasons.ts';
 import type { ExchangeVerifier } from '../exchange/exchange-verifier.ts';
 import { agentCredentialQuery } from '../ledger/credential.ts';
 import { findCredential, lookupTransaction } from '../ledger/reads.ts';
@@ -14,16 +15,6 @@ import type { DocumentStore } from '../storage/store.ts';
 import type { Payee, PayeeDirectory } from './payee-directory.ts';
 import type { PayoutIntent, PayoutParser } from './payout-parser.ts';
 import { agentRecords, type PayoutRecord } from './records.ts';
-
-/** Why the agent itself stopped before asking the policy service. */
-export const AgentReason = {
-  AlreadyPaid: 'ALREADY_PAID',
-  Unresolved: 'UNRESOLVED_EARLIER_ATTEMPT',
-  PayeeUnknown: 'PAYEE_UNKNOWN',
-  NoMandate: 'NO_MANDATE',
-  Error: 'ERROR',
-} as const;
-
 
 export type PayoutResult =
   | { reference: string; status: 'paid'; hash: string; ledgerIndex: number }

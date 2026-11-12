@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PolicyReason } from '../domain/reasons.ts';
 import { refusalChecks, ledgerRejectionChecks } from './checks.ts';
+import { actorName, decisionNote } from './actors.ts';
 import { decidedBy, paymentEvents } from './payment-events.ts';
 import { SCENARIOS } from './scenarios.ts';
 import { depositStatus, LEDGER_REJECTION_STATUS, refusalStatus } from './status.ts';
@@ -55,16 +56,34 @@ describe('payment events', () => {
     expect(events.at(-1)?.detail).toBe('Rejected by the ledger: no verified agent credential');
   });
 
-  it('names who decided each kind of entry', () => {
-    expect([decidedBy('deposit'), decidedBy('refusal'), decidedBy('rejection')]).toEqual([
+  it('names who decided each kind of entry, the same way on every page', () => {
+    expect([decidedBy('deposit'), decidedBy('refusal'), decidedBy('rejection')].map((actor) => actorName(actor))).toEqual([
       'the exchange',
       'the policy service',
-      'the ledger',
+      'the XRP Ledger',
     ]);
+    expect(actorName('ledger', true)).toBe('The XRP Ledger');
+  });
+
+  it('says a cleared payment needed the policy signature and was accepted at the exchange', () => {
+    expect(decisionNote('exchange', 'cleared')).toBe("It needed the policy service's signature, and the exchange accepted it.");
+    expect(decisionNote('exchange', 'held')).toContain('held it for review');
+  });
+
+  it("labels refused attempts as reported by the agent's policy service", () => {
+    expect(decisionNote('policy', 'refused')).toContain("Reported by the agent's policy service");
   });
 });
 
 describe('scenarios', () => {
+  it('names the actor that clears or stops each scenario, matching the desk', () => {
+    expect(SCENARIOS.map((scenario) => scenario.decidedBy)).toEqual(['ledger', 'exchange', 'policy', 'policy']);
+    // Scenario 2 is a cleared payment, which the desk shows as decided at the exchange.
+    expect(SCENARIOS[1]?.decidedBy).toBe(decidedBy('deposit'));
+    // Scenario 1 ends with the ledger rejection, which the desk shows as decided by the ledger.
+    expect(SCENARIOS[0]?.decidedBy).toBe(decidedBy('rejection'));
+  });
+
   it('lists the four scenarios in order with one plain line each', () => {
     expect(SCENARIOS.map((scenario) => scenario.number)).toEqual([1, 2, 3, 4]);
     for (const scenario of SCENARIOS) {

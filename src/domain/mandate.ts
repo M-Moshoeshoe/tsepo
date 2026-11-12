@@ -33,6 +33,20 @@ export const MandateSchema = z.strictObject({
 
 export type Mandate = z.infer<typeof MandateSchema>;
 
+export interface MandateLimits {
+  perPaymentLimit: string;
+  dailyLimit: string;
+}
+
+/**
+ * The same mandate with new limits. Only the two limit fields are taken from
+ * `limits`, so nothing else (such as a request's kind) can slip into the
+ * mandate, and the result is validated.
+ */
+export function withLimits(mandate: Mandate, limits: MandateLimits): Mandate {
+  return MandateSchema.parse({ ...mandate, perPaymentLimit: limits.perPaymentLimit, dailyLimit: limits.dailyLimit });
+}
+
 /** True when a payment to this address and destination tag goes to an approved recipient. */
 export function isApprovedRecipient(mandate: Mandate, address: string, destinationTag: number | undefined): boolean {
   return mandate.approvedRecipients.some(

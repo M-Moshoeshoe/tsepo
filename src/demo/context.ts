@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import type { Client } from 'xrpl';
 import { createPayeeDirectory } from '../agent/payee-directory.ts';
 import { createPayoutAgent, type AgentEvent, type PayoutAgent } from '../agent/payout-agent.ts';
@@ -42,13 +43,13 @@ export function createDemoContext(client: Client, report: Report): DemoContext {
 
   const policy = createPolicyService({
     wallet: wallets.policy,
-    store: createFileStore('.data/policy'),
+    store: createFileStore(join(env.dataDir, 'policy')),
     issuerAddress,
     readCredential: (query) => findCredential(client, query),
   });
   const exchange = createExchangeVerifier({
     client,
-    store: createFileStore('.data/exchange'),
+    store: createFileStore(join(env.dataDir, 'exchange')),
     laneAddress,
     issuerAddress,
     readPolicyLog: () => policy.readLog(),
@@ -63,7 +64,7 @@ export function createDemoContext(client: Client, report: Report): DemoContext {
       report({ type: 'line', text: 'Submitting to the ledger', hash });
     },
   });
-  const agentStore = createFileStore('.data/agent');
+  const agentStore = createFileStore(join(env.dataDir, 'agent'));
   const directory = createPayeeDirectory(DEMO_PAYEES.map((payee) => ({ ...payee, ledgerAddress: laneAddress })));
 
   return {
@@ -75,7 +76,7 @@ export function createDemoContext(client: Client, report: Report): DemoContext {
     exchange,
     registry,
     agentStore,
-    demo: demoState(createFileStore('.data/demo')),
+    demo: demoState(createFileStore(join(env.dataDir, 'demo'))),
     createAgent: (onEvent, parser = withCallBudget(createClaudePayoutParser(), createDailyCallBudget(agentStore, DAILY_MODEL_CALL_LIMIT))) =>
       createPayoutAgent({
         client,

@@ -288,6 +288,8 @@ export interface LedgerPayment {
  * ledger the server holds.
  */
 export async function getIncomingPayments(client: Client, account: string, afterLedger: number): Promise<LedgerPayment[]> {
+  // No ledger after `afterLedger` is validated yet, so there is nothing new; account_tx would reject the range.
+  if (afterLedger > 0 && afterLedger >= (await getValidatedLedgerIndex(client))) return [];
   const payments: LedgerPayment[] = [];
   let marker: unknown = undefined;
   do {

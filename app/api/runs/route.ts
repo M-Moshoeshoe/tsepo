@@ -1,6 +1,7 @@
 import { Client } from 'xrpl';
 import type { DemoEvent } from '../../../src/demo/events.ts';
 import { RunRequestSchema } from '../../../src/demo/events.ts';
+import { plainRunError } from '../../../src/demo/errors.ts';
 import { runDemo } from '../../../src/demo/runs.ts';
 import { TESTNET_URL } from '../../../src/ledger/testnet.ts';
 import { guardRun } from './guard.ts';
@@ -13,9 +14,10 @@ function errorResponse(status: number, message: string): Response {
   return Response.json({ error: message }, { status });
 }
 
-function plainError(error: unknown): string {
-  const message = error instanceof Error ? error.message : 'Unknown error';
-  return `${message} Nothing further was submitted.`;
+/** The browser gets one plain sentence; the raw error goes to the server log only. */
+function stoppedText(kind: string, error: unknown): string {
+  console.error(`[runs] ${kind} stopped`, error);
+  return `${plainRunError(error)} Nothing further was submitted.`;
 }
 
 /**
@@ -54,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
         await client.connect();
         await runDemo(parsed.data, client, send);
       } catch (error: unknown) {
-        send({ type: 'failed', text: plainError(error) });
+        send({ type: 'failed', text: stoppedText(parsed.data.kind, error) });
       } finally {
         if (client.isConnected()) await client.disconnect();
         releaseRunLock();

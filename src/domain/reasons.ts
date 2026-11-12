@@ -41,6 +41,8 @@ export type DepositReason = (typeof DepositReason)[keyof typeof DepositReason];
 
 /** Why the policy service rejected an admin action. */
 export const AdminReason = {
+  /** The action is not a well-formed admin action, so its signature is not checked. */
+  MalformedAction: 'MALFORMED_ACTION',
   BadSignature: 'BAD_SIGNATURE',
   SignerNotPrincipal: 'SIGNER_NOT_PRINCIPAL',
   PrincipalChangeNotAllowed: 'PRINCIPAL_CHANGE_NOT_ALLOWED',
@@ -48,3 +50,12 @@ export const AdminReason = {
 } as const;
 
 export type AdminReason = (typeof AdminReason)[keyof typeof AdminReason];
+
+/** Why the agent itself stopped before asking the policy service. */
+export const AgentReason = {
+  AlreadyPaid: 'ALREADY_PAID',
+  Unresolved: 'UNRESOLVED_EARLIER_ATTEMPT',
+  PayeeUnknown: 'PAYEE_UNKNOWN',
+  NoMandate: 'NO_MANDATE',
+  Error: 'ERROR',
+} as const;

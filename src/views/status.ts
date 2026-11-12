@@ -1,4 +1,4 @@
-import { DepositReason, PolicyReason } from '../domain/reasons.ts';
+import { AdminReason, AgentReason, DepositReason, PolicyReason } from '../domain/reasons.ts';
 
 export type Tone = 'cleared' | 'held' | 'refused';
 
@@ -110,11 +110,30 @@ const REASON_TEXT: Record<string, string> = {
   [DepositReason.CredentialNotPresented]: 'the payment presented no credential',
   [DepositReason.CredentialNotFound]: 'the presented credential is not on the ledger',
   [DepositReason.CredentialMismatch]: 'the credential does not prove the mandate in the package',
+  [AdminReason.MalformedAction]: 'the change was not well formed',
+  [AdminReason.BadSignature]: 'the business signature did not verify',
+  [AdminReason.SignerNotPrincipal]: 'it was not signed by the business named in the mandate',
+  [AdminReason.PrincipalChangeNotAllowed]: 'a mandate cannot move to another business',
+  [AdminReason.StaleAction]: 'a newer change was already applied',
+  [AgentReason.AlreadyPaid]: 'it was already paid',
+  [AgentReason.Unresolved]: 'an earlier attempt is not resolved yet',
+  [AgentReason.PayeeUnknown]: 'the payee is not in the directory',
+  [AgentReason.NoMandate]: 'the agent has no mandate',
 };
 
-/** A plain sentence fragment for a reason code. Unknown codes are shown as they are. */
+/** Ledger result codes such as tecPATH_PARTIAL. */
+const LEDGER_RESULT = /^te[cfm][A-Z_]+$/;
+
+/**
+ * A plain sentence fragment for a reason code. Ledger result codes are named;
+ * error details are never shown, because they belong in the server log.
+ */
 export function reasonText(reason: string): string {
-  return REASON_TEXT[reason] ?? reason;
+  const known = REASON_TEXT[reason];
+  if (known !== undefined) return known;
+  if (LEDGER_RESULT.test(reason)) return `the XRP Ledger returned ${reason}`;
+  if (reason.startsWith(`${AgentReason.Error}:`)) return 'an error stopped it; the details are in the server log';
+  return reason;
 }
 
 function firstReasonText(reasons: readonly string[]): string {

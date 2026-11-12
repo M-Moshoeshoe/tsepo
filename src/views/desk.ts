@@ -49,3 +49,44 @@ export function emptyDeskText(filter: DeskFilter): { title: string; next: string
       return { title: 'No ledger rejections yet.', next: 'Run scenario 1 to see the ledger reject an unknown agent.' };
   }
 }
+
+/** The name shown for a sender that no business registered. */
+export const UNREGISTERED_AGENT = 'Unregistered agent';
+
+export interface StoppedSummary {
+  /** Attempts stopped by the policy service or the ledger. */
+  attempts: number;
+  byPolicy: number;
+  byLedger: number;
+  /** "3 refused by the policy service, 1 rejected by the XRP Ledger." plus who made repeated attempts. */
+  sentence: string;
+}
+
+function times(count: number, noun: string): string {
+  return `${String(count)} ${noun}`;
+}
+
+/**
+ * Counts stopped attempts honestly. An unregistered agent that asks the
+ * policy service and then pays the ledger directly is one agent with two
+ * attempts, and the sentence says so.
+ */
+export function stoppedSummary(items: readonly (DeskItem & { sender: string; senderName: string })[]): StoppedSummary {
+  const stopped = items.filter((item) => item.status.category === 'refused' || item.status.category === 'rejected');
+  const byPolicy = stopped.filter((item) => item.status.category === 'refused').length;
+  const byLedger = stopped.length - byPolicy;
+  const parts = [`${times(byPolicy, 'refused')} by the policy service`, `${times(byLedger, 'rejected')} by the XRP Ledger`];
+  let sentence = `${parts.join(', ')}.`;
+
+  const perUnregistered = new Map<string, number>();
+  for (const item of stopped) {
+    if (item.senderName === UNREGISTERED_AGENT) perUnregistered.set(item.sender, (perUnregistered.get(item.sender) ?? 0) + 1);
+  }
+  const repeated = [...perUnregistered.values()].filter((count) => count > 1);
+  if (repeated.length === 1 && repeated[0] !== undefined) {
+    sentence += ` One unregistered agent made ${String(repeated[0])} of these attempts.`;
+  } else if (repeated.length > 1) {
+    sentence += ` ${String(repeated.length)} unregistered agents made more than one attempt each.`;
+  }
+  return { attempts: stopped.length, byPolicy, byLedger, sentence };
+}

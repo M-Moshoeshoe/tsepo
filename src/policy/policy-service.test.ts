@@ -69,6 +69,20 @@ describe('admin actions', () => {
     expect(await policy.currentMandate(parties.agent.address)).toEqual(mandate);
   });
 
+  it('reports a malformed action as malformed, never as a bad signature', async () => {
+    // The Change limits bug: a request field slipped into the mandate. The business signature itself was fine.
+    const withKind = { ...mandate, kind: 'change-limits' } as unknown as Mandate;
+    const signed = signAdminAction({ type: 'set-mandate', mandate: withKind, issuedAt: '2026-11-12T09:30:00.000Z' }, parties.business);
+    expect(await policy.applyAdminAction(signed)).toEqual({ applied: false, reason: AdminReason.MalformedAction });
+    expect(await policy.currentMandate(parties.agent.address)).toEqual(mandate);
+  });
+
+  it('still reports a well-formed action with a wrong signature as a bad signature', async () => {
+    const signed = signAdminAction({ type: 'set-mandate', mandate, issuedAt: '2026-11-12T09:30:00.000Z' }, parties.business);
+    const tampered = { ...signed, action: { ...signed.action, mandate: { ...mandate, dailyLimit: '1000' } } };
+    expect(await policy.applyAdminAction(tampered)).toEqual({ applied: false, reason: AdminReason.BadSignature });
+  });
+
   it('rejects limits signed by the agent itself, and logs it', async () => {
     const raised = { ...mandate, dailyLimit: '1000' };
     expect(await setMandate(parties.agent, raised, '2026-11-12T09:30:00.000Z')).toEqual({
