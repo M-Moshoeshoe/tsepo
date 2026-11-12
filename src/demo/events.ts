@@ -1,12 +1,15 @@
 import { z } from 'zod';
 import { DecimalAmountSchema, toUnits } from '../domain/amount.ts';
 
-/** Progress from a demo run. Plain data, so it can be printed or streamed to the browser. */
-export type DemoEvent =
-  | { type: 'step'; text: string }
-  | { type: 'line'; text: string; hash?: string | undefined }
-  | { type: 'done'; text: string }
-  | { type: 'failed'; text: string };
+/** Progress from a demo run. Plain data, so it can be printed or streamed and validated in the browser. */
+export const DemoEventSchema = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('step'), text: z.string() }),
+  z.strictObject({ type: z.literal('line'), text: z.string(), hash: z.string().regex(/^[0-9A-F]{64}$/).optional() }),
+  z.strictObject({ type: z.literal('done'), text: z.string() }),
+  z.strictObject({ type: z.literal('failed'), text: z.string() }),
+]);
+
+export type DemoEvent = z.infer<typeof DemoEventSchema>;
 
 export type Report = (event: DemoEvent) => void;
 
