@@ -18,7 +18,7 @@ const CELL = 'px-4 py-2.5 lg:px-5';
  * a link that opens the payment details. Agent, Travel Rule and Decided by step
  * aside on narrow screens; all three are in the details.
  */
-export function DeskTable({ entries, filter, range }: { entries: DeskEntry[]; filter: DeskFilter; range: DatePreset }) {
+export function DeskTable({ entries, filter, range, page }: { entries: DeskEntry[]; filter: DeskFilter; range: DatePreset; page: number }) {
   return (
     <Table size="sm" aria-label="Payments to the agent deposit address and attempts stopped before they reached it, newest first">
       <Table.Header>
@@ -33,7 +33,7 @@ export function DeskTable({ entries, filter, range }: { entries: DeskEntry[]; fi
         {(entry) => (
           <Table.Row
             id={entry.id}
-            href={deskHref({ filter, range, entry: entry.id })}
+            href={deskHref({ filter, range, page, entry: entry.id })}
             routerOptions={{ scroll: false }}
             textValue={`${formatSastTime(entry.at)}, ${entry.senderName}, ${entry.status.chip}`}
             className="h-auto cursor-pointer"
@@ -62,7 +62,7 @@ export function DeskTable({ entries, filter, range }: { entries: DeskEntry[]; fi
             <Table.Cell className={`${CELL} max-md:hidden`}>
               <span className="grid">
                 <span>{actorName(entry.decidedBy, true)}</span>
-                {entry.kind === 'refusal' && <span className="text-xs text-tertiary">Shared by the agent&apos;s approval service</span>}
+                {entry.kind === 'refusal' && <span className="text-xs text-tertiary">The money never moved.</span>}
               </span>
             </Table.Cell>
           </Table.Row>

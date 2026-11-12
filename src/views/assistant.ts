@@ -60,3 +60,14 @@ export function outcomeNote(payment: Pick<BusinessPayment, 'status' | 'reasons' 
       return undefined;
   }
 }
+
+/** Thuso's one line for an inbox row: "Found 3 payments to Thabo Nkosi, 2 RLUSD each." */
+export function readSummary(intents: readonly PayoutIntent[]): string {
+  const first = intents[0];
+  if (first === undefined) return 'Found no payments.';
+  if (intents.length === 1) return `Found 1 payment: ${first.amount} RLUSD to ${first.payee}.`;
+  const payees = new Set(intents.map((intent) => intent.payee));
+  const amounts = new Set(intents.map((intent) => intent.amount));
+  if (payees.size === 1 && amounts.size === 1) return `Found ${String(intents.length)} payments to ${first.payee}, ${first.amount} RLUSD each.`;
+  return `Found ${String(intents.length)} payments: ${amountList(intents)}.`;
+}

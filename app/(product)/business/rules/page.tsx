@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ChangeLimitsButton, RegisterAgainButton, RevokeButton } from '../../../../components/business/agent-actions.tsx';
+import { ChangeLimitsButton, RevokeButton } from '../../../../components/business/agent-actions.tsx';
 import { AgentStatusBadge } from '../../../../components/business/agent-status.tsx';
 import { RecipientsTable } from '../../../../components/business/recipients-table.tsx';
 import { WhoMustApprove } from '../../../../components/business/who-must-approve.tsx';
@@ -27,8 +27,7 @@ function Limits({ view }: { view: RegistryView }) {
     return (
       <section className="grid justify-items-start gap-3 rounded-xl bg-secondary p-5 lg:p-6">
         <SectionTitle title="Limits" />
-        <p className="text-sm text-tertiary">This agent has no spending rules yet, so it cannot pay.</p>
-        <RegisterAgainButton />
+        <p className="text-sm text-tertiary">This agent has no spending rules yet, so it cannot pay. You can register it again from the Agent page.</p>
       </section>
     );
   }
@@ -95,7 +94,13 @@ export default async function SpendingRulesPage() {
           Revoking deletes the agent&apos;s credential from the ledger with your business key. From the next ledger, within seconds,
           the approval service refuses every payment it asks for, and exchanges reject it.
         </p>
-        <div>{active ? <RevokeButton agentActive /> : <RegisterAgainButton />}</div>
+        {active ? (
+          <div>
+            <RevokeButton agentActive />
+          </div>
+        ) : (
+          <p className="text-sm text-tertiary">This agent is already revoked. You can register it again from the Agent page.</p>
+        )}
       </section>
     </div>
   );

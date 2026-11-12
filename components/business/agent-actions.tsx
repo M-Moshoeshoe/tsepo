@@ -5,6 +5,7 @@ import { Dialog, Modal, ModalOverlay } from '@/components/application/modals/mod
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { RunRequestSchema } from '../../src/demo/events.ts';
+import { MoreMenu } from '../more-menu.tsx';
 import { useLiveActions } from '../shell/live-actions.tsx';
 
 function ActionDialog({
@@ -184,42 +185,53 @@ export function RevokeButton({ agentActive }: { agentActive: boolean }) {
   );
 }
 
-/** Registers a revoked agent again by restoring the sample workspace: its rules, a new credential and its RLUSD. */
-export function RegisterAgainButton() {
-  const dialog = useActionDialog();
+/** The confirmation for registering a revoked agent again, which restores the sample workspace. */
+function RegisterAgainDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { run } = useLiveActions();
   return (
+    <ActionDialog
+      isOpen={isOpen}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+      title="Register the agent again?"
+    >
+      <DialogText title="Register the agent again?">
+        This restores the sample workspace: the business signs the sample spending rules, Tšepo issues a new credential, and the
+        agent gets its RLUSD back. Everyone sees the same sample workspace, so this changes it for all visitors.
+      </DialogText>
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <Button color="secondary" size="md" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          color="primary"
+          size="md"
+          onClick={() => {
+            onClose();
+            run({ kind: 'reset' }, 'Register the agent again');
+          }}
+        >
+          Register again
+        </Button>
+      </div>
+    </ActionDialog>
+  );
+}
+
+/**
+ * The agent's secondary actions behind "More". Register again is the way back
+ * after a revocation, so it is enabled only for an agent that is not active.
+ */
+export function AgentMoreMenu({ agentActive }: { agentActive: boolean }) {
+  const dialog = useActionDialog();
+  return (
     <>
-      <Button color="primary" size="md" isDisabled={dialog.busy} onClick={dialog.open}>
-        Register again
-      </Button>
-      <ActionDialog
-        isOpen={dialog.isOpen}
-        onOpenChange={(next) => {
-          if (!next) dialog.close();
-        }}
-        title="Register the agent again?"
-      >
-        <DialogText title="Register the agent again?">
-          This restores the sample workspace: the business signs the sample spending rules, Tšepo issues a new credential, and the
-          agent gets its RLUSD back. Everyone sees the same sample workspace, so this changes it for all visitors.
-        </DialogText>
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button color="secondary" size="md" onClick={dialog.close}>
-            Cancel
-          </Button>
-          <Button
-            color="primary"
-            size="md"
-            onClick={() => {
-              dialog.close();
-              run({ kind: 'reset' }, 'Register the agent again');
-            }}
-          >
-            Register again
-          </Button>
-        </div>
-      </ActionDialog>
+      <MoreMenu
+        label="More agent actions"
+        items={[{ id: 'register', label: 'Register the agent again', onAction: dialog.open, disabled: agentActive || dialog.busy }]}
+      />
+      <RegisterAgainDialog isOpen={dialog.isOpen} onClose={dialog.close} />
     </>
   );
 }

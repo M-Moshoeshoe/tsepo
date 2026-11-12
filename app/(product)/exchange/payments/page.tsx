@@ -4,13 +4,17 @@ import { DeskTable } from '../../../../components/compliance/desk-table.tsx';
 import { DeskTabs } from '../../../../components/compliance/desk-tabs.tsx';
 import { PaymentDetails, PaymentHeader } from '../../../../components/compliance/payment-details.tsx';
 import { DetailsPanel } from '../../../../components/details-panel.tsx';
-import { CopyableMono, ExplorerLink } from '../../../../components/display.tsx';
+import { CopyableMono } from '../../../../components/display.tsx';
+import { MoreMenu } from '../../../../components/more-menu.tsx';
+import { Pagination } from '../../../../components/pagination.tsx';
+import { TESTNET_EXPLORER } from '../../../../src/ledger/testnet.ts';
 import { EmptyMessage } from '../../../../components/empty-message.tsx';
 import { SegmentedLinks } from '../../../../components/filter-tabs.tsx';
 import { Term } from '../../../../components/term.tsx';
 import { DATE_PRESETS, dayLabels, MAX_CHART_DAYS, parseRange } from '../../../../src/views/date-range.ts';
 import { emptyDeskText, OUTCOMES, parseDeskFilter } from '../../../../src/views/desk.ts';
 import { deskHref } from '../../../../src/views/desk-href.ts';
+import { paginate, parsePage } from '../../../../src/views/pagination.ts';
 import { CATEGORY_CHIPS, type Category } from '../../../../src/views/status.ts';
 import { loadDesk } from '../../../_data/compliance.ts';
 
@@ -36,6 +40,7 @@ export default async function IncomingPaymentsPage({ searchParams }: { searchPar
   const view = await loadDesk({ entryId: one('entry'), filter, range });
   const empty = view.total === 0 ? emptyDeskText(filter) : { title: 'No payments match these filters.', next: 'Choose another outcome or a longer date range.' };
   const truncated = range === 'all' && view.outcomes.days.length === MAX_CHART_DAYS;
+  const page = paginate(view.entries, parsePage(one('page')));
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
@@ -84,7 +89,12 @@ export default async function IncomingPaymentsPage({ searchParams }: { searchPar
           <EmptyMessage title={empty.title}>{empty.next}</EmptyMessage>
         ) : (
           <div className="overflow-hidden rounded-xl bg-primary ring-1 ring-secondary">
-            <DeskTable entries={view.entries} filter={filter} range={range} />
+            <DeskTable entries={page.items} filter={filter} range={range} page={page.page} />
+            <Pagination
+              label={page.label}
+              previousHref={page.page > 1 ? deskHref({ filter, range, page: page.page - 1 }) : undefined}
+              nextHref={page.page < page.pageCount ? deskHref({ filter, range, page: page.page + 1 }) : undefined}
+            />
           </div>
         )}
       </div>
@@ -93,9 +103,18 @@ export default async function IncomingPaymentsPage({ searchParams }: { searchPar
         <DetailsPanel
           label="Payment details"
           key={view.detail.entry.id}
-          closeHref={deskHref({ filter, range })}
+          closeHref={deskHref({ filter, range, page: page.page })}
           header={<PaymentHeader detail={view.detail} />}
-          footer={view.detail.entry.hash === undefined ? undefined : <ExplorerLink hash={view.detail.entry.hash}>View on the XRP Ledger</ExplorerLink>}
+          footer={
+            view.detail.entry.hash === undefined ? undefined : (
+              <div className="flex justify-end">
+                <MoreMenu
+                  label="More payment actions"
+                  items={[{ id: 'ledger', label: 'View on the XRP Ledger', href: `${TESTNET_EXPLORER}/transactions/${view.detail.entry.hash}`, external: true }]}
+                />
+              </div>
+            )
+          }
         >
           <PaymentDetails detail={view.detail} />
         </DetailsPanel>

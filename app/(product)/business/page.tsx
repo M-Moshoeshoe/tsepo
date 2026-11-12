@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Button } from '@/components/base/buttons/button';
 import { AgentStatusBadge } from '../../../components/business/agent-status.tsx';
-import { RegisterAgainButton } from '../../../components/business/agent-actions.tsx';
 import { PaymentList } from '../../../components/business/payment-list.tsx';
 import { PaymentPanel } from '../../../components/business/payment-panel.tsx';
 import { TodayMeter } from '../../../components/business/today-meter.tsx';
@@ -11,7 +10,6 @@ import { EmptyMessage } from '../../../components/empty-message.tsx';
 import { dayLabels } from '../../../src/views/date-range.ts';
 import { findPayment, parsePaymentQuery, paymentsHref, spendByDay } from '../../../src/views/payments.ts';
 import { storyTitle } from '../../../src/views/scenarios.ts';
-import { formatSastDate } from '../../../src/views/status.ts';
 import { loadRegistry, type RegistryView } from '../../_data/registry.ts';
 
 export const dynamic = 'force-dynamic';
@@ -33,19 +31,13 @@ function AgentCard({ view }: { view: RegistryView }) {
         <p className="text-sm text-tertiary">Pays contractors for {view.business.registeredName}.</p>
       </div>
       {mandate === undefined || agent.status.state !== 'active' ? (
-        <div className="grid justify-items-start gap-3">
-          <p className="text-sm text-secondary">
-            {agent.status.state === 'revoked'
-              ? 'This agent is revoked. Its credential is deleted, so it cannot pay.'
-              : 'This agent has no valid spending rules, so it cannot pay.'}
-          </p>
-          <RegisterAgainButton />
-        </div>
+        <p className="text-sm text-secondary">
+          {agent.status.state === 'revoked'
+            ? 'This agent is revoked. Its credential is deleted, so it cannot pay. You can register it again from the Agent page.'
+            : 'This agent has no valid spending rules, so it cannot pay.'}
+        </p>
       ) : (
-        <>
-          <TodayMeter usage={mandate.usage} perPaymentLimit={mandate.perPaymentLimit} totalsClearedAt={mandate.totalsClearedAt} />
-          <p className="text-sm text-tertiary">Spending rules expire on {formatSastDate(mandate.expiresAt)}.</p>
-        </>
+        <TodayMeter usage={mandate.usage} perPaymentLimit={mandate.perPaymentLimit} totalsClearedAt={mandate.totalsClearedAt} />
       )}
       <div className="flex flex-wrap gap-x-5 gap-y-2">
         <Button href="/business/agent" color="link-color" size="md">
@@ -95,7 +87,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             id="spending"
             title="Spending, last 14 days"
             description={`RLUSD the agent paid each day over the last 14 days, against today's daily limit of ${view.mandate.dailyLimit} RLUSD.`}
-            series={[{ key: 'paid', label: 'Paid', fill: 'fill-fg-brand-primary', swatch: 'bg-fg-brand-primary' }]}
+            series={[{ key: 'paid', label: 'Paid', fill: 'fill-utility-brand-400', swatch: 'bg-utility-brand-400' }]}
             columns={spending.map((day) => {
               const labels = dayLabels(day.day);
               return { key: day.day, label: labels.short, full: labels.full, values: [Number(day.paid)] };

@@ -105,6 +105,7 @@ describe('payment filters', () => {
     expect(parsePaymentQuery({ status: 'nonsense', range: ['7d', '30d'], payment: '<script>' })).toEqual({
       status: 'all',
       range: '7d',
+      page: 1,
       payment: undefined,
     });
   });
@@ -114,6 +115,8 @@ describe('payment filters', () => {
     expect(paymentsHref('/business/payments', { status: 'paid', range: 'today', payment: 'x' })).toBe(
       '/business/payments?status=paid&range=today&payment=x',
     );
+    expect(paymentsHref('/business/payments', { page: 1 })).toBe('/business/payments');
+    expect(paymentsHref('/business/payments', { page: 3 })).toBe('/business/payments?page=3');
   });
 });
 

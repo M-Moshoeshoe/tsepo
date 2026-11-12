@@ -4,6 +4,7 @@ import { formatUnits, toUnits } from '../domain/amount.ts';
 import { payoutSteps, type PayoutActivity, type PayoutStep } from './activity.ts';
 import { sastDay } from '../domain/time.ts';
 import { DEFAULT_RANGE, inRange, lastDays, parseRange, type DatePreset } from './date-range.ts';
+import { parsePage } from './pagination.ts';
 import { reasonText } from './status.ts';
 
 /** What the business sees for one payment. It ends at ledger settlement; the exchange's own checks are not shown here. */
@@ -110,6 +111,8 @@ export const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
 export interface PaymentQuery {
   status: StatusFilter;
   range: DatePreset;
+  /** The page of the list, from 1. */
+  page: number;
   /** The payment open in the details panel, if any. */
   payment: string | undefined;
 }
@@ -125,6 +128,7 @@ export function parsePaymentQuery(params: Record<string, string | string[] | und
   return {
     status: pick(STATUS_FILTERS, one('status'), 'all'),
     range: parseRange(one('range')),
+    page: parsePage(one('page')),
     payment: payment !== undefined && /^\d{1,15}-[A-Za-z0-9-]{1,32}$/.test(payment) ? payment : undefined,
   };
 }
@@ -134,6 +138,7 @@ export function paymentsHref(path: string, query: Partial<PaymentQuery>): string
   const params = new URLSearchParams();
   if (query.status !== undefined && query.status !== 'all') params.set('status', query.status);
   if (query.range !== undefined && query.range !== DEFAULT_RANGE) params.set('range', query.range);
+  if (query.page !== undefined && query.page > 1) params.set('page', String(query.page));
   if (query.payment !== undefined) params.set('payment', query.payment);
   const text = params.toString();
   return text === '' ? path : `${path}?${text}`;
@@ -192,6 +197,16 @@ export function spendByDay(payments: readonly BusinessPayment[], now: Date, days
     if (current !== undefined) totals.set(day, current + toUnits(payment.intent.amount));
   }
   return [...totals].map(([day, units]) => ({ day, paid: formatUnits(units) }));
+}
+
+/** One outcome for a whole instruction, for its inbox row. */
+export function instructionOutcome(payments: readonly Pick<BusinessPayment, 'status'>[]): { label: string; tone: 'cleared' | 'held' | 'refused' | 'neutral' } {
+  if (payments.length === 0) return { label: 'Nothing to pay', tone: 'neutral' };
+  if (payments.some((payment) => payment.status === 'in-progress' || payment.status === 'not-started')) return { label: 'In progress', tone: 'neutral' };
+  const paid = payments.filter((payment) => payment.status === 'paid').length;
+  if (paid === payments.length) return { label: payments.length === 1 ? 'Paid' : 'All paid', tone: 'cleared' };
+  if (paid === 0) return { label: payments.length === 1 ? STATUS_LABELS[payments[0]?.status ?? 'not-approved'] : 'None paid', tone: 'refused' };
+  return { label: `${String(paid)} of ${String(payments.length)} paid`, tone: 'held' };
 }
 
 export const STATUS_LABELS: Record<BusinessPaymentStatus, string> = {

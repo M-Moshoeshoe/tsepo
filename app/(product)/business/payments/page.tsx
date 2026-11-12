@@ -2,8 +2,10 @@ import type { Metadata } from 'next';
 import { PaymentPanel } from '../../../../components/business/payment-panel.tsx';
 import { PaymentsTable } from '../../../../components/business/payments-table.tsx';
 import { EmptyMessage } from '../../../../components/empty-message.tsx';
+import { Pagination } from '../../../../components/pagination.tsx';
 import { FilterTabs, SegmentedLinks } from '../../../../components/filter-tabs.tsx';
 import { DATE_PRESETS } from '../../../../src/views/date-range.ts';
+import { paginate } from '../../../../src/views/pagination.ts';
 import { parsePaymentQuery, paymentsHref, STATUS_FILTERS } from '../../../../src/views/payments.ts';
 import { storyTitle } from '../../../../src/views/scenarios.ts';
 import { loadPayments } from '../../../_data/business.ts';
@@ -20,6 +22,8 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
   const filters = { status: query.status, range: query.range };
   const nothingAtAll = view.total === 0;
   const shownCount = view.shown.length;
+  const page = paginate(view.shown, query.page);
+  const here = { ...filters, page: page.page };
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-5">
@@ -52,7 +56,12 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
       ) : (
         <>
           <div className="overflow-hidden rounded-xl bg-primary ring-1 ring-secondary">
-            <PaymentsTable rows={view.shown.map((payment) => ({ payment, href: paymentsHref(PATH, { ...filters, payment: payment.id }) }))} />
+            <PaymentsTable rows={page.items.map((payment) => ({ payment, href: paymentsHref(PATH, { ...here, payment: payment.id }) }))} />
+            <Pagination
+              label={page.label}
+              previousHref={page.page > 1 ? paymentsHref(PATH, { ...filters, page: page.page - 1 }) : undefined}
+              nextHref={page.page < page.pageCount ? paymentsHref(PATH, { ...filters, page: page.page + 1 }) : undefined}
+            />
           </div>
           <p className="text-sm text-tertiary tabular-nums">
             {shownCount === 1 ? '1 payment' : `${String(shownCount)} payments`}, {view.paidTotal} RLUSD paid.
@@ -60,7 +69,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
         </>
       )}
 
-      {view.open !== undefined && <PaymentPanel open={view.open} closeHref={paymentsHref(PATH, filters)} />}
+      {view.open !== undefined && <PaymentPanel open={view.open} closeHref={paymentsHref(PATH, here)} />}
     </div>
   );
 }

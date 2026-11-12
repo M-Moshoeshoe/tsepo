@@ -5,10 +5,11 @@ import { paymentDecision, STATUS_LABELS, STATUS_TONES } from '../../src/views/pa
 import { formatSast, reasonText } from '../../src/views/status.ts';
 import { AssistantNote, DecisionBox } from '../assistant-note.tsx';
 import { DetailsPanel } from '../details-panel.tsx';
-import { Amount, CopyableMono, ExplorerLink, Facts, StatusBadge } from '../display.tsx';
+import { Amount, CopyableMono, Facts, StatusBadge } from '../display.tsx';
 import { Term } from '../term.tsx';
 import { Timeline, type TimelineState } from '../timeline.tsx';
-import { EvidenceButton } from './evidence-button.tsx';
+import { TESTNET_EXPLORER } from '../../src/ledger/testnet.ts';
+import { MoreMenu } from '../more-menu.tsx';
 
 const STEP_STATE: Record<PayoutStep['state'], { state: TimelineState; text: string }> = {
   done: { state: 'passed', text: 'Done' },
@@ -51,9 +52,14 @@ export function PaymentPanel({ open, closeHref }: { open: OpenPayment; closeHref
         </div>
       }
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <EvidenceButton paymentId={payment.id} />
-          {paid && <ExplorerLink hash={payment.hash ?? ''}>View on the XRP Ledger</ExplorerLink>}
+        <div className="flex justify-end">
+          <MoreMenu
+            label="More payment actions"
+            items={[
+              { id: 'evidence', label: 'Download evidence (JSON)', href: `/business/payments/${payment.id}/evidence`, download: true },
+              ...(paid ? [{ id: 'ledger', label: 'View on the XRP Ledger', href: `${TESTNET_EXPLORER}/transactions/${payment.hash ?? ''}`, external: true }] : []),
+            ]}
+          />
         </div>
       }
     >
@@ -71,7 +77,6 @@ export function PaymentPanel({ open, closeHref }: { open: OpenPayment; closeHref
               label: step.label,
               state: STEP_STATE[step.state].state,
               stateText: STEP_STATE[step.state].text,
-              detail: step.hash === undefined ? undefined : <ExplorerLink hash={step.hash}>Transaction</ExplorerLink>,
             }))}
           />
         </Section>
