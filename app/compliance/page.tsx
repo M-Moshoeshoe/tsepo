@@ -87,7 +87,7 @@ function FilterTabs({ view, filter, earlier }: { view: DeskView; filter: DeskFil
                 aria-current={current ? 'page' : undefined}
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium',
-                  current ? 'bg-background text-primary' : 'text-muted hover:text-ink',
+                  current ? 'bg-background text-teal' : 'text-muted hover:text-ink',
                 )}
               >
                 {option.label}
@@ -104,7 +104,7 @@ function FilterTabs({ view, filter, earlier }: { view: DeskView; filter: DeskFil
 function EarlierToggle({ view, filter, earlier }: { view: DeskView; filter: DeskFilter; earlier: boolean }) {
   if (view.lastResetAt === undefined) return null;
   return (
-    <Link href={deskHref({ filter, earlier: !earlier })} scroll={false} className="rounded-md text-sm font-medium text-primary hover:underline">
+    <Link href={deskHref({ filter, earlier: !earlier })} scroll={false} className="rounded-md text-sm font-medium text-teal hover:underline">
       {earlier ? 'Show only runs since the last reset' : `Show earlier runs (${view.earlierCount})`}
     </Link>
   );
@@ -134,7 +134,7 @@ export default async function CompliancePage({
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-ink">Demo Exchange, agent lane</h1>
+        <h2 className="text-xl font-semibold text-ink">Demo Exchange, agent lane</h2>
         <p className="mt-1 text-sm text-muted">
           This <Term term="agent-lane">agent lane</Term> accepts deposits only from agents with a valid credential. Account{' '}
           <CopyableMono value={view.laneAddress} label="agent lane account" className="text-xs text-muted" />

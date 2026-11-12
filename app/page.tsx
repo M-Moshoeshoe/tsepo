@@ -44,13 +44,13 @@ export default function OverviewPage() {
   return (
     <div className="grid gap-8">
       <div className="grid max-w-3xl gap-5">
-        <h1 className="text-2xl leading-snug font-semibold text-ink sm:text-3xl">
+        <p className="text-2xl leading-snug font-semibold text-ink sm:text-3xl">
           Tšepo gives an AI agent that pays a verified identity and spending limits on the XRP Ledger, so its business stays
           in control and an exchange knows who is paying.
-        </h1>
+        </p>
         <div>
           <Button asChild>
-            <Link href="/registry">Start the demo</Link>
+            <Link href="/agent">Start the demo</Link>
           </Button>
         </div>
       </div>
@@ -74,7 +74,7 @@ export default function OverviewPage() {
         <ol className="grid divide-y divide-border rounded-md border border-border bg-surface">
           {SCENARIOS.map((scenario) => (
             <li key={scenario.number} className="grid gap-1 px-4 py-3 sm:grid-cols-[2rem_11rem_1fr] sm:gap-4">
-              <span className="font-semibold text-primary tabular-nums">{scenario.number}</span>
+              <span className="font-semibold text-teal tabular-nums">{scenario.number}</span>
               <span className="font-medium text-ink">{scenario.title}</span>
               <span className="text-sm text-ink sm:text-base">{scenario.proves}</span>
             </li>

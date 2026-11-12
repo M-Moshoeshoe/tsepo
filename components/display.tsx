@@ -38,7 +38,7 @@ export function ExplorerLink({ hash, children }: { hash: string; children?: Reac
       href={`${TESTNET_EXPLORER}/transactions/${hash}`}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex items-center gap-1 rounded-md text-sm font-medium text-primary underline-offset-2 hover:underline"
+      className="inline-flex items-center gap-1 rounded-md text-sm font-medium text-teal underline-offset-2 hover:underline"
     >
       {children ?? 'View on the ledger explorer'}
       <ExternalLink className="size-3.5" aria-hidden />

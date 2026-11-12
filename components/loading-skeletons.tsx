@@ -30,7 +30,6 @@ export function RegistrySkeleton() {
   return (
     <div className="grid gap-6" aria-busy="true">
       <div className="grid gap-1">
-        <h1 className="text-2xl font-semibold text-ink">Agent registry</h1>
         <Reading />
       </div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
@@ -59,7 +58,7 @@ export function DeskSkeleton() {
   return (
     <div className="grid gap-6" aria-busy="true">
       <div className="grid gap-1">
-        <h1 className="text-2xl font-semibold text-ink">Demo Exchange, agent lane</h1>
+        <h2 className="text-xl font-semibold text-ink">Demo Exchange, agent lane</h2>
         <Reading />
       </div>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)]">

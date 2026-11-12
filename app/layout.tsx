@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { DemoBar } from '../components/demo-bar.tsx';
 import { RunProvider } from '../components/run-provider.tsx';
-import { SiteFooter } from '../components/site-footer.tsx';
-import { SiteHeader } from '../components/site-header.tsx';
+import { AppShell } from '../components/shell/app-shell.tsx';
 import { ToastProvider } from '../components/toast-provider.tsx';
 import './globals.css';
 
@@ -22,18 +20,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen antialiased">
         <a
           href="#main"
-          className="sr-only rounded-md bg-surface px-3 py-2 text-sm font-medium text-primary focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
+          className="sr-only rounded-md bg-surface px-3 py-2 text-sm font-medium text-teal focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
         >
           Skip to content
         </a>
         <ToastProvider>
           <RunProvider>
-            <SiteHeader />
-            <DemoBar />
-            <main id="main" className="mx-auto max-w-[1232px] px-4 py-6">
-              {children}
-            </main>
-            <SiteFooter />
+            <AppShell>{children}</AppShell>
           </RunProvider>
         </ToastProvider>
       </body>

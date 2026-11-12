@@ -41,7 +41,7 @@ function DailyUse({ used, limit }: { used: string; limit: string }) {
         <span className="text-muted">co-signed today (SAST)</span>
       </p>
       <div className="h-1.5 w-full max-w-64 rounded-md bg-background" role="img" aria-label={`${share} percent of the daily limit used`}>
-        <div className="h-full rounded-md bg-primary" style={{ width: `${share}%` }} />
+        <div className="h-full rounded-md bg-teal" style={{ width: `${share}%` }} />
       </div>
     </div>
   );
@@ -146,7 +146,6 @@ export default async function RegistryPage() {
   const view = await loadRegistry();
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold text-ink">Agent registry</h1>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="grid content-start gap-6">
           <BusinessSection business={view.business} />

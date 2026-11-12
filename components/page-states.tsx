@@ -6,7 +6,7 @@ import { Button } from './ui/button.tsx';
 export function PageError({ title, retry }: { title: string; retry: () => void }) {
   return (
     <div className="grid gap-4">
-      <h1 className="text-2xl font-semibold text-ink">{title}</h1>
+      <h2 className="text-xl font-semibold text-ink">{title}</h2>
       <div role="alert" className="grid gap-3 rounded-md border border-border bg-surface p-4">
         <p className="text-sm font-medium text-refused">This screen could not read the ledger or the service records.</p>
         <p className="text-sm text-ink">
