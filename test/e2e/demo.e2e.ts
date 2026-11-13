@@ -26,7 +26,7 @@ import {
 /**
  * End-to-end checks against a running production build and the XRP Ledger
  * Testnet. Start the app first (npm run build && npm start), then run
- * npm run test:e2e. About nine runs and five Claude calls.
+ * npm run test:e2e. About 11 runs and 7 Claude calls.
  */
 
 const RUN_TIMEOUT = 240_000;
@@ -333,7 +333,7 @@ void describe('the interface', () => {
     await dialog.getByText('Enter a valid email address.').waitFor();
     await dialog.getByLabel('Email').fill('test@example.com');
     await dialog.getByRole('button', { name: 'Send' }).click();
-    await dialog.getByText('Thank you. We have your details and will contact you about the pilot.').waitFor();
+    await dialog.getByText('Thank you. Your details are saved, and we will be in touch.').waitFor();
     await landing.context().close();
     const refused = await fetch(`${BASE_URL}/api/pilot`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"name":"x"}' });
     assert.equal(refused.status, 400);

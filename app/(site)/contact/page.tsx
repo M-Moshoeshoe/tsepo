@@ -18,7 +18,7 @@ const TOPICS: { title: string; text: string }[] = [
 /** A short way to reach the people behind Tšepo. */
 export default function ContactPage() {
   return (
-    <SitePage title="Talk to us." lead={<p>Send a message about the pilot, an integration or the product. We reply by email, and we never share your details.</p>}>
+    <SitePage title="Talk to us." lead={<p>Send a message about the pilot, an integration or the product. We will be in touch, and we never share your details.</p>}>
       <div className="grid gap-12 border-t border-secondary pt-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
         <div className="grid content-start gap-8">
           <dl className="grid gap-6">

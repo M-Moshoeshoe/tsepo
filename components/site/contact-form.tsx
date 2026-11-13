@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { ContactMessageSchema } from '../../src/pilot/contact.ts';
+import { PrivacyNotice, SAVED_MESSAGE } from './privacy-notice.tsx';
 
 const ErrorSchema = z.object({ error: z.string() });
 
@@ -44,7 +45,7 @@ export function ContactForm() {
   if (done) {
     return (
       <p role="status" className="rounded-2xl bg-secondary p-6 text-md text-primary">
-        Thank you. Your message is saved, and we will reply by email.
+        {SAVED_MESSAGE}
       </p>
     );
   }
@@ -79,6 +80,7 @@ export function ContactForm() {
           {error}
         </p>
       )}
+      <PrivacyNotice />
       <Button type="submit" color="primary" size="md" isLoading={sending} showTextWhileLoading className="justify-self-start">
         Send the message
       </Button>

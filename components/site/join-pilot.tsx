@@ -7,6 +7,7 @@ import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { RadioButton, RadioGroup } from '@/components/base/radio-buttons/radio-buttons';
 import { PilotRequestSchema } from '../../src/pilot/pilot.ts';
+import { PrivacyNotice, SAVED_MESSAGE } from './privacy-notice.tsx';
 
 const ErrorSchema = z.object({ error: z.string() });
 
@@ -59,13 +60,13 @@ export function JoinPilot({ className }: { className?: string }) {
               <div className="grid gap-1">
                 <h2 className="text-lg font-semibold text-primary">Join the pilot</h2>
                 <p className="text-sm text-tertiary">
-                  For South African businesses that pay through AI agents, and for exchanges that receive their payments. We will contact
-                  you about the pilot. Nothing is signed up or charged.
+                  For South African businesses that pay through AI agents, and for exchanges that receive their payments. We will be in
+                  touch about the pilot. Nothing is signed up or charged.
                 </p>
               </div>
               {done ? (
                 <div className="grid gap-4" role="status">
-                  <p className="text-md text-primary">Thank you. We have your details and will contact you about the pilot.</p>
+                  <p className="text-md text-primary">{SAVED_MESSAGE}</p>
                   <Button color="primary" size="md" onClick={() => { setOpen(false); }} className="justify-self-end">
                     Close
                   </Button>
@@ -79,6 +80,7 @@ export function JoinPilot({ className }: { className?: string }) {
                     <RadioButton value="exchange" label="An exchange that receives agent payments" />
                   </RadioGroup>
                   <Input label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} isRequired />
+                  <PrivacyNotice />
                   {error !== undefined && (
                     <p role="alert" className="text-sm text-error-primary">
                       {error}
