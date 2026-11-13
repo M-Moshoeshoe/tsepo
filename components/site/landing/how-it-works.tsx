@@ -109,10 +109,10 @@ function SignaturesFragment({ proof }: { proof: ProofFile }) {
   );
 }
 
-/** Step 4: the exchange's view of an incoming agent payment. */
+/** Step 4: the receiving platform's view of an incoming agent payment. */
 function ExchangeFragment() {
   return (
-    <UiCard label="An incoming payment at the exchange">
+    <UiCard label="An incoming payment at the receiving platform">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold text-primary">2 RLUSD from Lesedi payout agent</p>
         <StatusBadge tone="cleared">Cleared</StatusBadge>
@@ -168,7 +168,7 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
       fragment: <SignaturesFragment proof={proof} />,
     },
     {
-      title: '4. The exchange accepts verified agents.',
+      title: '4. The receiving platform accepts verified agents.',
       question: 'How do I prove what it did and why?',
       answer: 'Every payment keeps its instruction, its decision, its Travel Rule details and its ledger record.',
       proof: { label: 'See the payments and their evidence', href: '/business/payments' },
@@ -181,7 +181,7 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
       title="How it works."
       intro="Four steps, each enforced by the XRP Ledger or by tested rules in code. Each one answers a question your CFO will ask."
     >
-      <StepCarousel label="How it works, in four steps">
+      <StepCarousel label="How it works, in four steps" labels={steps.map((step) => step.title.replace(/^\d+\.\s*/, ''))}>
         {steps.map((step) => (
           <article key={step.title} className="grid h-full content-start gap-4 rounded-2xl p-2.5 ring-1 ring-secondary">
             <FragmentPanel className="min-h-[15rem] p-2.5 md:p-3">{step.fragment}</FragmentPanel>

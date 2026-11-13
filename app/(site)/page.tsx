@@ -26,7 +26,7 @@ export default async function LandingPage() {
     <div className="min-h-dvh bg-primary">
       <SiteHeader />
       <main id="main">
-        <Hero proof={proof} />
+        <Hero />
         <Stakes />
         <HowItWorks proof={proof} />
         <Proof numbers={numbers} proof={proof} />

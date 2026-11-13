@@ -1,22 +1,47 @@
 'use client';
 
-import { ArrowLeft, ArrowRight } from '@untitledui/icons';
+import { ArrowLeft, ArrowRight, PauseCircle, PlayCircle } from '@untitledui/icons';
 import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { cx } from '@/utils/cx';
+
+/** How long each step stays highlighted. */
+const STEP_MS = 3200;
 
 const BUTTON =
   'flex size-9 items-center justify-center rounded-full text-secondary ring-1 ring-secondary outline-focus-ring hover:bg-secondary hover:text-primary focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 
 /**
  * The steps, all visible at once from 640px: a 2x2 grid on a tablet and a
- * row on a desktop. Below 640px they become a sliding row: each slide snaps
- * into place, the arrows move one slide at a time, and a visitor can also
- * swipe or scroll. Smooth sliding switches off for reduced motion. Nothing
- * moves by itself.
+ * row on a desktop. There they are highlighted one at a time, in the order a
+ * payment runs, with a button to pause; with reduced motion the highlight
+ * never starts, and it never hides a step. Below 640px they become a sliding
+ * row that only moves when the visitor moves it: each slide snaps into place,
+ * the arrows move one slide at a time, and a visitor can also swipe.
  */
-export function StepCarousel({ label, children }: { label: string; children: ReactNode }) {
+export function StepCarousel({ label, labels, children }: { label: string; labels: string[]; children: ReactNode }) {
   const slides = Children.toArray(children);
   const track = useRef<HTMLOListElement>(null);
   const [index, setIndex] = useState(0);
+  const [active, setActive] = useState<number | undefined>(undefined);
+  const [playing, setPlaying] = useState(false);
+  const [canPlay, setCanPlay] = useState(false);
+
+  useEffect(() => {
+    const allowed = !window.matchMedia('(prefers-reduced-motion: reduce)').matches && window.matchMedia('(min-width: 640px)').matches;
+    setCanPlay(allowed);
+    setPlaying(allowed);
+    if (allowed) setActive(0);
+  }, []);
+
+  useEffect(() => {
+    if (!playing) return undefined;
+    const timer = window.setInterval(() => {
+      setActive((current) => ((current ?? -1) + 1) % slides.length);
+    }, STEP_MS);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [playing, slides.length]);
 
   const update = useCallback(() => {
     const element = track.current;
@@ -69,11 +94,34 @@ export function StepCarousel({ label, children }: { label: string; children: Rea
         className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto rounded-2xl p-1 outline-focus-ring focus-visible:outline-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4"
       >
         {slides.map((slide, position) => (
-          <li key={position} className="w-[85%] shrink-0 snap-start sm:w-auto">
+          <li
+            key={position}
+            className={cx(
+              'w-[85%] shrink-0 snap-start rounded-2xl transition-[box-shadow,transform] duration-500 sm:w-auto',
+              active === position && '-translate-y-0.5 shadow-lg ring-2 ring-brand',
+            )}
+          >
             {slide}
           </li>
         ))}
       </ol>
+      {canPlay && (
+        <div className="hidden items-center justify-between gap-3 sm:flex">
+          <p className="text-xs text-tertiary" aria-hidden>
+            {active === undefined ? '' : `${String(active + 1)} of ${String(slides.length)}: ${labels[active] ?? ''}`}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setPlaying((current) => !current);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-secondary outline-focus-ring hover:bg-secondary hover:text-primary focus-visible:outline-2"
+          >
+            {playing ? <PauseCircle className="size-4" aria-hidden /> : <PlayCircle className="size-4" aria-hidden />}
+            {playing ? 'Pause the steps' : 'Play the steps'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
