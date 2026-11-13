@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { Ref, SourceList } from '../../../components/site/footnotes.tsx';
 import { INLINE_LINK, PagePart, SitePage } from '../../../components/site/site-page.tsx';
+import { ABOUT_NOTES, SOURCES } from '../../../src/views/sources.ts';
 import { REPOSITORY } from '../../../src/views/navigation.ts';
 
 export const metadata: Metadata = {
@@ -29,8 +31,9 @@ export default function AboutPage() {
         <p>AI agents can now hold a wallet and pay. A business that wants to use one faces a hard choice.</p>
         <p>It can give the agent a key, and with it the whole account, with no limit and no way to stop it. Or it can keep paying by hand.</p>
         <p>
-          On the other side, the crypto platform where the recipient receives the money, such as VALR or Luno, faces its own problem. FIC Directive 9 requires it to know who sends every crypto transfer, from
-          R0. It cannot accept money from an agent that nobody can identify.
+          On the other side, the crypto platform where the recipient receives the money, such as VALR or Luno, faces its own problem. FIC
+          Directive 9 requires it to know who sends every crypto transfer, from R0.
+          <Ref notes={ABOUT_NOTES} sources={[SOURCES.directive9]} /> It cannot accept money from an agent that nobody can identify.
         </p>
       </PagePart>
 
@@ -62,6 +65,8 @@ export default function AboutPage() {
         <p className="text-primary">Built by Mokhachane Moshoeshoe, software engineer.</p>
         <p>Built for the Node Engine Hackathon 2026, Agentic Finance track, sponsored by Ripple.</p>
       </PagePart>
+
+      <SourceList notes={ABOUT_NOTES} inPage />
     </SitePage>
   );
 }
