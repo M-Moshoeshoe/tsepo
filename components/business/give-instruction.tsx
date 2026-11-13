@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { useState, type SyntheticEvent } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { INSTRUCTION_MAX_LENGTH, RunRequestSchema } from '../../src/demo/events.ts';
-import { AssistantNote, DecisionBox } from '../assistant-note.tsx';
+import { DecisionBox } from '../assistant-note.tsx';
 import { StatusBadge } from '../display.tsx';
 import { useRun } from '../run-provider.tsx';
 import type { LatestInstruction } from '../../src/views/instruct.ts';
 import { runLabel } from '../../src/views/scenarios.ts';
 import { useLiveActions } from '../shell/live-actions.tsx';
+import { ThusoAvatar } from '../thuso-avatar.tsx';
+import { ASSISTANT_NAME } from '../../src/views/assistant.ts';
 
 /** The run label, so the panel can tell its own run from a tour story or a restore. */
 const LABEL = runLabel('instruction');
@@ -109,23 +111,41 @@ export function GiveInstruction({ latest, allowance }: { latest: LatestInstructi
       {mine && busy && <p className="text-sm text-secondary" role="status">The agent is working on it. The steps appear at the top of the page.</p>}
 
       {result !== undefined && (
-        <div className="grid gap-3 border-t border-secondary pt-4" aria-live="polite">
-          <h3 className="text-sm font-semibold text-primary">Result</h3>
-          <AssistantNote>{result.note}</AssistantNote>
-          <ul className="grid gap-3">
-            {result.payments.map((payment) => (
-              <li key={payment.id} className="grid gap-2 rounded-lg bg-primary p-3 ring-1 ring-secondary ring-inset">
-                <span className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <Link href={payment.href} scroll={false} className="rounded-sm font-semibold text-primary underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2">
-                    {payment.label}
-                  </Link>
-                  <StatusBadge tone={payment.status.tone}>{payment.status.label}</StatusBadge>
-                </span>
-                {payment.decision !== undefined && <DecisionBox decidedBy={payment.decision.decidedBy}>{payment.decision.text}</DecisionBox>}
-                {payment.outcome !== undefined && <AssistantNote>{payment.outcome}</AssistantNote>}
-              </li>
-            ))}
-          </ul>
+        <div className="grid gap-4 border-t border-secondary pt-4" aria-live="polite">
+          <h3 className="sr-only">Thuso’s reply</h3>
+          <blockquote className="max-w-[85%] justify-self-end rounded-lg bg-primary px-3 py-2.5 text-sm whitespace-pre-wrap text-primary ring-1 ring-secondary ring-inset">
+            <span className="sr-only">Your instruction: </span>
+            {result.text}
+          </blockquote>
+          <div className="flex items-start gap-3">
+            <ThusoAvatar className="size-8" />
+            <div className="grid min-w-0 flex-1 gap-2 rounded-lg bg-primary px-3 py-2.5 text-sm text-secondary ring-1 ring-secondary ring-inset">
+              <p className="font-semibold text-primary">
+                {ASSISTANT_NAME}
+                <span className="sr-only">, the agent’s AI assistant, replies:</span>
+              </p>
+              <p>{result.note}</p>
+              {result.payments.map((payment) => payment.outcome !== undefined && <p key={payment.id}>{payment.outcome}</p>)}
+            </div>
+          </div>
+          {result.payments.length > 0 && (
+          <div className="grid gap-2">
+            <h3 className="text-sm font-semibold text-primary">What the rules decided</h3>
+            <ul className="grid gap-3">
+              {result.payments.map((payment) => (
+                <li key={payment.id} className="grid gap-2 rounded-lg bg-primary p-3 ring-1 ring-secondary ring-inset">
+                  <span className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <Link href={payment.href} scroll={false} className="rounded-sm font-semibold text-primary underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2">
+                      {payment.label}
+                    </Link>
+                    <StatusBadge tone={payment.status.tone}>{payment.status.label}</StatusBadge>
+                  </span>
+                  {payment.decision !== undefined && <DecisionBox decidedBy={payment.decision.decidedBy}>{payment.decision.text}</DecisionBox>}
+                </li>
+              ))}
+            </ul>
+          </div>
+          )}
         </div>
       )}
     </section>

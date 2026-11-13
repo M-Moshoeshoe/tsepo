@@ -64,10 +64,7 @@ export function PaymentPanel({ open, closeHref }: { open: OpenPayment; closeHref
       }
     >
       <div className="grid w-full gap-8">
-        <div className="grid gap-3">
-          {decision !== undefined && <DecisionBox decidedBy={decision.decidedBy}>{decision.text}</DecisionBox>}
-          {note !== undefined && <AssistantNote>{note}</AssistantNote>}
-        </div>
+        {decision !== undefined && <DecisionBox decidedBy={decision.decidedBy}>{decision.text}</DecisionBox>}
 
         <Section title="What happened">
           <Timeline
@@ -111,6 +108,7 @@ export function PaymentPanel({ open, closeHref }: { open: OpenPayment; closeHref
           <p className="text-sm text-tertiary">Received {formatSast(instruction.at)}</p>
           <blockquote className="rounded-lg bg-secondary px-3 py-2.5 text-sm whitespace-pre-wrap text-primary">{instruction.text}</blockquote>
           <AssistantNote>{readNote(instruction.intents)}</AssistantNote>
+          {note !== undefined && <AssistantNote>{note}</AssistantNote>}
         </Section>
       </div>
     </DetailsPanel>

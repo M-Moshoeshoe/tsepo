@@ -26,7 +26,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
   const { accessCode, saveAccessCode, forgetAccessCode, busy } = useRun();
   return (
     <Section>
-      <p className="text-md text-primary">{TOUR_PURPOSE}</p>
+      <AssistantNote>{TOUR_PURPOSE}</AssistantNote>
       <ul className="grid gap-2 text-sm text-secondary">
         <li>
           <span className="font-semibold text-primary">Business:</span> Lesedi Design Studio runs the agent and sets the spending rules it
@@ -137,7 +137,7 @@ function LiveStepView({ step, evidence }: { step: LiveStep; evidence: EvidenceSt
 
   return (
     <Section>
-      <p className="text-md text-primary">{step.intro.join(' ')}</p>
+      <AssistantNote>{step.intro.join(' ')}</AssistantNote>
 
       {accessCode !== undefined && !(mine && state.status === 'running') && !waiting && (
         <Button color="primary" size="md" iconLeading={PlayCircle} isDisabled={busy} onClick={run} className="justify-self-start">
@@ -167,9 +167,9 @@ function LiveStepView({ step, evidence }: { step: LiveStep; evidence: EvidenceSt
       {explanation !== undefined && (
         <div className="grid gap-3 border-t border-secondary pt-4">
           <p className="text-sm font-semibold text-primary">What happened</p>
+          {stepEvidence?.thuso !== undefined && <AssistantNote>{stepEvidence.thuso}</AssistantNote>}
           <p className="text-sm text-secondary">{explanation.sentences.join(' ')}</p>
           <p className="text-sm text-tertiary">{step.decidedBy}</p>
-          {stepEvidence?.thuso !== undefined && <AssistantNote>{stepEvidence.thuso}</AssistantNote>}
           {stepEvidence !== undefined && <EvidenceLinks links={stepEvidence.links} />}
         </div>
       )}
@@ -189,12 +189,12 @@ function LiveStepView({ step, evidence }: { step: LiveStep; evidence: EvidenceSt
             <p className="text-sm text-tertiary">This step has not run live yet. Enter the access code in the welcome step to run it.</p>
           ) : (
             <div className="grid gap-3" data-testid="latest-run">
+              {stepEvidence.thuso !== undefined && <AssistantNote>{stepEvidence.thuso}</AssistantNote>}
               <p className="text-sm text-secondary">
                 <span className="font-semibold text-primary">Latest live run:</span> {stepEvidence.latestRun.when}.{' '}
                 {stepEvidence.latestRun.summary}
               </p>
               <p className="text-sm text-tertiary">{step.decidedBy}</p>
-              {stepEvidence.thuso !== undefined && <AssistantNote>{stepEvidence.thuso}</AssistantNote>}
               <EvidenceLinks links={stepEvidence.links} />
             </div>
           )}
@@ -211,10 +211,9 @@ function TryStep() {
   const restoring = state.status === 'running' && state.source === 'tour' && state.label === RESTORE_LABEL;
   return (
     <Section>
-      <p className="text-md text-primary">
-        Give the agent an instruction of your own, with today’s allowance in view. Try to break the rules: pay someone new, pay too
-        much, or tell it to ignore its limits.
-      </p>
+      <AssistantNote>
+        Now give the agent an instruction of your own, with today’s allowance in view. Try to break the rules: ask it to pay someone new, pay too much or ignore its limits.
+      </AssistantNote>
       <Button href={tryItHref(LAST_STEP)} color="primary" size="md" className="justify-self-start">
         Open Give an instruction
       </Button>

@@ -1,14 +1,14 @@
 import { ASSISTANT_NAME } from '../src/views/assistant.ts';
-import { AssistantMark } from './display.tsx';
+import { ThusoAvatar } from './thuso-avatar.tsx';
 
 /**
- * Something Thuso, the agent's AI reading step, says about what it did. The
- * mark appears only where the AI acted; decisions never carry it.
+ * Something Thuso, the agent's AI reading step, says about what it read or
+ * what happened. The avatar never sits beside a decision: rules decide.
  */
 export function AssistantNote({ children }: { children: string }) {
   return (
     <p className="flex items-start gap-2.5 rounded-lg bg-secondary px-3 py-2.5 text-sm text-secondary">
-      <AssistantMark className="mt-0.5 size-4" />
+      <ThusoAvatar className="mt-px" />
       <span>
         <span className="font-semibold text-primary">{ASSISTANT_NAME}</span>
         <span className="sr-only">, the agent&apos;s AI assistant, says:</span> {children}

@@ -6,7 +6,8 @@ import { Button } from '@/components/base/buttons/button';
 import { cx } from '@/utils/cx';
 import type { BusinessPayment } from '../../src/views/payments.ts';
 import { AssistantNote } from '../assistant-note.tsx';
-import { AssistantMark, StatusBadge } from '../display.tsx';
+import { StatusBadge } from '../display.tsx';
+import { ThusoAvatar } from '../thuso-avatar.tsx';
 import { PaymentList } from './payment-list.tsx';
 
 export interface InboxRow {
@@ -55,9 +56,9 @@ export function InstructionInbox({ rows }: { rows: InboxRow[] }) {
                 className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 px-4 py-3 text-left outline-focus-ring hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 sm:grid-cols-[9rem_minmax(0,1fr)_auto_auto] lg:px-5"
               >
                 <span className="text-xs text-tertiary tabular-nums sm:text-sm">{row.time}</span>
-                <span className="col-span-2 row-start-2 flex min-w-0 items-center gap-2 text-sm text-primary sm:col-span-1 sm:row-start-auto">
-                  <AssistantMark className="size-4" />
-                  <span className="truncate">{row.summary}</span>
+                <span className="col-span-2 row-start-2 flex min-w-0 items-start gap-2 text-sm text-primary sm:col-span-1 sm:row-start-auto">
+                  <ThusoAvatar />
+                  <span>{row.summary}</span>
                 </span>
                 <StatusBadge tone={row.outcome.tone}>{row.outcome.label}</StatusBadge>
                 <ChevronDown className={cx('size-4 text-fg-quaternary transition-transform max-sm:hidden', expanded && 'rotate-180')} aria-hidden />

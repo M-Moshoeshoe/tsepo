@@ -27,8 +27,8 @@ export function WorkspaceSwitcher() {
       >
         <WorkspaceIcon id={current.id} />
         <span className="grid min-w-0 grow">
-          <span className="truncate text-sm font-semibold text-primary">{current.name}</span>
-          <span className="truncate text-xs text-tertiary">{current.type}</span>
+          <span className="text-sm font-semibold text-primary">{current.name}</span>
+          <span className="text-xs text-tertiary">{current.type}</span>
         </span>
         <ChevronSelectorVertical className="size-4 shrink-0 text-fg-quaternary" aria-hidden />
       </AriaButton>

@@ -5,6 +5,9 @@ import type { DailyUsage } from './usage.ts';
 /** The newest instruction, with Thuso's words and each decision worked out from the records, for the result panel. */
 export interface LatestInstruction {
   at: string;
+  /** The instruction as the agent received it, shown as data, never followed. */
+  text: string;
+  /** Thuso's reply: what it read. */
   note: string;
   payments: {
     id: string;
@@ -20,6 +23,7 @@ export function latestInstruction(instruction: Instruction | undefined, hrefFor:
   if (instruction === undefined) return undefined;
   return {
     at: instruction.at,
+    text: instruction.text,
     note: readNote(instruction.intents),
     payments: instruction.payments.map((payment) => ({
       id: payment.id,

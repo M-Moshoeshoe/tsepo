@@ -107,18 +107,3 @@ export function SectionTitle({ title, aside, id }: { title: string; aside?: Reac
     </div>
   );
 }
-
-/**
- * Thuso's mark, the AI assistant: an open ring held around a solid core. In
- * the accent colour, which the theme keeps for marks; it appears only where the
- * AI acted. The Tšepo logo itself is the shield in public/tsepo-mark.png.
- */
-export function AssistantMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={cx('shrink-0 text-accent', className)} aria-hidden>
-      <path d="M12 3.5a8.5 8.5 0 1 1-8.5 8.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="12" cy="12" r="3.25" fill="currentColor" />
-    </svg>
-  );
-}
-
