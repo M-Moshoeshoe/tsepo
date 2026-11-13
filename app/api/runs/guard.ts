@@ -4,8 +4,8 @@ import { createRateLimiter, type RateLimiter } from '../../../src/access/rate-li
 import { ACCESS_CODE_HEADER } from '../../../src/demo/events.ts';
 
 const HOUR_MS = 60 * 60 * 1000;
-/** About 20 demo runs an hour, for the whole server. */
-const RUNS_PER_HOUR = 20;
+/** About 60 live runs an hour, for the whole server: enough for several visitors to take the tour in the same hour. */
+const RUNS_PER_HOUR = 60;
 /** Wrong codes are limited separately, so the code cannot be guessed by trying many. */
 const WRONG_CODES_PER_15_MINUTES = 10;
 
