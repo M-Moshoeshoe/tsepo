@@ -312,13 +312,13 @@ void describe('the interface', () => {
     await list.context().close();
   });
 
-  void it('says Testnet and sample once, in the footer, and the logo opens the workspace overview', async () => {
+  void it('says Testnet and sample once, in the footer, and the logo opens the landing page', async () => {
     const page2 = await openPage(browser, 1280, BASE_URL, '/exchange/payments');
     assert.equal(await page2.locator('footer').getByText('Testnet. Sample businesses and people.').count(), 1);
     assert.equal(await page2.getByText('Node Engine Hackathon').count(), 0);
     assert.equal(await page2.getByText('Sample data', { exact: true }).count(), 0);
-    await page2.getByRole('link', { name: 'Tšepo, go to the overview' }).first().click();
-    await page2.waitForURL(/\/exchange\/payments$/);
+    await page2.getByRole('link', { name: 'Tšepo, home' }).first().click();
+    await page2.waitForURL(`${BASE_URL}/`);
     await page2.context().close();
   });
 

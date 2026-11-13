@@ -16,9 +16,9 @@ const FOOT_ICONS: Record<string, FC<{ className?: string }>> = { '/': InfoCircle
 const FOOT_LINK =
   'flex items-center gap-2 rounded-md text-tertiary outline-focus-ring hover:text-secondary focus-visible:outline-2';
 
-/** The logo, linking to the current workspace's overview. */
+/** The logo, linking to the landing page. */
 export function WorkspaceBrand() {
-  return <Brand href={workspaceFor(usePathname()).home} />;
+  return <Brand href="/" />;
 }
 
 /** The sidebar content, shared by the desktop sidebar and the phone slideout. */
@@ -30,7 +30,7 @@ export function SidebarContent() {
   return (
     <div className="flex h-full flex-col bg-secondary px-3 pt-5 pb-4">
       <div className="px-2">
-        <Brand href={workspace.home} />
+        <Brand href="/" />
       </div>
 
       <div className="mt-8">

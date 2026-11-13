@@ -92,7 +92,7 @@ export function linksFrom(route: string): { href: string; clicks: number }[] {
   const own = workspace === 'business' ? [...BUSINESS_NAV, BUSINESS_ACTION] : EXCHANGE_NAV;
   const other: WorkspaceId = workspace === 'business' ? 'exchange' : 'business';
   return [
-    ...[...own, ...SHELL_FOOT, { label: 'Logo', href: WORKSPACE_HOMES[workspace] }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 })),
+    ...[...own, ...SHELL_FOOT, { label: 'Logo', href: '/' }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 })),
     { href: WORKSPACE_HOMES[other], clicks: 2 },
   ];
 }

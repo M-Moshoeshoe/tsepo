@@ -8,8 +8,8 @@ export function BrandMark({ className }: { className?: string }) {
 }
 
 /**
- * The logo and name. With `href` it is a link: in the product it opens the
- * current workspace's overview, on the landing page the top of the page.
+ * The logo and name. With `href` it is a link to the landing page, from the
+ * product and from every public page.
  */
 export function Brand({ href }: { href?: string }) {
   const content = (
@@ -21,7 +21,7 @@ export function Brand({ href }: { href?: string }) {
   const style = 'flex items-center gap-2 text-md font-semibold text-primary';
   if (href === undefined) return <span className={style}>{content}</span>;
   return (
-    <Link href={href} className={cx(style, 'rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2')} aria-label={href === "/" ? "Tšepo, home" : "Tšepo, go to the overview"}>
+    <Link href={href} className={cx(style, 'rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2')} aria-label="Tšepo, home">
       {content}
     </Link>
   );
