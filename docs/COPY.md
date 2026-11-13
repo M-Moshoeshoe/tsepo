@@ -531,3 +531,24 @@ except:
 Layout only, no new words: on phones the two pricing columns and the four
 proof figures become rows to swipe, with arrows and a counter; the Meet
 Thuso handshake picture is smaller on a computer screen.
+
+# Copy changes, Stage 8C, part 2: a premium guided tour
+
+The side panel becomes a floating card beside what it explains, with the
+page dimmed and the record lit. Every step's own words stay as they were.
+
+| Before | After |
+|---|---|
+| Guided tour (panel heading) | Guided tour Â· Step 1 of 6 (card heading); The story Â· Step 1 of 6 while the story plays |
+| Start the tour (welcome) | Play the story / Walk through it myself |
+| No code? You can still see the latest live run of each step. | No code? The tour still shows the latest live run of each step. |
+| New: first-visit offer buttons | Play the story / Walk through it myself / Not now (was: Start the tour / Not now) |
+| New: story controls | Pause, Resume, Skip to the end |
+| New: story captions | Playing the story: each step runs, then its proof opens on the page. / Step 2 of 6: Your agent pays Naledi for a logo. Running live on the XRP Ledger Testnet. / â€¦ Another visitor is running a step; the story continues when the ledger is free. / â€¦ This step has not run live yet, so there is nothing to show. / â€¦ Paused. / The story is over. Here is what the tour showed. |
+
+## Buttons in the product
+
+The product's buttons now share the public pages' button language: a pill,
+medium weight, a flat ink primary and a flat outlined secondary, with the
+same hover, focus and press states. Destructive buttons stay red. No words
+changed.

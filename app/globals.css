@@ -170,11 +170,6 @@ button[data-pressed]:not([data-disabled]) {
   animation: run-progress 1.4s ease-in-out infinite;
 }
 
-/* When the tour panel would cover a highlighted record, the page makes room beside it. */
-body[data-tour-room] [data-page-column] {
-  padding-right: 400px;
-}
-
 /* The guided tour's evidence highlight: a brand ring, so it stays visible when motion is reduced. */
 .tour-highlight {
   outline: 3px solid var(--color-brand-500);

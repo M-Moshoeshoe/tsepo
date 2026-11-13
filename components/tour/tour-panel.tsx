@@ -1,17 +1,19 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, CheckCircle, PlayCircle, RefreshCcw01, X } from '@untitledui/icons';
-import { useEffect, useRef, useState } from 'react';
-import { ProgressBarBase } from '@/components/base/progress-indicators/progress-indicators';
+import { ArrowLeft, ArrowRight, CheckCircle, FastForward, PauseCircle, PlayCircle, RefreshCcw01, X } from '@untitledui/icons';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { cx } from '@/utils/cx';
 import type { DemoEvent } from '../../src/demo/events.ts';
-import { CFO_QUESTIONS, LAST_STEP, SCHEDULE_NOTE, stepLabel, TOUR_PURPOSE, TOUR_STEPS, tryItHref, type LiveStep } from '../../src/views/tour.ts';
+import { RECEIVING_PLATFORM_LINE } from '../../src/views/navigation.ts';
+import { atStage, placeCard, stageHref, storyCaption, STORY_DWELL_MS, STORY_WELCOME_MS, type Box, type Placement, type Size } from '../../src/views/tour-stage.ts';
+import { CFO_QUESTIONS, LAST_STEP, SCHEDULE_NOTE, stepLabel, TOUR_PURPOSE, TOUR_STEPS, tryItHref, type LiveStep, type TourEvidence } from '../../src/views/tour.ts';
 import { AssistantNote } from '../assistant-note.tsx';
 import { useRun } from '../run-provider.tsx';
 import { AccessCodeForm } from '../shell/access-code-dialog.tsx';
 import { RESTORE_LABEL, useLiveActions } from '../shell/live-actions.tsx';
-import { RECEIVING_PLATFORM_LINE } from '../../src/views/navigation.ts';
+import { Spotlight } from './spotlight.tsx';
 import { useTour } from './tour-provider.tsx';
 import { useTourEvidence, type EvidenceState } from './use-tour-evidence.ts';
 
@@ -19,15 +21,29 @@ import { useTourEvidence, type EvidenceState } from './use-tour-evidence.ts';
 const RETRY_MS = 5000;
 const MAX_RETRIES = 12;
 
+function reducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function Section({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cx('grid gap-3', className)}>{children}</div>;
 }
 
-function WelcomeStep({ onNext }: { onNext: () => void }) {
+function WelcomeStep({ onWalk, onPlay, story }: { onWalk: () => void; onPlay: () => void; story: boolean }) {
   const { accessCode, saveAccessCode, forgetAccessCode, busy } = useRun();
   return (
     <Section>
       <AssistantNote>{TOUR_PURPOSE}</AssistantNote>
+      {!story && (
+        <div className="flex flex-wrap gap-3">
+          <Button color="primary" size="md" iconLeading={PlayCircle} onClick={onPlay}>
+            Play the story
+          </Button>
+          <Button color="secondary" size="md" iconTrailing={ArrowRight} onClick={onWalk}>
+            Walk through it myself
+          </Button>
+        </div>
+      )}
       <ul className="grid gap-2 text-sm text-secondary">
         <li>
           <span className="font-semibold text-primary">Business:</span> Lesedi Design Studio runs the agent and sets the spending rules it
@@ -44,13 +60,15 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
             The access code
           </h3>
           <p className="text-sm text-tertiary">
-            Live steps move test funds, so they need the access code from the submission. No code? You can still see the latest live run
+            Live steps move test funds, so they need the access code from the submission. No code? The tour still shows the latest live run
             of each step.
           </p>
           <AccessCodeForm onSave={saveAccessCode} />
-          <Button color="link-color" size="sm" onClick={onNext} className="justify-self-start">
-            Skip, and see the latest runs
-          </Button>
+          {!story && (
+            <Button color="link-color" size="sm" onClick={onWalk} className="justify-self-start">
+              Skip, and see the latest runs
+            </Button>
+          )}
         </section>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-secondary px-3 py-2.5 text-sm">
@@ -63,21 +81,18 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           </Button>
         </div>
       )}
-      <Button color="primary" size="md" iconTrailing={ArrowRight} onClick={onNext} className="justify-self-start">
-        Start the tour
-      </Button>
     </Section>
   );
 }
 
-/** The last few progress lines of the running step, inside the panel, so the page never moves. */
+/** The last few progress lines of the running step, inside the card, so the page never moves. */
 function Progress({ events }: { events: DemoEvent[] }) {
   const list = useRef<HTMLOListElement>(null);
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight });
   }, [events.length]);
   return (
-    <ol ref={list} aria-label="Progress" className="grid max-h-44 gap-1 overflow-y-auto rounded-lg bg-secondary p-3 text-xs">
+    <ol ref={list} aria-label="Progress" className="grid max-h-32 gap-1 overflow-y-auto rounded-lg bg-secondary p-3 text-xs">
       {events.length === 0 && <li className="text-tertiary">Connecting to the XRP Ledger Testnet</li>}
       {events.map((event, index) => (
         // Events are append-only, so the index is a stable key.
@@ -108,10 +123,10 @@ function EvidenceLinks({ links }: { links: { key: string; label: string; href?: 
   );
 }
 
-function LiveStepView({ step, evidence }: { step: LiveStep; evidence: EvidenceState }) {
+function LiveStepView({ step, evidence, autoLatest }: { step: LiveStep; evidence: EvidenceState; autoLatest: boolean }) {
   const { state, busy, accessCode } = useRun();
   const { runStory } = useLiveActions();
-  const [showLatest, setShowLatest] = useState(false);
+  const [showLatest, setShowLatest] = useState(autoLatest);
   const [retries, setRetries] = useState(0);
   const mine = state.status !== 'idle' && state.source === 'tour' && state.label === step.title;
   const waiting = mine && state.status === 'failed' && state.conflict && retries < MAX_RETRIES;
@@ -262,88 +277,297 @@ function TryStep() {
   );
 }
 
+/** The address as it is now, path and query, from the router. */
+function useCurrentHref(): string {
+  const pathname = usePathname();
+  const search = useSearchParams().toString();
+  return search === '' ? pathname : `${pathname}?${search}`;
+}
+
 /**
- * The guided tour, in a side panel that leaves the product usable beside it
- * (a sheet from the bottom on phones). Six steps; four run live, then show
- * where the proof is. Escape closes it; the step stays in the address.
+ * "Play the story": the tour moving on by itself. On each live step it runs
+ * the step live when the access code is there and waits for the result, or
+ * otherwise uses the latest live run; then it opens the evidence, lets the
+ * caption be read, and moves on. With reduced motion it never moves on by
+ * itself: Next does. It stops at the last step.
  */
-export function TourPanel() {
-  const { open, step, goTo, close } = useTour();
-  const heading = useRef<HTMLHeadingElement>(null);
-  const evidence = useTourEvidence(open);
-  const index = step ?? 0;
-  const current = TOUR_STEPS[index] ?? TOUR_STEPS[0];
+function useStoryPlayer(input: { index: number; evidence: EvidenceState; move: (step: number) => void }): { caption: string; ended: boolean } {
+  const { index, evidence, move } = input;
+  const { mode, playing, pause } = useTour();
+  const { state, busy, accessCode } = useRun();
+  const { runStory } = useLiveActions();
+  const router = useRouter();
+  const current = useCurrentHref();
+  const started = useRef(new Map<number, string>());
+  const step = TOUR_STEPS[index];
+  const live = step?.kind === 'live' ? step : undefined;
+  const mine = live !== undefined && state.status !== 'idle' && state.source === 'tour' && state.label === live.title;
+  const story = mode === 'story';
+
+  // A new story starts with nothing run.
+  useEffect(() => {
+    if (story && index === 0) started.current.clear();
+  }, [story, index]);
+
+  const ready = evidence.status === 'ready' ? evidence.evidence : undefined;
+  const startedAt = started.current.get(index);
+  const latest = ready?.steps[String(index)]?.latestRun;
+  // After a run in this story, wait for the records of that run, so the evidence is the new one.
+  const fresh = startedAt === undefined || (latest !== undefined && Date.parse(latest.at) >= Date.parse(startedAt) - 60_000);
 
   useEffect(() => {
-    if (open) heading.current?.focus();
+    if (!story || !playing || step === undefined) return undefined;
+    if (step.kind === 'try') {
+      pause();
+      return undefined;
+    }
+    if (step.kind === 'welcome') {
+      if (reducedMotion()) return undefined;
+      const timer = window.setTimeout(() => {
+        move(1);
+      }, STORY_WELCOME_MS);
+      return () => {
+        window.clearTimeout(timer);
+      };
+    }
+    if (accessCode !== undefined) {
+      if (!started.current.has(index)) {
+        if (busy) return undefined;
+        started.current.set(index, new Date().toISOString());
+        runStory(step.scenario, 'tour');
+        return undefined;
+      }
+      if (mine && state.status === 'running') return undefined;
+      if (mine && state.status === 'failed') {
+        // A clash with another visitor retries by itself; any other failure pauses the story with its message showing.
+        if (!state.conflict) pause();
+        return undefined;
+      }
+    }
+    if (ready === undefined || !fresh) return undefined;
+    const stage = stageHref(index, ready);
+    if (stage !== undefined && !atStage(current, stage)) {
+      router.push(stage, { scroll: false });
+      return undefined;
+    }
+    if (reducedMotion()) return undefined;
+    const timer = window.setTimeout(() => {
+      move(index + 1);
+    }, STORY_DWELL_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [story, playing, step, index, accessCode, busy, mine, state, ready, fresh, current, router, move, pause, runStory]);
+
+  const ended = story && step?.kind === 'try';
+  let caption = '';
+  if (story && step !== undefined) {
+    if (ended) caption = storyCaption({ index, phase: 'ended' });
+    else if (!playing) caption = storyCaption({ index, phase: 'paused' });
+    else if (step.kind === 'welcome') caption = 'Playing the story: each step runs, then its proof opens on the page.';
+    else if (mine && state.status === 'running') caption = storyCaption({ index, phase: 'running' });
+    else if (mine && state.status === 'failed' && state.conflict) caption = storyCaption({ index, phase: 'waiting' });
+    else {
+      const last = mine ? state.events.at(-1) : undefined;
+      const summary = last?.type === 'done' ? last.text : latest?.summary;
+      caption = summary === undefined && ready !== undefined ? storyCaption({ index, phase: 'no-run' }) : storyCaption({ index, phase: 'showing', summary });
+    }
+  }
+  return { caption, ended };
+}
+
+/** Where the card goes, from the lit element and the card's own size, kept up to date as either moves. */
+function usePlacement(card: React.RefObject<HTMLDivElement | null>, target: Box | undefined): Placement {
+  const [size, setSize] = useState<Size>({ width: 384, height: 320 });
+  const [viewport, setViewport] = useState<Size>({ width: 1280, height: 900 });
+
+  useLayoutEffect(() => {
+    const element = card.current;
+    if (element === null) return undefined;
+    const update = (): void => {
+      setSize({ width: element.offsetWidth, height: element.offsetHeight });
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [card]);
+
+  return placeCard(target, size, viewport);
+}
+
+const PLACEMENT_CLASS: Record<Placement['kind'], string> = {
+  dock: 'inset-x-2 bottom-2 max-h-[60dvh]',
+  corner: 'right-6 bottom-6 max-h-[calc(100dvh-3rem)]',
+  beside: 'max-h-[calc(100dvh-2rem)]',
+};
+
+/**
+ * The guided tour, as a floating card beside what it explains. The page dims
+ * and the element being explained is lit (see Spotlight); the card is a
+ * labelled, non-modal dialog, so the page stays reachable and nothing traps
+ * focus. Six steps; four run live, then show where the proof is. The step
+ * stays in the address. Escape ends the tour and returns focus to where the
+ * visitor was.
+ */
+export function TourPanel() {
+  const { open, step, mode, playing, goTo, close, show, playStory, pause, resume } = useTour();
+  const router = useRouter();
+  const current = useCurrentHref();
+  const heading = useRef<HTMLHeadingElement>(null);
+  const card = useRef<HTMLDivElement>(null);
+  const evidence = useTourEvidence(open);
+  const [target, setTarget] = useState<Box | undefined>(undefined);
+  const placement = usePlacement(card, target);
+  const index = step ?? 0;
+  const currentStep = TOUR_STEPS[index] ?? TOUR_STEPS[0];
+  const ready: TourEvidence | undefined = evidence.status === 'ready' ? evidence.evidence : undefined;
+  const story = mode === 'story';
+
+  /** Moves to a step: to its evidence page when there is one, otherwise just the step. */
+  const move = useCallback(
+    (to: number) => {
+      const clamped = Math.min(Math.max(to, 0), LAST_STEP);
+      const stage = stageHref(clamped, ready);
+      if (stage !== undefined && !atStage(current, stage)) router.push(stage, { scroll: false });
+      else goTo(clamped);
+    },
+    [ready, current, router, goTo],
+  );
+
+  const player = useStoryPlayer({ index, evidence, move });
+
+  useEffect(() => {
+    if (open) heading.current?.focus({ preventScroll: true });
   }, [open, index]);
 
+  // Escape ends the tour, unless it belongs to another dialog, such as a details sheet.
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      const owner = event.target instanceof Element ? event.target.closest('[role="dialog"]') : null;
+      if (owner !== null && owner.id !== 'guided-tour') return;
+      close();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, close]);
+
+  const onTarget = useCallback((box: Box | undefined) => {
+    setTarget(box);
+  }, []);
+
+  if (!open) return null;
+  const style = placement.kind === 'beside' ? { top: placement.top, left: placement.left } : undefined;
+
   return (
-    <aside
-      id="guided-tour"
-      aria-label="Guided tour"
-      hidden={!open}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') close();
-      }}
-      className="fixed inset-x-0 bottom-0 z-40 flex max-h-[75dvh] flex-col overflow-hidden rounded-t-2xl bg-primary shadow-xl ring-1 ring-secondary lg:inset-x-auto lg:top-0 lg:right-0 lg:max-h-none lg:w-100 lg:rounded-none"
-    >
-      <div className="grid gap-3 border-b border-secondary px-5 py-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-brand-secondary">Guided tour</p>
-          <Button color="tertiary" size="sm" iconLeading={X} onClick={close} aria-label="Close the guided tour" />
-        </div>
-        <div className="grid gap-1.5">
-          <p className="text-xs text-tertiary tabular-nums">{stepLabel(index)}</p>
-          <ProgressBarBase value={((index + 1) / TOUR_STEPS.length) * 100} label={stepLabel(index)} className="h-1.5 bg-tertiary" />
-        </div>
-        <h2 ref={heading} tabIndex={-1} className="text-lg font-semibold text-primary" style={{ outline: 'none' }}>
-          {current?.title}
-        </h2>
-      </div>
-
-      <div className="grid content-start gap-5 overflow-y-auto px-5 py-5">
-        {current?.kind === 'welcome' && (
-          <WelcomeStep
-            onNext={() => {
-              goTo(1);
-            }}
-          />
+    <>
+      <Spotlight onTarget={onTarget} />
+      <div
+        ref={card}
+        id="guided-tour"
+        role="dialog"
+        aria-modal="false"
+        aria-label="Guided tour"
+        aria-describedby="tour-step-label tour-title"
+        style={style}
+        className={cx(
+          'fixed z-[70] flex w-[min(24rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-2xl bg-primary shadow-xl ring-1 ring-secondary transition-[top,left] duration-200 motion-reduce:transition-none',
+          PLACEMENT_CLASS[placement.kind],
         )}
-        {current?.kind === 'live' && <LiveStepView key={current.index} step={current} evidence={evidence} />}
-        {current?.kind === 'try' && <TryStep />}
-      </div>
-
-      <nav aria-label="Tour steps" className="grid gap-3 border-t border-secondary px-5 py-3">
-        <ol className="flex flex-wrap gap-1.5">
-          {TOUR_STEPS.map((item) => (
-            <li key={item.index}>
-              <button
-                type="button"
-                onClick={() => {
-                  goTo(item.index);
-                }}
-                aria-current={item.index === index ? 'step' : undefined}
-                aria-label={`${stepLabel(item.index)}: ${item.title}`}
-                className={cx(
-                  'flex size-7 items-center justify-center rounded-full text-xs font-semibold tabular-nums outline-focus-ring focus-visible:outline-2',
-                  item.index === index ? 'bg-brand-solid text-white' : 'bg-secondary text-secondary hover:bg-secondary_hover',
-                )}
-              >
-                {item.index + 1}
-              </button>
-            </li>
-          ))}
-        </ol>
-        <div className="flex justify-between gap-3">
-          <Button color="secondary" size="sm" iconLeading={ArrowLeft} isDisabled={index === 0} onClick={() => { goTo(index - 1); }}>
-            Back
-          </Button>
-          <Button color="secondary" size="sm" iconTrailing={ArrowRight} isDisabled={index === LAST_STEP} onClick={() => { goTo(index + 1); }}>
-            Next
-          </Button>
+      >
+        <div className="grid gap-2 border-b border-secondary px-5 pt-4 pb-3">
+          <div className="flex items-center justify-between gap-3">
+            <p id="tour-step-label" className="text-xs font-semibold text-brand-secondary tabular-nums">
+              {story ? 'The story' : 'Guided tour'} · {stepLabel(index)}
+            </p>
+            <Button color="tertiary" size="sm" iconLeading={X} onClick={close} aria-label="Close the guided tour" />
+          </div>
+          <h2 id="tour-title" ref={heading} tabIndex={-1} className="text-lg font-semibold text-primary" style={{ outline: 'none' }}>
+            {currentStep?.title}
+          </h2>
+          {story && (
+            <p aria-live="polite" data-testid="story-caption" className="text-sm text-secondary">
+              {player.caption}
+            </p>
+          )}
         </div>
-      </nav>
-    </aside>
+
+        <div className="grid content-start gap-5 overflow-y-auto px-5 py-4">
+          {currentStep?.kind === 'welcome' && (
+            <WelcomeStep
+              story={story}
+              onWalk={() => {
+                show(1);
+                move(1);
+              }}
+              onPlay={playStory}
+            />
+          )}
+          {currentStep?.kind === 'live' && <LiveStepView key={`${String(currentStep.index)}-${mode}`} step={currentStep} evidence={evidence} autoLatest={story} />}
+          {currentStep?.kind === 'try' && <TryStep />}
+        </div>
+
+        <nav aria-label="Tour steps" className="grid gap-3 border-t border-secondary px-5 py-3">
+          <ol className="flex items-center gap-2">
+            {TOUR_STEPS.map((item) => (
+              <li key={item.index}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    move(item.index);
+                  }}
+                  aria-current={item.index === index ? 'step' : undefined}
+                  aria-label={`${stepLabel(item.index)}: ${item.title}`}
+                  className="flex size-6 items-center justify-center rounded-full outline-focus-ring focus-visible:outline-2"
+                >
+                  <span
+                    aria-hidden
+                    className={cx(
+                      'block rounded-full transition-[width,background-color] duration-150 motion-reduce:transition-none',
+                      item.index === index ? 'h-2 w-5 bg-brand-solid' : item.index < index ? 'size-2 bg-brand-secondary' : 'size-2 bg-quaternary',
+                    )}
+                  />
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Button color="secondary" size="sm" iconLeading={ArrowLeft} isDisabled={index === 0} onClick={() => { move(index - 1); }}>
+              Back
+            </Button>
+            {story && !player.ended && (
+              <div className="flex gap-2">
+                <Button color="secondary" size="sm" iconLeading={playing ? PauseCircle : PlayCircle} onClick={playing ? pause : resume}>
+                  {playing ? 'Pause' : 'Resume'}
+                </Button>
+                <Button
+                  color="secondary"
+                  size="sm"
+                  iconLeading={FastForward}
+                  onClick={() => {
+                    pause();
+                    move(LAST_STEP);
+                  }}
+                >
+                  Skip to the end
+                </Button>
+              </div>
+            )}
+            <Button color="secondary" size="sm" iconTrailing={ArrowRight} isDisabled={index === LAST_STEP} onClick={() => { move(index + 1); }}>
+              Next
+            </Button>
+          </div>
+        </nav>
+      </div>
+    </>
   );
 }

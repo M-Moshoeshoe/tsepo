@@ -4,12 +4,22 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { parseTourParam, withTourParam } from '../../src/views/tour.ts';
 
+/** Walk through it yourself, step by step, or let the story play on its own. */
+export type TourMode = 'walk' | 'story';
+
 interface TourState {
   open: boolean;
   /** The current step, from 0; undefined while the tour is closed. */
   step: number | undefined;
-  /** Opens the tour, at a step or where it was left. */
+  mode: TourMode;
+  /** True while "Play the story" is moving on by itself. */
+  playing: boolean;
+  /** Opens the walkthrough, at a step or where it was left. */
   show: (step?: number) => void;
+  /** Starts "Play the story" from the welcome. */
+  playStory: () => void;
+  pause: () => void;
+  resume: () => void;
   goTo: (step: number) => void;
   close: () => void;
   toggle: () => void;
@@ -51,6 +61,14 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const search = useSearchParams().toString();
   const [step, setStep] = useState<number | undefined>(undefined);
+  const [mode, setMode] = useState<TourMode>('walk');
+  const [playing, setPlaying] = useState(false);
+  // The control that opened the tour gets focus back when it closes.
+  const opener = useRef<HTMLElement | null>(null);
+  const remember = (): void => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.closest('#guided-tour') === null) opener.current = active;
+  };
   const lastStep = useRef<number>(0);
   const current = useRef<number | undefined>(undefined);
   current.current = step;
@@ -75,20 +93,49 @@ export function TourProvider({ children }: { children: ReactNode }) {
 
   const show = useCallback((at?: number) => {
     markTourSeen();
+    remember();
+    setMode('walk');
+    setPlaying(false);
     setStep(at ?? lastStep.current);
+  }, []);
+  const playStory = useCallback(() => {
+    markTourSeen();
+    remember();
+    setMode('story');
+    setPlaying(true);
+    setStep(0);
+  }, []);
+  const pause = useCallback(() => {
+    setPlaying(false);
+  }, []);
+  const resume = useCallback(() => {
+    setPlaying(true);
   }, []);
   const goTo = useCallback((at: number) => {
     setStep(at);
   }, []);
   const close = useCallback(() => {
     setStep(undefined);
+    setMode('walk');
+    setPlaying(false);
   }, []);
+
+  // Once the tour has closed and its card is gone, focus goes back to the control that opened it.
+  useEffect(() => {
+    if (step !== undefined) return;
+    const back = opener.current;
+    opener.current = null;
+    if (back?.isConnected === true) back.focus();
+  }, [step]);
   const toggle = useCallback(() => {
     if (current.current === undefined) show();
     else close();
   }, [show, close]);
 
-  const value = useMemo(() => ({ open: step !== undefined, step, show, goTo, close, toggle }), [step, show, goTo, close, toggle]);
+  const value = useMemo(
+    () => ({ open: step !== undefined, step, mode, playing, show, playStory, pause, resume, goTo, close, toggle }),
+    [step, mode, playing, show, playStory, pause, resume, goTo, close, toggle],
+  );
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
 }
 

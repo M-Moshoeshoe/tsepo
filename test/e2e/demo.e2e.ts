@@ -210,12 +210,63 @@ void describe('the interface', () => {
     await view.keyboard.press('Escape');
     await tour.waitFor({ state: 'hidden' });
     assert.ok(!view.url().includes('tour='));
+    // Focus goes back to the button that opened the tour.
+    assert.equal(await view.evaluate(() => document.activeElement?.textContent), 'Take the 3-minute tour');
+    await view.context().close();
+  });
+
+  void it('works from the keyboard: the card is a labelled dialog that takes focus, never traps it, and Escape ends it', async () => {
+    const view = await openPage(browser, 1280, BASE_URL, '/business');
+    await view.locator('header').getByRole('button', { name: 'Take the 3-minute tour' }).focus();
+    await view.keyboard.press('Enter');
+    const tour = view.getByRole('dialog', { name: 'Guided tour' });
+    await tour.waitFor();
+    assert.equal(await tour.getAttribute('aria-modal'), 'false');
+    assert.equal(await view.evaluate(() => document.activeElement?.id), 'tour-title');
+    await view.keyboard.press('Tab');
+    assert.ok(await view.evaluate(() => document.getElementById('guided-tour')?.contains(document.activeElement) === true));
+    // The page behind stays reachable: nothing in it is made inert.
+    assert.equal(await view.locator('main[inert], main[aria-hidden="true"]').count(), 0);
+    await view.keyboard.press('Escape');
+    await tour.waitFor({ state: 'hidden' });
+    assert.equal(await view.evaluate(() => document.activeElement?.textContent), 'Take the 3-minute tour');
+    await view.context().close();
+  });
+
+  void it('plays the story from the latest live runs without the code, with captions, a spotlight, Pause, Resume and Skip to the end', { timeout: RUN_TIMEOUT }, async () => {
+    const view = await openPage(browser, 1280, BASE_URL, '/business', { firstVisit: true, motion: true });
+    await view.getByRole('region', { name: 'New here?' }).getByRole('button', { name: 'Play the story' }).click();
+    const tour = view.getByRole('dialog', { name: 'Guided tour' });
+    const caption = tour.getByTestId('story-caption');
+    await caption.getByText('Playing the story', { exact: false }).waitFor();
+    // It moves on by itself to the first live step, opens its evidence and lights it.
+    await caption.getByText('Step 2 of 6: Your agent pays Naledi for a logo.', { exact: false }).waitFor({ timeout: 30_000 });
+    await view.waitForURL(/highlight=decision/, { timeout: 30_000 });
+    await view.getByTestId('spotlight').waitFor({ timeout: 20_000 });
+    await tour.getByRole('button', { name: 'Pause' }).click();
+    await caption.getByText('Paused.', { exact: false }).waitFor();
+    await tour.getByRole('button', { name: 'Resume' }).click();
+    await tour.getByRole('button', { name: 'Skip to the end' }).click();
+    await tour.getByRole('heading', { name: 'Now you try' }).waitFor();
+    await caption.getByText('The story is over.', { exact: false }).waitFor();
+    await view.context().close();
+  });
+
+  void it('with reduced motion, plays the story only when Next is pressed', { timeout: RUN_TIMEOUT }, async () => {
+    const view = await openPage(browser, 1280, BASE_URL, '/business', { firstVisit: true });
+    await view.getByRole('region', { name: 'New here?' }).getByRole('button', { name: 'Play the story' }).click();
+    const tour = view.getByRole('dialog', { name: 'Guided tour' });
+    await tour.getByRole('heading', { name: 'Welcome' }).waitFor();
+    await view.waitForTimeout(6000);
+    assert.equal(await tour.getByRole('heading', { name: 'Welcome' }).count(), 1, 'the story must not move on by itself');
+    await tour.getByRole('button', { name: 'Next' }).click();
+    await tour.getByRole('heading', { name: 'Your agent pays Naledi for a logo' }).waitFor();
     await view.context().close();
   });
 
   void it('moves between steps, and a refresh or shared link reopens the same step', async () => {
     const view = await openPage(browser, 1280, BASE_URL, '/business?tour=0');
-    const tour = view.getByRole('complementary', { name: 'Guided tour' });
+    const tour = view.getByRole('dialog', { name: 'Guided tour' });
     await tour.getByRole('button', { name: 'Skip, and see the latest runs' }).click();
     await tour.getByRole('heading', { name: 'Your agent pays Naledi for a logo' }).waitFor();
     await view.waitForURL(/tour=1/);
@@ -230,7 +281,7 @@ void describe('the interface', () => {
 
   void it('shows the latest live run without a code, and the evidence opens with its record highlighted and focused', { timeout: RUN_TIMEOUT }, async () => {
     const view = await openPage(browser, 1280, BASE_URL, '/business?tour=1');
-    const tour = view.getByRole('complementary', { name: 'Guided tour' });
+    const tour = view.getByRole('dialog', { name: 'Guided tour' });
     await tour.getByRole('button', { name: 'Show the latest live run' }).click();
     const latest = tour.getByTestId('latest-run');
     await latest.getByText(/Latest live run: .* SAST/).waitFor();
@@ -245,7 +296,7 @@ void describe('the interface', () => {
   void it('runs a live step inside the panel, says who decided, and announces it to screen readers', { timeout: RUN_TIMEOUT }, async () => {
     const view = await openPage(browser, 1280, BASE_URL, '/business');
     await unlockInTour(view);
-    const tour = view.getByRole('complementary', { name: 'Guided tour' });
+    const tour = view.getByRole('dialog', { name: 'Guided tour' });
     await tour.getByRole('button', { name: 'Step 4 of 6: An unknown agent tries to pay' }).click();
     await tour.getByRole('button', { name: 'Run live on Testnet' }).click();
     await view.getByRole('status').filter({ hasText: 'An unknown agent tries to pay finished.' }).waitFor({ timeout: RUN_TIMEOUT });

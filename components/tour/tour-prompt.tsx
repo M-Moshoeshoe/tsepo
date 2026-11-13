@@ -1,6 +1,6 @@
 'use client';
 
-import { Compass03, X } from '@untitledui/icons';
+import { Compass03, PlayCircle, X } from '@untitledui/icons';
 import { useState } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { markTourSeen, useTour } from './tour-provider.tsx';
@@ -11,7 +11,7 @@ import { markTourSeen, useTour } from './tour-provider.tsx';
  * opened, it never shows again.
  */
 export function TourPrompt() {
-  const { open, show } = useTour();
+  const { open, show, playStory } = useTour();
   const [visible, setVisible] = useState(true);
 
   if (!visible || open) return null;
@@ -34,18 +34,29 @@ export function TourPrompt() {
         <Button color="tertiary" size="sm" iconLeading={X} onClick={dismiss} aria-label="Dismiss the tour offer" />
       </div>
       <p className="text-sm text-secondary">Take the 3-minute tour: four live steps on the XRP Ledger Testnet, each with its proof.</p>
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-2">
         <Button
           color="primary"
+          size="sm"
+          iconLeading={PlayCircle}
+          onClick={() => {
+            setVisible(false);
+            playStory();
+          }}
+        >
+          Play the story
+        </Button>
+        <Button
+          color="secondary"
           size="sm"
           onClick={() => {
             setVisible(false);
             show(0);
           }}
         >
-          Start the tour
+          Walk through it myself
         </Button>
-        <Button color="secondary" size="sm" onClick={dismiss}>
+        <Button color="link-gray" size="sm" onClick={dismiss}>
           Not now
         </Button>
       </div>

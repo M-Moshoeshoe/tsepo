@@ -38,16 +38,22 @@ export function lastEvent(events: DemoEvent[]): DemoEvent | undefined {
   return events.at(-1);
 }
 
+/**
+ * Opens Chromium. E2E_HOST_RULES passes Chromium's --host-resolver-rules, for
+ * a machine whose own name resolution fails, for example
+ * "MAP tsepo.up.railway.app 153.52.255.92".
+ */
 export async function openBrowser(): Promise<Browser> {
-  return chromium.launch();
+  const rules = process.env.E2E_HOST_RULES;
+  return chromium.launch(rules === undefined || rules === '' ? {} : { args: [`--host-resolver-rules=${rules}`] });
 }
 
 /**
  * Opens a page in a fresh browser context. The first-visit tour offer is marked
  * as seen, so it never covers what a test clicks, unless `firstVisit` is set.
  */
-export async function openPage(browser: Browser, width: number, base = BASE_URL, path = '/', options: { firstVisit?: boolean } = {}): Promise<Page> {
-  const context = await browser.newContext({ viewport: { width, height: width < 600 ? 844 : 900 }, reducedMotion: 'reduce' });
+export async function openPage(browser: Browser, width: number, base = BASE_URL, path = '/', options: { firstVisit?: boolean; motion?: boolean } = {}): Promise<Page> {
+  const context = await browser.newContext({ viewport: { width, height: width < 600 ? 844 : 900 }, reducedMotion: options.motion === true ? 'no-preference' : 'reduce' });
   if (options.firstVisit !== true) {
     await context.addInitScript(() => {
       localStorage.setItem('tsepo-tour-seen', '1');
@@ -61,7 +67,7 @@ export async function openPage(browser: Browser, width: number, base = BASE_URL,
 
 /** Opens the guided tour panel from the header, unless it is open already, and returns it. */
 export async function openTour(page: Page): Promise<Locator> {
-  const tour = page.getByRole('complementary', { name: 'Guided tour' });
+  const tour = page.getByRole('dialog', { name: 'Guided tour' });
   if (!(await tour.isVisible())) await page.locator('header').getByRole('button', { name: 'Take the 3-minute tour' }).click();
   await tour.waitFor();
   return tour;
