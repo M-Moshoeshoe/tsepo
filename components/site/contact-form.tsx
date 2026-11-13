@@ -43,7 +43,7 @@ export function ContactForm() {
 
   if (done) {
     return (
-      <p role="status" className="rounded-xl bg-secondary p-5 text-md text-primary">
+      <p role="status" className="rounded-2xl bg-secondary p-6 text-md text-primary">
         Thank you. Your message is saved, and we will reply by email.
       </p>
     );
@@ -54,7 +54,7 @@ export function ContactForm() {
       onSubmit={(event) => {
         void submit(event);
       }}
-      className="grid gap-4 rounded-xl bg-secondary p-5"
+      className="grid gap-5 rounded-2xl bg-secondary p-6 md:p-8"
       noValidate
     >
       <Input label="Your name" autoComplete="name" value={name} onChange={setName} isRequired />

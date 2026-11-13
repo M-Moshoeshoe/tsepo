@@ -1,64 +1,92 @@
 import Link from 'next/link';
-import { REPOSITORY, SITE_FOOTER, SITE_NAV } from '../../src/views/navigation.ts';
+import { Button } from '@/components/base/buttons/button';
+import { LANDING_ACTIONS, REPOSITORY, SITE_FOOTER_COMPANY, SITE_FOOTER_PRODUCT, SITE_NAV, type NavEntry } from '../../src/views/navigation.ts';
 import { Brand } from '../shell/brand.tsx';
 
-const NAV_LINK = 'rounded-sm text-sm font-semibold text-secondary outline-focus-ring hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2';
+/** The width every public section shares: 1200px of content, with a 16px gutter on a phone. */
+export const SITE_WIDTH = 'mx-auto w-full max-w-[1264px] px-4 md:px-8';
+
+const NAV_LINK = 'rounded-sm text-sm font-medium text-secondary outline-focus-ring hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2';
 const FOOT_LINK = 'rounded-sm text-sm text-tertiary outline-focus-ring hover:text-primary focus-visible:outline-2';
 
-/** The header of the public pages, with the logo and the main destinations. */
+const [tour, product] = LANDING_ACTIONS;
+
+/** The header of the public pages: the logo, the landing page sections, the FAQ, and the two ways in. */
 export function SiteHeader() {
   return (
-    <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-6 lg:px-8">
-      <Brand href="/" />
-      <nav aria-label="Main">
-        <ul className="flex flex-wrap gap-x-5 gap-y-2">
-          {SITE_NAV.map((entry) => (
-            <li key={entry.href}>
-              <Link href={entry.href} className={NAV_LINK}>
-                {entry.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <header className="border-b border-secondary bg-primary">
+      <div className={`${SITE_WIDTH} flex flex-wrap items-center gap-x-10 gap-y-3 py-3.5`}>
+        <Brand href="/" />
+        <nav aria-label="Main" className="order-last w-full md:order-none md:w-auto md:flex-1">
+          <ul className="flex flex-wrap gap-x-5 gap-y-1 md:gap-x-7">
+            {SITE_NAV.map((entry) => (
+              <li key={entry.label}>
+                <Link href={entry.href} className={NAV_LINK}>
+                  {entry.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="ml-auto flex items-center gap-2">
+          {product !== undefined && (
+            <Button href={product.href} color="secondary" size="sm" className="max-sm:hidden">
+              {product.label}
+            </Button>
+          )}
+          {tour !== undefined && (
+            <Button href={tour.href} color="primary" size="sm">
+              {tour.label}
+            </Button>
+          )}
+        </div>
+      </div>
     </header>
   );
 }
 
-/** The footer of the public pages: every destination, the source, and what is real here. */
-export function SiteFooter() {
-  const product = SITE_FOOTER.slice(0, 5);
-  const site = SITE_FOOTER.slice(5);
+function FooterGroup({ label, entries, external }: { label: string; entries: NavEntry[]; external?: NavEntry }) {
   return (
-    <footer className="border-t border-secondary bg-secondary">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-10 pb-10 sm:grid-cols-[2fr_1fr_1fr] lg:px-8">
-        <div className="grid content-start gap-3">
+    <nav aria-label={label} className="grid content-start gap-3">
+      <p className="text-sm font-semibold text-primary">{label}</p>
+      <ul className="grid gap-2">
+        {entries.map((entry) => (
+          <li key={entry.href}>
+            <Link href={entry.href} className={FOOT_LINK}>
+              {entry.label}
+            </Link>
+          </li>
+        ))}
+        {external !== undefined && (
+          <li>
+            <a href={external.href} target="_blank" rel="noreferrer" className={FOOT_LINK}>
+              {external.label}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
+  );
+}
+
+/** The footer of the public pages: the product, the company pages, the source, and the Testnet line. */
+export function SiteFooter() {
+  return (
+    <footer className="border-t border-secondary bg-primary">
+      <div className={`${SITE_WIDTH} grid gap-10 py-12 sm:grid-cols-2 md:grid-cols-[2fr_1fr_1fr]`}>
+        <div className="grid content-start gap-3 sm:col-span-2 md:col-span-1">
           <Brand href="/" />
-          <p className="max-w-sm text-sm text-tertiary">Identity and spending rules for AI agents that pay, on the XRP Ledger.</p>
+          <p className="max-w-xs text-sm text-tertiary">Tšepo gives AI agents that pay a verified identity and spending rules they cannot break.</p>
         </div>
-        <nav aria-label="Product" className="grid content-start gap-2">
-          <p className="text-sm font-semibold text-primary">Product</p>
-          {product.map((entry) => (
-            <Link key={entry.href} href={entry.href} className={FOOT_LINK}>
-              {entry.label}
-            </Link>
-          ))}
-        </nav>
-        <nav aria-label="Tšepo" className="grid content-start gap-2">
-          <p className="text-sm font-semibold text-primary">Tšepo</p>
-          {site.map((entry) => (
-            <Link key={entry.href} href={entry.href} className={FOOT_LINK}>
-              {entry.label}
-            </Link>
-          ))}
-          <a href={REPOSITORY} target="_blank" rel="noreferrer" className={FOOT_LINK}>
-            GitHub<span className="sr-only"> (opens in a new tab)</span>
-          </a>
-        </nav>
+        <FooterGroup label="Product" entries={SITE_FOOTER_PRODUCT} />
+        <FooterGroup label="Company" entries={SITE_FOOTER_COMPANY} external={{ label: 'GitHub', href: REPOSITORY }} />
       </div>
-      <p className="mx-auto max-w-6xl border-t border-secondary px-4 py-5 text-sm text-tertiary lg:px-8">
-        Testnet. Sample businesses and people. No real money moves.
-      </p>
+      <div className="border-t border-secondary">
+        <p className={`${SITE_WIDTH} py-5 text-sm text-tertiary`}>
+          Tšepo runs on the XRP Ledger Testnet. The businesses and people are samples, and no real money moves.
+        </p>
+      </div>
     </footer>
   );
 }

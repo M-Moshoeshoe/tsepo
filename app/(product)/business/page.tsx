@@ -82,10 +82,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         )}
       </section>
       {view.mandate !== undefined && (
-        <section aria-label="Spending, last 14 days" className="rounded-xl p-4 ring-1 ring-secondary ring-inset lg:p-5 xl:col-span-2">
+        <section aria-label="Spending in the last 14 days" className="rounded-xl p-4 ring-1 ring-secondary ring-inset lg:p-5 xl:col-span-2">
           <ColumnChart
             id="spending"
-            title="Spending, last 14 days"
+            title="Spending in the last 14 days"
             description={`RLUSD the agent paid each day over the last 14 days, against today's daily limit of ${view.mandate.dailyLimit} RLUSD.`}
             series={[{ key: 'paid', label: 'Paid', fill: 'fill-utility-brand-400', swatch: 'bg-utility-brand-400' }]}
             columns={spending.map((day) => {

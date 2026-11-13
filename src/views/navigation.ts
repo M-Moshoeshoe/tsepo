@@ -42,43 +42,65 @@ export const SHELL_FOOT: NavEntry[] = [
 
 export const REPOSITORY = 'https://github.com/M-Moshoeshoe/tsepo';
 
-/** The header of the public pages: the landing page, About, FAQ and Contact. */
+/** The header of the public pages: sections of the landing page, then the FAQ. */
 export const SITE_NAV: NavEntry[] = [
-  { label: 'Business workspace', href: '/business' },
-  { label: 'Receiving exchange', href: '/exchange/payments' },
-  { label: 'Give an instruction', href: '/business/instruct' },
+  { label: 'How it works', href: '/#how-it-works' },
+  { label: 'For businesses', href: '/#for-businesses' },
+  { label: 'For exchanges', href: '/#for-exchanges' },
   { label: 'FAQ', href: '/faq' },
 ];
 
-/** The footer of the public pages: the product, then the site. GitHub leaves the site and is added by the footer. */
-export const SITE_FOOTER: NavEntry[] = [
+/** The footer of the public pages: the product first. GitHub leaves the site and is added by the footer. */
+export const SITE_FOOTER_PRODUCT: NavEntry[] = [
   { label: 'Business workspace', href: '/business' },
   { label: 'Receiving exchange', href: '/exchange/payments' },
   { label: 'Give an instruction', href: '/business/instruct' },
   { label: 'Verify an agent', href: '/exchange/verify' },
   { label: 'Integrate', href: '/exchange/integrate' },
+];
+
+/** The footer of the public pages: the company pages. */
+export const SITE_FOOTER_COMPANY: NavEntry[] = [
   { label: 'About', href: '/about' },
   { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' },
 ];
 
-/** The landing page's calls to action, beyond its header. */
+/** The two calls to action of the public pages: the tour first, then the workspace chooser. */
 export const LANDING_ACTIONS: NavEntry[] = [
   { label: 'Take the 3-minute tour', href: '/business?tour' },
-  { label: 'Open the product', href: '/business' },
+  { label: 'Open the product', href: '/explore' },
+];
+
+/** The workspace chooser: who you explore as. There is no sign-in on the Testnet sandbox. */
+export const EXPLORE_AS: (NavEntry & { name: string; role: string; line: string })[] = [
+  {
+    name: 'Lesedi Design Studio',
+    role: 'Finance lead',
+    line: 'Set the agent’s spending rules, give it instructions and review every payment.',
+    label: 'Explore as Lesedi Design Studio',
+    href: '/business',
+  },
+  {
+    name: 'Receiving exchange',
+    role: 'Compliance officer',
+    line: 'See agent payments arrive with their Travel Rule details, and verify any agent.',
+    label: 'Explore as the Receiving exchange',
+    href: '/exchange/payments',
+  },
 ];
 
 export function workspaceOf(pathname: string): WorkspaceId {
   return pathname.startsWith('/exchange') ? 'exchange' : 'business';
 }
 
-/** The page part of an address, without the query: "/business?tour" is "/business". */
+/** The page part of an address, without the query or section: "/business?tour" is "/business", "/#how-it-works" is "/". */
 export function routeOf(href: string): string {
-  return href.split('?')[0] ?? href;
+  return href.split(/[?#]/)[0] ?? href;
 }
 
 /** The public pages share the site header and footer, not the product shell. */
-export const PUBLIC_PAGES = new Set(['/', '/faq', '/about', '/contact']);
+export const PUBLIC_PAGES = new Set(['/', '/explore', '/faq', '/about', '/contact']);
 
 /**
  * The links on a page and how many clicks each takes. A sidebar or header
@@ -86,7 +108,7 @@ export const PUBLIC_PAGES = new Set(['/', '/faq', '/about', '/contact']);
  */
 export function linksFrom(route: string): { href: string; clicks: number }[] {
   if (PUBLIC_PAGES.has(route)) {
-    return [...SITE_NAV, ...SITE_FOOTER, ...LANDING_ACTIONS, { label: 'Home', href: '/' }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 }));
+    return [...SITE_NAV, ...SITE_FOOTER_PRODUCT, ...SITE_FOOTER_COMPANY, ...LANDING_ACTIONS, ...EXPLORE_AS, { label: 'Home', href: '/' }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 }));
   }
   const workspace = workspaceOf(route);
   const own = workspace === 'business' ? [...BUSINESS_NAV, BUSINESS_ACTION] : EXCHANGE_NAV;
