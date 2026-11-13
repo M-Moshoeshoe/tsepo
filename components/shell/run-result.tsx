@@ -188,7 +188,7 @@ export function RunResult() {
           </div>
         )}
       </div>
-      {state.status !== 'idle' && <RunPanel state={state} busy={busy} onClose={dismiss} />}
+      {state.status !== 'idle' && state.source === 'page' && <RunPanel state={state} busy={busy} onClose={dismiss} />}
     </>
   );
 }

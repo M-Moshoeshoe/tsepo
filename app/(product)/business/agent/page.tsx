@@ -23,7 +23,9 @@ function PageHeader({ view }: { view: RegistryView }) {
       <div className="grid gap-1.5">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-xl font-semibold text-primary">{agent.name}</h2>
-          <AgentStatusBadge status={agent.status} />
+          <span data-tour-target="agent-status" className="inline-flex rounded-full">
+            <AgentStatusBadge status={agent.status} />
+          </span>
         </div>
         <p className="text-sm text-tertiary">
           Pays contractors for {view.business.registeredName}.

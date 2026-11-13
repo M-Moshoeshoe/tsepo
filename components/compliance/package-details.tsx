@@ -14,7 +14,9 @@ export function PackageDetails({ pkg, timing }: { pkg: Directive9Package | undef
         </h3>
       </div>
       <div>
-        <StatusBadge tone={TRAVEL_RULE_TONES[timing]}>{TRAVEL_RULE_LABELS[timing]}</StatusBadge>
+        <span data-tour-target="travel-rule" className="inline-flex rounded-full">
+          <StatusBadge tone={TRAVEL_RULE_TONES[timing]}>{TRAVEL_RULE_LABELS[timing]}</StatusBadge>
+        </span>
       </div>
       {pkg === undefined ? (
         <p className="text-sm text-tertiary">No Travel Rule details were received for this payment.</p>

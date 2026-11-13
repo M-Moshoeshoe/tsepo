@@ -170,6 +170,23 @@ button[data-pressed]:not([data-disabled]) {
   animation: run-progress 1.4s ease-in-out infinite;
 }
 
+/* The guided tour's evidence highlight: a brand ring, so it stays visible when motion is reduced. */
+.tour-highlight {
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 4px;
+  border-radius: 8px;
+  animation: tour-pulse 1.2s ease-out 2;
+}
+
+@keyframes tour-pulse {
+  from {
+    box-shadow: 0 0 0 0 var(--color-brand-200);
+  }
+  to {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Untitled UI enter and exit animations and hover transitions also stop. */
   *,

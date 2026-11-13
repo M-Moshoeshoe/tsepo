@@ -70,3 +70,23 @@ export const RunRequestSchema = z
 
 export type RunRequest = z.infer<typeof RunRequestSchema>;
 export type RunKind = RunRequest['kind'];
+
+const RunKindSchema = z.enum(['reset', 'scenario-1', 'scenario-2', 'scenario-3', 'scenario-4', 'revoke', 'change-limits', 'instruction']);
+
+/**
+ * The run going on now, or the one that just ended, as the run endpoint
+ * reports it. A page that was refreshed during a run reattaches with this.
+ * It holds progress text and hashes only, never a key or the access code.
+ */
+export const CurrentRunSchema = z.strictObject({
+  run: z
+    .strictObject({
+      kind: RunKindSchema,
+      startedAt: z.number().int(),
+      finished: z.boolean(),
+      events: z.array(DemoEventSchema),
+    })
+    .nullable(),
+});
+
+export type CurrentRun = NonNullable<z.infer<typeof CurrentRunSchema>['run']>;

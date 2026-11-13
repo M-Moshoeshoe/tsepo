@@ -51,3 +51,23 @@ export function storyTitle(kind: ScenarioKind): string {
   if (scenario === undefined) throw new Error(`No story for ${kind}`);
   return scenario.title;
 }
+
+/** The label each kind of live run shows while it runs, so a page that reattaches after a refresh names it the same way. */
+export const RESTORE_LABEL = 'Restore sample data';
+
+export function runLabel(kind: RunKind): string {
+  const story = SCENARIOS.find((scenario) => scenario.kind === kind);
+  if (story !== undefined) return story.title;
+  switch (kind) {
+    case 'reset':
+      return RESTORE_LABEL;
+    case 'revoke':
+      return 'Revoke agent';
+    case 'change-limits':
+      return 'Change limits';
+    case 'instruction':
+      return 'Your instruction';
+    default:
+      return 'Live step';
+  }
+}

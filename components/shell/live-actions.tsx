@@ -2,19 +2,19 @@
 
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import type { RunRequest } from '../../src/demo/events.ts';
-import { SCENARIOS, scenarioLabel, type ScenarioKind } from '../../src/views/scenarios.ts';
-import { useRun } from '../run-provider.tsx';
+import { RESTORE_LABEL, SCENARIOS, scenarioLabel, type ScenarioKind } from '../../src/views/scenarios.ts';
+import { useRun, type RunSource } from '../run-provider.tsx';
 
 /** The label of the action that puts the sample workspace back in its starting state. */
-export const RESTORE_LABEL = 'Restore sample data';
+export { RESTORE_LABEL };
 
 interface LiveActions {
   busy: boolean;
   locked: boolean;
   /** Starts a live step on Testnet, or asks for the access code first when none is saved. */
-  run: (request: RunRequest, label: string) => void;
-  runStory: (kind: ScenarioKind) => void;
-  restore: () => void;
+  run: (request: RunRequest, label: string, source?: RunSource) => void;
+  runStory: (kind: ScenarioKind, source?: RunSource) => void;
+  restore: (source?: RunSource) => void;
   unlock: () => void;
 }
 
@@ -26,24 +26,27 @@ export function LiveActionsProvider({ onUnlock, children }: { onUnlock: () => vo
   const locked = accessCode === undefined;
 
   const run = useCallback(
-    (request: RunRequest, label: string) => {
+    (request: RunRequest, label: string, source?: RunSource) => {
       if (locked) onUnlock();
-      else start(request, label);
+      else start(request, label, source);
     },
     [locked, onUnlock, start],
   );
 
   const runStory = useCallback(
-    (kind: ScenarioKind) => {
+    (kind: ScenarioKind, source?: RunSource) => {
       const scenario = SCENARIOS.find((item) => item.kind === kind);
-      if (scenario !== undefined) run({ kind }, scenarioLabel(scenario));
+      if (scenario !== undefined) run({ kind }, scenarioLabel(scenario), source);
     },
     [run],
   );
 
-  const restore = useCallback(() => {
-    run({ kind: 'reset' }, RESTORE_LABEL);
-  }, [run]);
+  const restore = useCallback(
+    (source?: RunSource) => {
+      run({ kind: 'reset' }, RESTORE_LABEL, source);
+    },
+    [run],
+  );
 
   const value = useMemo(
     () => ({ busy, locked, run, runStory, restore, unlock: onUnlock }),

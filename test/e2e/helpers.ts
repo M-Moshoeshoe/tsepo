@@ -36,8 +36,17 @@ export async function openBrowser(): Promise<Browser> {
   return chromium.launch();
 }
 
-export async function openPage(browser: Browser, width: number, base = BASE_URL, path = '/'): Promise<Page> {
+/**
+ * Opens a page in a fresh browser context. The first-visit tour offer is marked
+ * as seen, so it never covers what a test clicks, unless `firstVisit` is set.
+ */
+export async function openPage(browser: Browser, width: number, base = BASE_URL, path = '/', options: { firstVisit?: boolean } = {}): Promise<Page> {
   const context = await browser.newContext({ viewport: { width, height: width < 600 ? 844 : 900 }, reducedMotion: 'reduce' });
+  if (options.firstVisit !== true) {
+    await context.addInitScript(() => {
+      localStorage.setItem('tsepo-tour-seen', '1');
+    });
+  }
   const page = await context.newPage();
   await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
   return page;
@@ -46,7 +55,7 @@ export async function openPage(browser: Browser, width: number, base = BASE_URL,
 /** Opens the guided tour panel from the header, unless it is open already, and returns it. */
 export async function openTour(page: Page): Promise<Locator> {
   const tour = page.getByRole('complementary', { name: 'Guided tour' });
-  if (!(await tour.isVisible())) await page.getByRole('button', { name: 'Take the 3-minute tour' }).click();
+  if (!(await tour.isVisible())) await page.locator('header').getByRole('button', { name: 'Take the 3-minute tour' }).click();
   await tour.waitFor();
   return tour;
 }
@@ -54,7 +63,7 @@ export async function openTour(page: Page): Promise<Locator> {
 /** Enters the access code in the tour's welcome step, so live steps can run. The code is never printed. */
 export async function unlockInTour(page: Page): Promise<void> {
   const tour = await openTour(page);
-  await tour.getByLabel('Access code').fill(accessCode());
+  await tour.getByRole('textbox', { name: 'Access code', exact: true }).fill(accessCode());
   await tour.getByRole('button', { name: 'Unlock live steps' }).click();
   await tour.getByText('Live steps unlocked').waitFor();
 }

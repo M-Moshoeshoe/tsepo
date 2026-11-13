@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { SiteFooter, SiteHeader } from '../../../components/site/site-chrome.tsx';
 
@@ -8,6 +9,17 @@ export const metadata: Metadata = {
 };
 
 const QUESTIONS: { question: string; answer: ReactNode }[] = [
+  {
+    question: 'Where do I start?',
+    answer: (
+      <>
+        Take the 3-minute tour. It runs four steps live on the XRP Ledger Testnet and shows you the proof of each.{' '}
+        <Link href="/business?tour" className="font-semibold text-brand-secondary hover:text-brand-secondary_hover">
+          Take the 3-minute tour
+        </Link>
+      </>
+    ),
+  },
   {
     question: 'What is Tšepo?',
     answer:

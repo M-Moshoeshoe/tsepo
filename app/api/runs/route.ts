@@ -4,7 +4,8 @@ import { RunRequestSchema } from '../../../src/demo/events.ts';
 import { plainRunError } from '../../../src/demo/errors.ts';
 import { runDemo } from '../../../src/demo/runs.ts';
 import { TESTNET_URL } from '../../../src/ledger/testnet.ts';
-import { guardRun } from './guard.ts';
+import { refuseWrongCode, takeRunSlot } from './guard.ts';
+import { beginRun, currentRun, endRun } from './current.ts';
 import { acquireRunLock, releaseRunLock } from './lock.ts';
 
 export const runtime = 'nodejs';
@@ -26,7 +27,7 @@ function stoppedText(kind: string, error: unknown): string {
  * progress text and transaction hashes only.
  */
 export async function POST(request: Request): Promise<Response> {
-  const refused = guardRun(request);
+  const refused = refuseWrongCode(request);
   if (refused !== undefined) return refused;
 
   let body: unknown;
@@ -37,13 +38,20 @@ export async function POST(request: Request): Promise<Response> {
   }
   const parsed = RunRequestSchema.safeParse(body);
   if (!parsed.success) return errorResponse(400, parsed.error.issues[0]?.message ?? 'The request was not valid.');
-  if (!acquireRunLock()) return errorResponse(409, 'Another run is in progress. Wait for it to finish, then try again.');
+  if (!acquireRunLock()) return errorResponse(409, 'Another visitor is running a step. Wait for it to finish, then try again.');
+  const limited = takeRunSlot();
+  if (limited !== undefined) {
+    releaseRunLock();
+    return limited;
+  }
 
   const encoder = new TextEncoder();
+  const record = beginRun(parsed.data.kind);
   let open = true;
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (event: DemoEvent): void => {
+        record(event);
         if (!open) return;
         try {
           controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
@@ -59,6 +67,7 @@ export async function POST(request: Request): Promise<Response> {
         send({ type: 'failed', text: stoppedText(parsed.data.kind, error) });
       } finally {
         if (client.isConnected()) await client.disconnect();
+        endRun();
         releaseRunLock();
         if (open) controller.close();
       }
@@ -72,4 +81,12 @@ export async function POST(request: Request): Promise<Response> {
   return new Response(stream, {
     headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store' },
   });
+}
+
+/**
+ * The run going on now, so a page refreshed during a run can reattach and
+ * follow it to the end. Progress text and hashes only; no code is needed.
+ */
+export function GET(): Response {
+  return Response.json({ run: currentRun() }, { headers: { 'Cache-Control': 'no-store' } });
 }

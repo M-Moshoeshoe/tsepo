@@ -5,7 +5,9 @@ import { MobileNavigationHeader } from '@/components/application/app-navigation/
 import { RouteProvider } from '@/providers/router-provider';
 import { cx } from '@/utils/cx';
 import { useRun } from '../run-provider.tsx';
+import { TourHighlight } from '../tour/tour-highlight.tsx';
 import { TourPanel } from '../tour/tour-panel.tsx';
+import { TourPrompt } from '../tour/tour-prompt.tsx';
 import { TourProvider, useTour } from '../tour/tour-provider.tsx';
 import { AccessCodeDialog } from './access-code-dialog.tsx';
 import { AppFooter } from './app-footer.tsx';
@@ -60,6 +62,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <PageColumn>{children}</PageColumn>
 
             <TourPanel />
+            <TourPrompt />
+            <TourHighlight />
             <AccessCodeDialog isOpen={askingForCode} onOpenChange={setAskingForCode} onSave={saveAccessCode} />
           </div>
         </LiveActionsProvider>

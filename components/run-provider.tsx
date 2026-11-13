@@ -3,12 +3,25 @@
 import { useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from 'react';
 import { z } from 'zod';
-import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunKind, type RunRequest } from '../src/demo/events.ts';
+import { ACCESS_CODE_HEADER, CurrentRunSchema, DemoEventSchema, type CurrentRun, type DemoEvent, type RunKind, type RunRequest } from '../src/demo/events.ts';
+import { runLabel } from '../src/views/scenarios.ts';
 import { useToast } from './toast-provider.tsx';
 
 export type RunState =
   | { status: 'idle' }
-  | { status: 'running' | 'done' | 'failed'; label: string; events: DemoEvent[]; startedAt: number; finishedAt?: number };
+  | {
+      status: 'running' | 'done' | 'failed';
+      label: string;
+      /** Where the run was started: the tour shows its own progress, so the page panel stays out of the way. */
+      source: RunSource;
+      /** True when the server refused because another visitor's run was going. */
+      conflict: boolean;
+      events: DemoEvent[];
+      startedAt: number;
+      finishedAt?: number;
+    };
+
+export type RunSource = 'tour' | 'page';
 
 interface RunContextValue {
   state: RunState;
@@ -21,7 +34,7 @@ interface RunContextValue {
   accessCode: string | undefined;
   saveAccessCode: (code: string) => void;
   forgetAccessCode: () => void;
-  start: (request: RunRequest, label: string) => void;
+  start: (request: RunRequest, label: string, source?: RunSource) => void;
   dismiss: () => void;
 }
 
@@ -50,6 +63,9 @@ function parseLine(line: string): DemoEvent | undefined {
     return undefined;
   }
 }
+
+/** How often a reattached page asks how the run is going. */
+const REATTACH_POLL_MS = 1500;
 
 const STORAGE_KEY = 'tsepo-demo-access-code';
 
@@ -96,6 +112,49 @@ export function RunProvider({ children }: { children: ReactNode }) {
     setAccessCode(stored);
   }, []);
 
+  // After a refresh during a live step, reattach to it and follow it to the end, so the page never
+  // looks idle while the ledger is busy. The server keeps the run's progress; nothing is run again.
+  useEffect(() => {
+    const controller = new AbortController();
+    const read = async (): Promise<CurrentRun | null> => {
+      const response = await fetch('/api/runs', { cache: 'no-store', signal: controller.signal });
+      const parsed = CurrentRunSchema.safeParse(await response.json());
+      return parsed.success ? parsed.data.run : null;
+    };
+    const show = (run: CurrentRun): void => {
+      const last = run.events.at(-1);
+      const status = last?.type === 'done' ? 'done' : last?.type === 'failed' ? 'failed' : 'running';
+      const source: RunSource = new URLSearchParams(window.location.search).has('tour') ? 'tour' : 'page';
+      setState({ status, label: runLabel(run.kind), source, conflict: false, events: run.events, startedAt: run.startedAt, ...(status === 'running' ? {} : { finishedAt: Date.now() }) });
+    };
+    void (async () => {
+      try {
+        const first = await read();
+        if (first === null || first.finished || running.current) return;
+        running.current = true;
+        setRunActive(true);
+        show(first);
+        for (;;) {
+          await new Promise((resolve) => setTimeout(resolve, REATTACH_POLL_MS));
+          const run = await read();
+          if (run === null) break;
+          show(run);
+          if (run.finished) break;
+        }
+        running.current = false;
+        startRefresh(() => {
+          router.refresh();
+        });
+        setRunActive(false);
+      } catch {
+        // No run to follow, or the page is closing: nothing to show.
+      }
+    })();
+    return () => {
+      controller.abort();
+    };
+  }, [router]);
+
   const saveAccessCode = useCallback((code: string) => {
     codeRef.current = code;
     writeStoredCode(code);
@@ -119,11 +178,11 @@ export function RunProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const start = useCallback(
-    (request: RunRequest, label: string) => {
+    (request: RunRequest, label: string, source: RunSource = 'page') => {
       if (running.current) return;
       running.current = true;
       setRunActive(true);
-      setState({ status: 'running', label, events: [], startedAt: Date.now() });
+      setState({ status: 'running', label, source, conflict: false, events: [], startedAt: Date.now() });
 
       void (async () => {
         let finished = false;
@@ -134,6 +193,7 @@ export function RunProvider({ children }: { children: ReactNode }) {
             body: JSON.stringify(request),
           });
           if (response.status === 401) forgetAccessCode();
+          if (response.status === 409) setState((current) => (current.status === 'idle' ? current : { ...current, conflict: true }));
           if (!response.ok || response.body === null) {
             append({ type: 'failed', text: await readError(response) });
             finished = true;

@@ -20,7 +20,7 @@ export function AssistantNote({ children }: { children: string }) {
 /** Who decided, in plain words. Deliberately without the AI mark: rules decide, never the model. */
 export function DecisionBox({ decidedBy, children }: { decidedBy: string; children: string }) {
   return (
-    <div className="grid gap-1 rounded-lg px-3 py-2.5 text-sm ring-1 ring-secondary ring-inset">
+    <div data-tour-target="decision" className="grid gap-1 rounded-lg px-3 py-2.5 text-sm ring-1 ring-secondary ring-inset">
       <p className="text-primary">{children}</p>
       <p className="text-tertiary">Decided by {decidedBy}</p>
     </div>

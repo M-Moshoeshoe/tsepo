@@ -3,7 +3,7 @@ import { actorName, decisionNote } from '../../src/views/actors.ts';
 import type { EventState } from '../../src/views/payment-events.ts';
 import { isGlossaryTerm } from '../../src/views/glossary.ts';
 import { formatSast, reasonText } from '../../src/views/status.ts';
-import { Amount, CopyableMono, Facts, Mono, StatusBadge } from '../display.tsx';
+import { Amount, CopyableMono, ExplorerLink, Facts, Mono, StatusBadge } from '../display.tsx';
 import { Term } from '../term.tsx';
 import { Timeline, type TimelineState } from '../timeline.tsx';
 import { CheckTimeline } from './check-timeline.tsx';
@@ -97,7 +97,17 @@ export function PaymentDetails({ detail }: { detail: DeskDetail }) {
             ...(entry.ledgerResult === undefined ? [] : [{ term: 'Ledger result', value: <LedgerResult code={entry.ledgerResult} /> }]),
             entry.hash === undefined
               ? { term: 'Ledger', value: <span className="text-tertiary">Never submitted. The approval service refused to approve it.</span> }
-              : { term: 'Transaction', value: <CopyableMono value={entry.hash} label="transaction hash" className="text-xs" /> },
+              : {
+                  term: 'Transaction',
+                  value: (
+                    <span className="grid gap-1">
+                      <CopyableMono value={entry.hash} label="transaction hash" className="text-xs" />
+                      <span data-tour-target="explorer" className="justify-self-start rounded-sm">
+                        <ExplorerLink hash={entry.hash}>View on the XRP Ledger</ExplorerLink>
+                      </span>
+                    </span>
+                  ),
+                },
             ...(entry.invoiceId === undefined
               ? []
               : [

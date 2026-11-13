@@ -36,28 +36,24 @@ function tour(page: Page) {
 /** Opens the guided tour and enters the access code in its welcome step. The code is never printed. */
 async function unlock(page: Page): Promise<void> {
   if (ACCESS_CODE === '') throw new Error('DEMO_ACCESS_CODE is not set in the environment');
-  await page.getByRole('button', { name: 'Take the 3-minute tour' }).click();
-  await tour(page).getByLabel('Access code').fill(ACCESS_CODE);
+  await page.locator('header').getByRole('button', { name: 'Take the 3-minute tour' }).click();
+  await tour(page).getByRole('textbox', { name: 'Access code', exact: true }).fill(ACCESS_CODE);
   await tour(page).getByRole('button', { name: 'Unlock live steps' }).click();
   await tour(page).getByText('Live steps unlocked').waitFor();
 }
 
-/** Starts a run with `start` and waits until it has fully finished. Stops on any failure. */
-async function runAndWait(page: Page, name: string, start: () => Promise<void>): Promise<void> {
-  const close = page.getByRole('region', { name: 'Run progress' }).getByRole('button', { name: 'Close', exact: true });
-  if (await close.isVisible()) await close.click();
-  await start();
-  const progress = page.getByRole('region', { name: 'Run progress' });
-  await progress.getByText(/Running|Finished in|Stopped after/).first().waitFor({ timeout: 10_000 });
-  const finished = progress.getByText(/Finished in \d+ seconds|Stopped after \d+ seconds/);
-  await finished.waitFor({ timeout: RUN_TIMEOUT_MS });
-  if ((await finished.textContent())?.startsWith('Stopped') === true) {
+/** Runs one live step of the tour, inside its panel, and waits for "What happened". Stops on any failure. */
+async function runStep(page: Page, step: number, title: string): Promise<void> {
+  await tour(page).getByRole('button', { name: `Step ${String(step + 1)} of 6: ${title}` }).click();
+  await tour(page).getByRole('button', { name: 'Run live on Testnet' }).click();
+  const outcome = tour(page).getByText(/^What happened$|Nothing further was submitted/).first();
+  await outcome.waitFor({ timeout: RUN_TIMEOUT_MS });
+  if ((await outcome.textContent())?.includes('Nothing further') === true) {
     await shot(page, 'run-stopped');
-    throw new Error(`The run "${name}" stopped. See screenshots/run-stopped.png.`);
+    throw new Error(`The step "${title}" stopped. See screenshots/run-stopped.png.`);
   }
-  await close.waitFor({ timeout: RUN_TIMEOUT_MS });
   await page.waitForLoadState('networkidle');
-  console.log(`ran ${name}`);
+  console.log(`ran ${title}`);
 }
 
 async function goTo(page: Page, link: string): Promise<void> {
@@ -79,20 +75,21 @@ async function runStories(browser: Browser): Promise<void> {
   await unlock(page);
   await shot(page, 'tour-1280', false);
 
-  await runAndWait(page, 'Restore sample data', () => tour(page).getByRole('button', { name: 'Restore sample data' }).click());
-  await page.getByRole('status').getByText('Sample data restored').waitFor();
+  await tour(page).getByRole('button', { name: 'Step 6 of 6: Now you try' }).click();
+  await tour(page).getByRole('button', { name: 'Restore sample data' }).click();
+  await page.getByRole('status').getByText('Sample data restored').waitFor({ timeout: RUN_TIMEOUT_MS });
   await shot(page, 'toast-restored', false);
 
-  await runAndWait(page, 'Unknown agent', () => tour(page).getByRole('button', { name: 'Run live: An unknown agent tries to pay' }).click());
-  await runAndWait(page, 'Split payment', () => tour(page).getByRole('button', { name: 'Run live: Your agent tries to split a payment' }).click());
-  await page.getByRole('heading', { name: 'What just happened' }).waitFor();
+  await runStep(page, 3, 'An unknown agent tries to pay');
+  await runStep(page, 2, 'Your agent tries to split a payment');
+  await shot(page, 'tour-step-result', false);
   await page.getByRole('button', { name: 'Close the guided tour' }).click();
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await shot(page, 'overview-1280');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 
   await goTo(page, 'Agent');
-  await page.getByRole('heading', { name: 'Approved recipients' }).waitFor({ timeout: 60_000 });
+  await page.getByRole('heading', { name: 'Instructions' }).waitFor({ timeout: 60_000 });
   await shot(page, 'agent-1280');
   await page.getByRole('button', { name: 'Change limits' }).click();
   await page.getByRole('dialog', { name: 'Change the agent limits' }).waitFor();

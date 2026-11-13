@@ -5,9 +5,7 @@ import { DeskTabs } from '../../../../components/compliance/desk-tabs.tsx';
 import { PaymentDetails, PaymentHeader } from '../../../../components/compliance/payment-details.tsx';
 import { DetailsPanel } from '../../../../components/details-panel.tsx';
 import { CopyableMono } from '../../../../components/display.tsx';
-import { MoreMenu } from '../../../../components/more-menu.tsx';
 import { Pagination } from '../../../../components/pagination.tsx';
-import { TESTNET_EXPLORER } from '../../../../src/ledger/testnet.ts';
 import { EmptyMessage } from '../../../../components/empty-message.tsx';
 import { SegmentedLinks } from '../../../../components/filter-tabs.tsx';
 import { Term } from '../../../../components/term.tsx';
@@ -105,16 +103,6 @@ export default async function IncomingPaymentsPage({ searchParams }: { searchPar
           key={view.detail.entry.id}
           closeHref={deskHref({ filter, range, page: page.page })}
           header={<PaymentHeader detail={view.detail} />}
-          footer={
-            view.detail.entry.hash === undefined ? undefined : (
-              <div className="flex justify-end">
-                <MoreMenu
-                  label="More payment actions"
-                  items={[{ id: 'ledger', label: 'View on the XRP Ledger', href: `${TESTNET_EXPLORER}/transactions/${view.detail.entry.hash}`, external: true }]}
-                />
-              </div>
-            )
-          }
         >
           <PaymentDetails detail={view.detail} />
         </DetailsPanel>

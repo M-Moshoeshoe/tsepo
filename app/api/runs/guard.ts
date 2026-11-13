@@ -22,12 +22,11 @@ export function refuseWrongCode(request: Request): Response | undefined {
 }
 
 /**
- * Checks the demo access code and the run rate limit. Returns a response to
- * send when the run must not start, or undefined when it may.
+ * Counts one run against the hourly limit. Called only for a valid request that
+ * got the run lock, so a malformed or conflicting request never uses up the
+ * allowance. Returns a response to send when the limit is reached.
  */
-export function guardRun(request: Request): Response | undefined {
-  const refused = refuseWrongCode(request);
-  if (refused !== undefined) return refused;
+export function takeRunSlot(): Response | undefined {
   const run = runLimiter.take(Date.now());
   if (!run.allowed) {
     return Response.json(
