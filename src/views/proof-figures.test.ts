@@ -28,6 +28,7 @@ describe('the proof figures', () => {
     expect(figures.map((figure) => figure.value)).toEqual(['1 of 1', '1 of 1', '1 of 2', 'Next ledger']);
     expect(figures[0]?.label).toBe('Every attempt that broke the rules was blocked.');
     expect(figures[2]?.label).toBe('The agent alone can never pay: it holds 1 of the 2 required signatures.');
+    expect(figures[3]?.label).toBe('A revocation stops the agent from the next ledger, within seconds.');
     expect(figures.every((figure) => !/^0\b/.test(figure.value))).toBe(true);
   });
 });

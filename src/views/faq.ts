@@ -48,7 +48,14 @@ export const FAQ: FaqEntry[] = [
   {
     question: 'What happens when I revoke the agent?',
     answer: [
-      'Your business key deletes the agent’s credential from the ledger. Within seconds, the approval service refuses every payment the agent asks for, and the exchange rejects it.',
+      'Your business key deletes the agent’s credential from the ledger. From the next ledger, within seconds, the approval service refuses every payment the agent asks for, and the exchange rejects it.',
+    ],
+  },
+  {
+    question: 'Who holds the business key?',
+    answer: [
+      'In this demo, the app plays the business, so it holds the business key: the recovery key, with weight 2. The agent key alone can never pay.',
+      'In a real pilot, the business holds its own key and the app never sees it.',
     ],
   },
   {

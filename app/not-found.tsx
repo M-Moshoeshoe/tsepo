@@ -14,7 +14,7 @@ export default function NotFound() {
         <p className="text-md text-tertiary">The address may be mistyped, or the page may have moved.</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button href="/" color="primary" size="md">
+        <Button href="/about" color="primary" size="md">
           About Tšepo
         </Button>
         <Button href="/business" color="secondary" size="md">

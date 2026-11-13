@@ -57,7 +57,7 @@ function Plan({ audience, extra }: { audience: Audience; extra?: ReactNode }) {
       <div className="grid gap-1 border-y border-secondary py-4">
         <p className="text-xs font-semibold text-tertiary">Pilot pricing, to be validated</p>
         <p className="flex flex-wrap items-baseline gap-x-2">
-          <span className="font-mono text-display-xs font-medium text-primary">{audience.price}</span>
+          <span className="font-mono text-display-xs font-medium text-primary">{audience.price}</span>{' '}
           <span className="text-sm text-tertiary">{audience.priceNote}</span>
         </p>
       </div>
@@ -105,7 +105,43 @@ function ApproversFragment({ proof }: { proof: ProofFile }) {
   );
 }
 
-/** Businesses and exchanges side by side: who each is, what they get, and the pilot price. */
+/** How the pilot reaches its first customers. Plain facts: the draft is called a draft, and no partnership is claimed. */
+const GO_TO_MARKET: { term: string; text: string }[] = [
+  {
+    term: 'First customers',
+    text: 'South African crypto exchanges, which must accept agent payments under Directive 9, and businesses that pay contractors through AI agents.',
+  },
+  {
+    term: 'Why now',
+    text: 'Directive 9 has applied from R0 since 30 April 2025. South Africa’s next FATF evaluation runs to October 2027. A 2026 Treasury draft proposes tighter rules for transfers between exchanges and self-custody wallets. AI agents are starting to pay.',
+  },
+  {
+    term: 'How we reach them',
+    text: 'Through the Travel Rule providers that exchanges already use, such as Notabene and Sumsub. Each exchange then brings its business clients.',
+  },
+  {
+    term: 'The pilot',
+    text: 'Three businesses and one exchange on the XRP Ledger Testnet, then a supervised pilot.',
+  },
+];
+
+function GoToMarket() {
+  return (
+    <div className="grid gap-6 rounded-2xl bg-secondary p-6 md:p-8">
+      <h3 className="text-lg font-semibold text-primary">How the pilot reaches its first customers</h3>
+      <dl className="grid gap-6 sm:grid-cols-2">
+        {GO_TO_MARKET.map((item) => (
+          <div key={item.term} className="grid content-start gap-1">
+            <dt className="text-md font-semibold text-primary">{item.term}</dt>
+            <dd className="text-md text-tertiary">{item.text}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+/** Businesses and exchanges side by side: who each is, what they get, the pilot price, and how the pilot reaches them. */
 export function Audiences({ proof, integrationPreview }: { proof: ProofFile; integrationPreview: string }) {
   const [business, exchange] = AUDIENCES;
   return (
@@ -128,6 +164,7 @@ export function Audiences({ proof, integrationPreview }: { proof: ProofFile; int
           />
         )}
       </div>
+      <GoToMarket />
     </Section>
   );
 }

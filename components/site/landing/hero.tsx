@@ -2,7 +2,6 @@ import { Check, XClose } from '@untitledui/icons';
 import type { ReactNode } from 'react';
 import { DEMO_LIMITS } from '../../../src/config/demo.ts';
 import { LANDING_ACTIONS } from '../../../src/views/navigation.ts';
-import type { ProofNumbers } from '../../../src/views/proof-numbers.ts';
 import { shortHash, type ProofFile } from '../../../src/views/proof.ts';
 import { StatusBadge } from '../../display.tsx';
 import { SiteButton } from '../site-button.tsx';
@@ -69,8 +68,7 @@ function LedgerLine({ result, hash }: { result: string; hash: string }) {
 }
 
 /** The four moments of the tour, as the product shows them, with the real ledger results. */
-function Moments({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbers }) {
-  const seconds = numbers.revocation.refusedAfterSeconds;
+function Moments({ proof }: { proof: ProofFile }) {
   return (
     <MomentSequence labels={['A payment approved and accepted', 'A split payment refused', 'An unknown agent rejected', 'An agent revoked']}>
       <UiCard label="A payment approved and accepted" className="h-full">
@@ -100,11 +98,7 @@ function Moments({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbers }
       </UiCard>
       <UiCard label="An agent revoked" className="h-full">
         <MomentHead reference="Lesedi payout agent" title="Credential deleted by the business" badge={<StatusBadge tone="neutral">Revoked</StatusBadge>} />
-        <p className="text-sm text-secondary">
-          {seconds === undefined
-            ? 'From the next ledger, the agent cannot pay.'
-            : `Its next payment was refused ${String(seconds)} seconds after the revocation.`}
-        </p>
+        <p className="text-sm text-secondary">From the next ledger, the agent cannot pay.</p>
         <LedgerLine result={proof.ledger.revocation.result} hash={proof.transactions.revocation} />
       </UiCard>
     </MomentSequence>
@@ -112,25 +106,25 @@ function Moments({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbers }
 }
 
 /** The opening: a two-line promise, one sentence, the two ways in, and the four moments as real product cards. */
-export function Hero({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbers }) {
+export function Hero({ proof }: { proof: ProofFile }) {
   return (
     <section aria-labelledby="hero-title">
       <div className={`${SITE_WIDTH} grid gap-7 pt-12 pb-8 md:pt-16 md:pb-10`}>
         <h1 id="hero-title" className="text-display-md font-medium text-primary md:text-display-lg xl:text-[3.5rem] xl:leading-[1.12]">
-          <span className="block">Your AI agent pays within its rules.</span>
+          <span className="block">Your AI agent pays within its rules.</span>{' '}
           <span className="block text-tertiary">Exchanges know exactly who it is.</span>
         </h1>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-12">
           <p className="max-w-2xl text-lg text-tertiary md:text-xl">
             Naledi Mokoena finished a logo for Lesedi Design Studio. Within a minute, the studio’s AI agent paid her 2 RLUSD. The
-            exchange knew exactly who sent the money. The agent could never have paid more than its rules allow.
+            exchange knew exactly who sent the money. The agent could never have paid more than its rules allowed.
           </p>
           <LandingActions />
         </div>
       </div>
       <div className={SITE_WIDTH}>
         <div className="rounded-2xl bg-secondary p-3 md:p-4">
-          <Moments proof={proof} numbers={numbers} />
+          <Moments proof={proof} />
         </div>
         <div className="flex flex-wrap justify-between gap-x-8 gap-y-1 py-5 text-sm text-tertiary">
           <p>

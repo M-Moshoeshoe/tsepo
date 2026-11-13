@@ -32,7 +32,7 @@ sentence on the landing page; no contractions, no em dashes, no hype words.
 | New | The approval service decided. Nothing was sent. |
 | New | The agent has no Tšepo credential. |
 | New | The XRP Ledger decided. No money moved. |
-| New | Its next payment was refused 6.6 seconds after the revocation. (The figure is counted from the records.) |
+| New | From the next ledger, the agent cannot pay. (No fixed number of seconds is claimed.) |
 | New | Built on the XRP Ledger. Settles in RLUSD. |
 
 ### The stakes
@@ -59,7 +59,7 @@ sentence on the landing page; no contractions, no em dashes, no hype words.
 | New | 55% of payment attempts were blocked. The approval service refused or the XRP Ledger rejected 41 of 75 attempts. |
 | New | 34 of 34 payments sent the Travel Rule details first. The agent sent the sender and receiver details to the exchange before each payment. |
 | New | 1 of 2 signatures can come from the agent. The signer list gives the agent key a weight of 1 against a quorum of 2, so the agent cannot pay alone. |
-| New | 6.6 s from revocation to the first refused payment. The business deleted the credential in ledger 22280046. The agent’s next payment was refused 6.6 seconds after that ledger closed. |
+| New | Next ledger. A revocation stops the agent from the next ledger, within seconds. The business deleted the credential in ledger 22280046. From then on, the approval service refuses the agent and the exchange rejects it. |
 
 ### How it works
 

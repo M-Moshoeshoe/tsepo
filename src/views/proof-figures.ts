@@ -40,16 +40,11 @@ export function proofFigures(numbers: ProofNumbers): Figure[] {
     label: `The agent alone can never pay: it holds ${String(agentWeight)} of the ${String(quorum)} required signatures.`,
     note: `The agent account’s signer list on the ledger sets a quorum of ${String(quorum)} and gives the agent key a weight of ${String(agentWeight)}.`,
   });
-  const { refusedAfterSeconds, ledgerIndex } = numbers.revocation;
-  figures.push(
-    refusedAfterSeconds === undefined
-      ? { value: 'Next ledger', label: 'is when a revocation takes effect.', note: `The credential was deleted in ledger ${String(ledgerIndex)}.` }
-      : {
-          value: `${String(refusedAfterSeconds)} s`,
-          label: 'from revocation to the first refused payment.',
-          note: `The business deleted the credential in ledger ${String(ledgerIndex)}. The agent’s next payment was refused ${String(refusedAfterSeconds)} seconds after that ledger closed.`,
-        },
-  );
+  figures.push({
+    value: 'Next ledger',
+    label: 'A revocation stops the agent from the next ledger, within seconds.',
+    note: `The business deleted the credential in ledger ${String(numbers.revocation.ledgerIndex)}. From then on, the approval service refuses the agent and the exchange rejects it.`,
+  });
   return figures;
 }
 

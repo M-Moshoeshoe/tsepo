@@ -148,23 +148,23 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
   const steps: Step[] = [
     {
       title: '1. The business sets the spending rules.',
-      question: 'What may the agent do?',
-      answer: 'Only what its rules allow: a limit per payment, a limit per day and an end date. It cannot change them.',
-      proof: { label: 'See the spending rules', href: '/business/rules' },
+      question: 'Who can it pay?',
+      answer: 'Only the recipients the business approves in its rules, within a limit per payment and a limit per day.',
+      proof: { label: 'See the approved recipients', href: '/business/rules' },
       fragment: <RulesFragment />,
     },
     {
       title: '2. Tšepo records them on the XRP Ledger.',
       question: 'How do I stop it?',
-      answer: 'Revoke it. Your business key deletes its credential, and its next payment is refused within seconds.',
+      answer: 'Revoke it. Your business key deletes this credential, and from the next ledger its payments are refused.',
       proof: { label: 'Watch a revocation live', href: '/business?tour=4' },
       fragment: <CredentialFragment proof={proof} />,
     },
     {
       title: '3. Every payment needs two signatures.',
-      question: 'Who can it pay?',
-      answer: 'Only approved recipients. The approval service signs nothing else, and the agent cannot pay alone.',
-      proof: { label: 'See the approved recipients', href: '/business/rules' },
+      question: 'What may the agent do?',
+      answer: 'Only what the approval service will co-sign: payments within the rules. The agent cannot change the rules or pay alone.',
+      proof: { label: 'See who must approve each payment', href: '/business/rules' },
       fragment: <SignaturesFragment proof={proof} />,
     },
     {

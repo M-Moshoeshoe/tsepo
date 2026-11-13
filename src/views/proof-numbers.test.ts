@@ -62,29 +62,16 @@ describe('proof in numbers', () => {
     expect(signatures.agentWeight + signatures.approvalWeight).toBe(signatures.quorum);
   });
 
-  it('measures the first refusal for a missing credential after the revocation ledger closed', () => {
+  it('gives the committed revocation ledger and claims no fixed number of seconds, even when a refusal followed it closely', () => {
     const after = new Date(Date.parse(revokedAt) + 6600).toISOString();
-    const before = new Date(Date.parse(revokedAt) - 60_000).toISOString();
     const numbers = proofNumbers({
       proof,
-      policyLog: [review(before, 'refused', ['CREDENTIAL_MISSING']), review(after, 'refused', ['CREDENTIAL_MISSING'])],
+      policyLog: [review(after, 'refused', ['CREDENTIAL_MISSING'])],
       agentEvents: [],
       ledgerRejections: [],
       depositInvoices: [],
     });
-    expect(numbers.revocation).toEqual({ ledgerIndex: proof.ledger.revocation.ledgerIndex, refusedAfterSeconds: 6.6 });
-  });
-
-  it('does not pair the committed revocation with a refusal from another run, hours later', () => {
-    const hoursLater = new Date(Date.parse(revokedAt) + 6 * 60 * 60 * 1000).toISOString();
-    const numbers = proofNumbers({
-      proof,
-      policyLog: [review(hoursLater, 'refused', ['CREDENTIAL_MISSING'])],
-      agentEvents: [],
-      ledgerRejections: [],
-      depositInvoices: [],
-    });
-    expect(numbers.revocation.refusedAfterSeconds).toBeUndefined();
+    expect(numbers.revocation).toEqual({ ledgerIndex: proof.ledger.revocation.ledgerIndex });
   });
 
   it('leaves out what the records cannot support', () => {
@@ -92,7 +79,6 @@ describe('proof in numbers', () => {
     expect(numbers.rulesHeld).toBeUndefined();
     expect(numbers.travelRule).toBeUndefined();
     expect(numbers.period).toBeUndefined();
-    expect(numbers.revocation.refusedAfterSeconds).toBeUndefined();
   });
 
   it('states the period briefly when both dates share a month', () => {

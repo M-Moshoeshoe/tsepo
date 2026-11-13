@@ -17,8 +17,8 @@ export interface ProofNumbers {
   travelRule: { first: number; paid: number } | undefined;
   /** The agent account's signer list: the agent's own weight against the quorum. */
   signatures: { quorum: number; agentWeight: number; approvalWeight: number };
-  /** The revocation on the ledger, and how long after it the agent's next payment was refused. */
-  revocation: { ledgerIndex: number; refusedAfterSeconds: number | undefined };
+  /** The committed revocation on the ledger. It takes effect from the next ledger; no fixed number of seconds is claimed. */
+  revocation: { ledgerIndex: number };
 }
 
 export interface ProofNumbersInput {
@@ -75,28 +75,6 @@ function travelRuleFrom(events: readonly PayoutRecord[]): ProofNumbers['travelRu
   return { first, paid: paid.length };
 }
 
-/**
- * A revoked agent's next payment comes within the same story, seconds later.
- * A refusal further away belongs to another revocation, so it is not counted.
- */
-const SAME_STORY_MS = 2 * 60 * 1000;
-
-/**
- * Seconds from the committed revocation ledger closing to the first payment
- * refused for a missing credential, to one decimal. Only a refusal within the
- * same story counts: the records may come from other runs than the committed
- * transaction, and pairing those would give a false figure.
- */
-function refusedAfter(log: readonly PolicyLogEntry[], closeTime: string): number | undefined {
-  const revokedAt = Date.parse(closeTime);
-  const refusals = log
-    .filter((entry) => entry.kind === 'review' && entry.decision === 'refused' && entry.reasons.includes(PolicyReason.CredentialMissing))
-    .map((entry) => Date.parse(entry.at))
-    .filter((at) => at >= revokedAt && at - revokedAt <= SAME_STORY_MS);
-  if (refusals.length === 0) return undefined;
-  return Math.round((Math.min(...refusals) - revokedAt) / 100) / 10;
-}
-
 function periodFrom(input: ProofNumbersInput): ProofNumbers['period'] {
   const times = [...input.policyLog.map((entry) => entry.at), ...input.agentEvents.map((event) => event.updatedAt), ...input.ledgerRejections.map((item) => item.at)]
     .map((at) => Date.parse(at))
@@ -112,7 +90,7 @@ export function proofNumbers(input: ProofNumbersInput): ProofNumbers {
     rulesHeld: rulesHeldFrom(input),
     travelRule: travelRuleFrom(input.agentEvents),
     signatures: { quorum: signerList.quorum, agentWeight: signerList.weights.agent, approvalWeight: signerList.weights.approvalService },
-    revocation: { ledgerIndex: ledger.revocation.ledgerIndex, refusedAfterSeconds: refusedAfter(input.policyLog, ledger.revocation.closeTime) },
+    revocation: { ledgerIndex: ledger.revocation.ledgerIndex },
   };
 }
 
