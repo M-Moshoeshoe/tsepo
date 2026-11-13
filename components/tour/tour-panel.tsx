@@ -3,6 +3,7 @@
 import { ArrowLeft, ArrowRight, CheckCircle, FastForward, PauseCircle, PlayCircle, RefreshCcw01, X } from '@untitledui/icons';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/base/buttons/button';
 import { cx } from '@/utils/cx';
 import type { DemoEvent } from '../../src/demo/events.ts';
@@ -465,11 +466,13 @@ export function TourPanel() {
     setTarget(box);
   }, []);
 
-  if (!open) return null;
+  if (!open || typeof document === 'undefined') return null;
   const style = placement.kind === 'beside' ? { top: placement.top, left: placement.left } : undefined;
 
-  return (
-    <>
+  // At the top of the page, beside any open details sheet, and marked as React Aria's top layer: the sheet then
+  // neither covers the card nor treats a click on it as a click outside, and screen readers still reach it.
+  return createPortal(
+    <div data-react-aria-top-layer="true">
       <Spotlight onTarget={onTarget} />
       <div
         ref={card}
@@ -568,6 +571,7 @@ export function TourPanel() {
           </div>
         </nav>
       </div>
-    </>
+    </div>,
+    document.body,
   );
 }
