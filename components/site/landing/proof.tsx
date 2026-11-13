@@ -4,6 +4,7 @@ import type { ProofNumbers } from '../../../src/views/proof-numbers.ts';
 import { explorerUrl, PROOF_KEYS, PROOF_LINES, shortHash, type ProofFile } from '../../../src/views/proof.ts';
 import { formatSastDate } from '../../../src/views/status.ts';
 import { Section } from '../section.tsx';
+import { SwipeRow } from '../swipe-row.tsx';
 
 /** One column per figure on a wide screen, so a shorter set never leaves an empty cell. */
 const WIDE_COLUMNS: Record<number, string> = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-2 lg:grid-cols-4' };
@@ -16,15 +17,19 @@ export function Proof({ numbers, proof }: { numbers: ProofNumbers; proof: ProofF
       {figures.length === 0 ? (
         <p className="rounded-2xl bg-secondary px-6 py-5 text-md text-secondary">{NO_FIGURES_YET}</p>
       ) : (
-        <dl className={`grid gap-px overflow-hidden rounded-2xl bg-border-secondary ring-1 ring-secondary ${WIDE_COLUMNS[figures.length] ?? ''}`}>
+        <SwipeRow
+          label="Proof figures"
+          count={figures.length}
+          gridClass={`sm:grid sm:gap-px sm:overflow-hidden sm:rounded-2xl sm:bg-border-secondary sm:ring-1 sm:ring-secondary ${WIDE_COLUMNS[figures.length] ?? ''}`}
+        >
           {figures.map((figure) => (
-            <div key={figure.label} className="grid content-start gap-2 bg-primary p-6">
+            <dl key={figure.label} className="grid content-start gap-2 rounded-2xl bg-primary p-6 ring-1 ring-secondary sm:rounded-none sm:ring-0">
               <dt className="order-2 text-md font-semibold text-primary">{figure.label}</dt>
               <dd className="order-1 text-display-sm font-medium text-primary tabular-nums md:text-display-md">{figure.value}</dd>
               <dd className="order-3 text-sm text-tertiary">{figure.note}</dd>
-            </div>
+            </dl>
           ))}
-        </dl>
+        </SwipeRow>
       )}
       <div className="grid gap-4">
         <h3 className="text-lg font-semibold text-primary">Proven on Testnet</h3>

@@ -46,7 +46,7 @@ export const PROOF_LINES: Record<ProofKey, { title: string; line: string }> = {
   'credential-accepted': { title: 'Credential accepted', line: 'The agent accepts the credential, so it now counts on the ledger.' },
   'deposit-authorization': {
     title: 'Deposit Authorization with credentials',
-    line: 'The exchange’s deposit address accepts payments only from senders with a Tšepo credential.',
+    line: 'The receiving platform’s deposit address accepts payments only from senders with a Tšepo credential.',
   },
   'signer-list': { title: 'Two keys to pay', line: 'The agent account needs the agent and the approval service to sign; its original key is off.' },
   'approved-payment': {

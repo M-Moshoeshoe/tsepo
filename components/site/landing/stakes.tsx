@@ -100,8 +100,7 @@ export function Stakes() {
       </aside>
 
       <p className="text-display-xs font-medium text-primary md:text-display-sm">
-        Other tools stop an AI agent from paying what it should not. Tšepo also proves who the agent is, so the payments it should make are
-        accepted.
+        Blocking bad payments is only half the job. Tšepo also proves who the agent works for, so its genuine payments go through.
       </p>
     </Section>
   );

@@ -519,3 +519,15 @@ except:
 | Frequently asked questions. These answers cover who decides, what goes on the ledger and what the pilot costs. If your question is missing, ask us. | Frequently asked questions. Plain answers about what TÅ¡epo is, who decides each payment, what goes on the ledger and what the pilot costs. |
 | One long list, every answer open | An accordion, one answer open at a time, grouped under: The basics; Control and safety; The Travel Rule and the ledger; Trying TÅ¡epo; The pilot. |
 | New | Still have a question? Contact us |
+
+## Later requests in Stage 8C, part 1
+
+| Before | After |
+|---|---|
+| Other tools stop an AI agent from paying what it should not. TÅ¡epo also proves who the agent is, so the payments it should make are accepted. | Blocking bad payments is only half the job. TÅ¡epo also proves who the agent works for, so its genuine payments go through. (The line appears only on the landing page; the README, FAQ and About page did not carry it.) |
+| Home page pricing introduction: Pilot pricing, to be validated: 0.25% of each payment, charged to each side â€¦ No monthly fees. | Removed from the home page. It stays on /market, in the FAQ and in the README. |
+| Proven on Testnet: The exchangeâ€™s deposit address accepts payments only from senders with a TÅ¡epo credential. | The receiving platformâ€™s deposit address accepts payments only from senders with a TÅ¡epo credential. |
+
+Layout only, no new words: on phones the two pricing columns and the four
+proof figures become rows to swipe, with arrows and a counter; the Meet
+Thuso handshake picture is smaller on a computer screen.

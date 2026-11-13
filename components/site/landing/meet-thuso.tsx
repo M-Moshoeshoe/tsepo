@@ -49,7 +49,7 @@ export function MeetThuso({ example }: { example: ThusoExample | undefined }) {
               height={794}
               loading="lazy"
               decoding="async"
-              className="-mt-[20%] block h-auto w-full"
+              className="-mt-[20%] block h-auto w-full lg:mx-auto lg:-mt-[10%] lg:w-[70%]"
             />
           </div>
           {example === undefined ? (

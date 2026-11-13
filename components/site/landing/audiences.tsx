@@ -6,6 +6,7 @@ import { LANDING_NOTES, SOURCES } from '../../../src/views/sources.ts';
 import { Ref } from '../footnotes.tsx';
 import { JoinPilot } from '../join-pilot.tsx';
 import { Section } from '../section.tsx';
+import { SwipeRow } from '../swipe-row.tsx';
 import { SiteButton } from '../site-button.tsx';
 
 /** The pilot pricing in one sentence, as the business and the platform both read it. */
@@ -28,7 +29,11 @@ function Points({ lines }: { lines: string[] }) {
 /** One side of the block: the name, the price as the largest element, three points, an extra line and one button. */
 function Column({ id, name, points, extra }: { id: string; name: string; points: string[]; extra: ReactNode }) {
   return (
-    <article id={id} aria-labelledby={`${id}-name`} className="grid scroll-mt-4 content-start gap-4 p-5 md:p-6">
+    <article
+      id={id}
+      aria-labelledby={`${id}-name`}
+      className="grid scroll-mt-4 content-start gap-4 rounded-2xl p-5 ring-1 ring-secondary sm:rounded-none sm:ring-0 md:p-6"
+    >
       <h3 id={`${id}-name`} className="text-md font-semibold text-primary">
         {name}
       </h3>
@@ -131,9 +136,13 @@ function GoToMarket() {
 /** Pricing for both sides of the payment, one slim block, with the worked examples and how the pilot reaches its customers. */
 export function Audiences({ proof }: { proof: ProofFile }) {
   return (
-    <Section id="pricing" title="Pricing, per payment, for both sides." intro={PRICING_LINE}>
+    <Section id="pricing" title="Pricing, per payment, for both sides.">
       <div className="grid gap-6">
-        <div className="grid divide-y divide-secondary rounded-2xl ring-1 ring-secondary md:grid-cols-2 md:divide-x md:divide-y-0">
+        <SwipeRow
+          label="Pricing for businesses and for receiving platforms"
+          count={2}
+          gridClass="sm:grid sm:grid-cols-2 sm:gap-0 sm:divide-x sm:divide-secondary sm:rounded-2xl sm:ring-1 sm:ring-secondary"
+        >
           <Column
             id="for-businesses"
             name="For businesses"
@@ -159,7 +168,7 @@ export function Audiences({ proof }: { proof: ProofFile }) {
               </p>
             }
           />
-        </div>
+        </SwipeRow>
         <Examples />
         <GoToMarket />
       </div>
