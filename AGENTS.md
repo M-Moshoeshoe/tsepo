@@ -78,7 +78,7 @@ accepts deposits only from agents that hold a valid credential.
 - Remote: `https://github.com/M-Moshoeshoe/tsepo`. Push with plain `git`.
   Do not use the GitHub CLI.
 - No GitHub Actions workflows. Checks (typecheck, lint, tests) run
-  locally and in the Netlify build.
+  locally and in the Railway build.
 - Before adding Next.js or a linter, confirm it supports the pinned
   TypeScript version. If it does not, pin the latest TypeScript 6 release
   and record why.
@@ -91,7 +91,7 @@ accepts deposits only from agents that hold a valid credential.
 - `npm run check`: all three. Must pass before every commit.
 - `npm run test:e2e`: end-to-end tests against a running production build
   (`npm run build && npm start`) and the XRP Ledger Testnet. They make
-  about nine demo runs and five Claude calls, so run them before a release,
+  about 11 demo runs and 7 Claude calls, so run them before a release,
   not on every commit.
 - `npm run test:site`: browser checks of the public pages against a running
   production build: no clipped or overflowing text and no sideways scroll at

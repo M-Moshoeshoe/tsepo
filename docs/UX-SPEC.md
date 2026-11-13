@@ -1016,8 +1016,8 @@ describe them for later; they are not built before the deadline.
 - **Deployment to Railway:** one long-running service with a persistent
   volume for `TSEPO_DATA_DIR`, which keeps the file store, run lock and rate
   limits valid on a single instance; environment variables; security
-  headers. AGENTS.md and the README mention Netlify for checks and are
-  updated in that step.
+  headers. AGENTS.md and the README name Railway for deployment and
+  checks.
 - **Submission video:** follows the guided tour on the deployed site.
 
 ### Decisions taken by the project owner
