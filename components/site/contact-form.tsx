@@ -2,10 +2,10 @@
 
 import { useState, type SyntheticEvent } from 'react';
 import { z } from 'zod';
-import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { ContactMessageSchema } from '../../src/pilot/contact.ts';
 import { PrivacyNotice, SAVED_MESSAGE } from './privacy-notice.tsx';
+import { SiteButton } from './site-button.tsx';
 
 const ErrorSchema = z.object({ error: z.string() });
 
@@ -81,9 +81,9 @@ export function ContactForm() {
         </p>
       )}
       <PrivacyNotice asksForOrganisation={false} />
-      <Button type="submit" color="primary" size="md" isLoading={sending} showTextWhileLoading className="justify-self-start">
-        Send the message
-      </Button>
+      <SiteButton type="submit" variant="primary" size="lg" arrow={false} busy={sending} className="justify-self-start">
+        {sending ? 'Sending…' : 'Send the message'}
+      </SiteButton>
     </form>
   );
 }

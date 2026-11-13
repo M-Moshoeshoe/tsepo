@@ -10,12 +10,12 @@ export function LandingActions() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       {tour !== undefined && (
-        <SiteButton href={tour.href} tone="primary" size="lg">
+        <SiteButton href={tour.href} variant="primary" size="lg">
           {tour.label}
         </SiteButton>
       )}
       {product !== undefined && (
-        <SiteButton href={product.href} tone="secondary" size="lg">
+        <SiteButton href={product.href} variant="secondary" size="lg">
           {product.label}
         </SiteButton>
       )}

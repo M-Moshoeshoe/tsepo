@@ -1,5 +1,4 @@
-import { ArrowRight, Check } from '@untitledui/icons';
-import Link from 'next/link';
+import { Check } from '@untitledui/icons';
 import type { ReactNode } from 'react';
 import { EXAMPLE_PAYMENTS_CENTS, feeBound, feePerSideCents, formatRand } from '../../../src/domain/pricing.ts';
 import type { ProofFile } from '../../../src/views/proof.ts';
@@ -7,6 +6,7 @@ import { LANDING_NOTES, SOURCES } from '../../../src/views/sources.ts';
 import { Ref } from '../footnotes.tsx';
 import { JoinPilot } from '../join-pilot.tsx';
 import { Section } from '../section.tsx';
+import { SiteButton } from '../site-button.tsx';
 
 /** The pilot pricing in one sentence, as the business and the platform both read it. */
 export const PRICING_LINE =
@@ -40,7 +40,7 @@ function Column({ id, name, points, extra }: { id: string; name: string; points:
       </p>
       <Points lines={points} />
       {extra}
-      <JoinPilot size="md" color="primary" className="justify-self-start" />
+      <JoinPilot variant="primary" size="lg" className="justify-self-start" />
     </article>
   );
 }
@@ -61,7 +61,7 @@ function Approvers({ proof }: { proof: ProofFile }) {
 }
 
 /** Three example payments, worked out by the pricing rules, never typed in. */
-function Examples() {
+export function Examples() {
   return (
     <table className="w-full max-w-md text-left text-sm">
       <caption className="pb-2 text-left text-sm font-semibold text-primary">What each side pays</caption>
@@ -121,13 +121,9 @@ function GoToMarket() {
           </div>
         ))}
       </dl>
-      <Link
-        href="/market"
-        className="inline-flex items-center gap-1.5 justify-self-start rounded-sm text-sm font-semibold text-brand-secondary underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2"
-      >
+      <SiteButton href="/market" variant="quiet" size="md" className="justify-self-start">
         Read about the market
-        <ArrowRight className="size-4" aria-hidden />
-      </Link>
+      </SiteButton>
     </div>
   );
 }
@@ -137,7 +133,6 @@ export function Audiences({ proof }: { proof: ProofFile }) {
   return (
     <Section id="pricing" title="Pricing, per payment, for both sides." intro={PRICING_LINE}>
       <div className="grid gap-6">
-        <p className="-mt-6 text-sm text-tertiary">Shaped by feedback from mentors at W3Node 2026.</p>
         <div className="grid divide-y divide-secondary rounded-2xl ring-1 ring-secondary md:grid-cols-2 md:divide-x md:divide-y-0">
           <Column
             id="for-businesses"

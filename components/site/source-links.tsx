@@ -1,3 +1,4 @@
+import { LinkExternal01 } from '@untitledui/icons';
 import { sourceLabel, type Source } from '../../src/views/sources.ts';
 
 /** "Source: Visa, 9 September 2026", each link opening in a new tab. Used where a footnote list would be out of place, such as one FAQ answer. */
@@ -15,6 +16,7 @@ export function SourceLinks({ sources, className = 'text-xs text-tertiary' }: { 
             className="rounded-sm font-medium text-brand-secondary underline underline-offset-4 outline-focus-ring hover:text-brand-secondary_hover focus-visible:outline-2"
           >
             {sourceLabel(source)}
+            <LinkExternal01 className="ml-1 inline size-3 align-[-1px]" aria-hidden />
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
         </span>

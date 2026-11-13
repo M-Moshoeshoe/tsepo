@@ -1,10 +1,10 @@
-import { ArrowRight, Check } from '@untitledui/icons';
-import Link from 'next/link';
+import { Check } from '@untitledui/icons';
 import type { ReactNode } from 'react';
 import { DEMO_LIMITS, DEMO_PAYEES } from '../../../src/config/demo.ts';
 import { shortHash, type ProofFile } from '../../../src/views/proof.ts';
 import { StatusBadge } from '../../display.tsx';
 import { FragmentPanel, Section, UiCard } from '../section.tsx';
+import { SiteButton } from '../site-button.tsx';
 import { StepCarousel } from './step-carousel.tsx';
 
 function Tick() {
@@ -195,10 +195,9 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
                 <p className="text-sm font-semibold text-secondary">{step.question}</p>
                 <p className="text-sm text-tertiary">{step.answer}</p>
               </div>
-              <Link href={step.proof.href} className="inline-flex items-center gap-1 justify-self-start rounded-sm text-sm font-semibold text-brand-secondary outline-focus-ring hover:text-brand-secondary_hover focus-visible:outline-2">
+              <SiteButton href={step.proof.href} variant="quiet" size="sm" className="justify-self-start whitespace-normal text-left">
                 {step.proof.label}
-                <ArrowRight className="size-4" aria-hidden />
-              </Link>
+              </SiteButton>
             </div>
           </article>
         ))}

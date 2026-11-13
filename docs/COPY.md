@@ -464,3 +464,58 @@ is "0.25% per payment", with the minimum and cap under it.
 
 Not added yet: the name has not been given. It goes on the About page and
 in the README when it is.
+
+# Copy changes, Stage 8C, part 1: polish
+
+## Sources
+
+On the landing page, /market and /about, the Sources list is collapsed
+under "Sources (N)". A footnote opens it and lands on its source; each
+source ends with "Back to the text". Each number appears once in the text.
+"(opens in a new tab)" stays for screen readers only, beside a small
+external-link icon. The FSCA's own copy of its 15 April 2026 update could
+not be reached, so source 8 stays the FA News republication.
+
+| Before | After |
+|---|---|
+| Sources (always open, with every source listed) | Sources (8), collapsed |
+| New | Back to the text |
+| /market: â€¦ plans 35 anti-money-laundering inspections in 2026/27.Â² (FSCA cited twice) | The same FSCA update reports 81 investigations into unlicensed providers, and plans 35 anti-money-laundering inspections in 2026/27. (cited once) |
+
+## Removed everywhere
+
+| Before | After |
+|---|---|
+| Shaped by feedback from mentors at W3Node 2026. | Removed from the landing page, /market, the FAQ and the README. |
+
+## Buttons
+
+Every button on the public pages now comes from one shared component with
+three variants: primary, secondary and quiet. The pricing buttons match the
+hero exactly.
+
+| Before | After |
+|---|---|
+| Send the message (contact form, while sending: the label with a spinner) | Send the message; while sending: Sendingâ€¦ |
+| Send (pilot form, while sending: the label with a spinner) | Send; while sending: Sendingâ€¦ |
+| Join the pilot dialog: â€¦ and for exchanges that receive their payments. | â€¦ and for the platforms that receive their payments. |
+| Join the pilot dialog option: An exchange that receives agent payments | A platform that receives agent payments |
+
+## /market
+
+Rebuilt from the landing page's sections and cards. The words are the same,
+except:
+
+| Before | After |
+|---|---|
+| Who must know the sender (three paragraphs) | Who must know the sender. Three cards: 310 (licences approved as at 31 March 2026, from 533 applications); From R0 (Directive 9); 81 and 35 (investigations and planned inspections). |
+| Pilot pricing, to be validated with the first customers: | The pricing sentence becomes the section's introduction, beside the example table and the illustration. |
+| What comes next (a list) | What comes next. Four cards: Now, Next, Then, After that. |
+
+## /faq
+
+| Before | After |
+|---|---|
+| Frequently asked questions. These answers cover who decides, what goes on the ledger and what the pilot costs. If your question is missing, ask us. | Frequently asked questions. Plain answers about what TÅ¡epo is, who decides each payment, what goes on the ledger and what the pilot costs. |
+| One long list, every answer open | An accordion, one answer open at a time, grouped under: The basics; Control and safety; The Travel Rule and the ledger; Trying TÅ¡epo; The pilot. |
+| New | Still have a question? Contact us |

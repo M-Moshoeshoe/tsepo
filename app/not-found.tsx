@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Button } from '@/components/base/buttons/button';
+import { SiteButton } from '../components/site/site-button.tsx';
 import { Brand } from '../components/shell/brand.tsx';
 
 export const metadata: Metadata = { title: 'Page not found - Tšepo' };
@@ -14,15 +14,15 @@ export default function NotFound() {
         <p className="text-md text-tertiary">The address may be mistyped, or the page may have moved.</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button href="/about" color="primary" size="md">
+        <SiteButton href="/about" variant="primary" size="md">
           About Tšepo
-        </Button>
-        <Button href="/business" color="secondary" size="md">
+        </SiteButton>
+        <SiteButton href="/business" variant="secondary" size="md">
           Business workspace
-        </Button>
-        <Button href="/exchange/payments" color="secondary" size="md">
+        </SiteButton>
+        <SiteButton href="/exchange/payments" variant="secondary" size="md">
           Platform workspace
-        </Button>
+        </SiteButton>
       </div>
     </main>
   );

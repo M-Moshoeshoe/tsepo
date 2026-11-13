@@ -79,4 +79,32 @@ void describe('the public pages', () => {
     for (const id of ['how-it-works', 'for-businesses', 'for-exchanges']) assert.equal(await page.locator(`#${id}`).count(), 1, id);
     await page.context().close();
   });
+
+  void it('keeps the sources collapsed, opens them from a footnote, and links back to the text', { timeout: TIMEOUT }, async () => {
+    for (const path of ['/', '/market', '/about']) {
+      const page = await openPage(browser, 1280, undefined, path);
+      const sources = page.locator('#sources');
+      assert.equal(await sources.evaluate((element) => (element as HTMLDetailsElement).open), false, `${path}: the sources start collapsed`);
+      const numbers = await page.locator('a[href^="#source-"]').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+      assert.equal(new Set(numbers).size, numbers.length, `${path}: each source number appears once in the text`);
+      await page.locator('a[href="#source-1"]').click();
+      await page.locator('#source-1').waitFor({ state: 'visible' });
+      assert.equal(await sources.evaluate((element) => (element as HTMLDetailsElement).open), true, `${path}: a footnote opens the sources`);
+      const hidden = await page.locator('#source-1').getByText('(opens in a new tab)').evaluate((element) => getComputedStyle(element).position);
+      assert.equal(hidden, 'absolute', `${path}: "opens in a new tab" is for screen readers only`);
+      await page.locator('#source-1').getByRole('link', { name: 'Back to the text' }).click();
+      await page.waitForURL(/#ref-1$/);
+      await page.context().close();
+    }
+  });
+
+  void it('opens one FAQ answer at a time, and ends with a way to ask more', { timeout: TIMEOUT }, async () => {
+    const page = await openPage(browser, 1280, undefined, '/faq');
+    await page.getByText('What is Tšepo?', { exact: true }).click();
+    await page.getByText('Why crypto?', { exact: true }).click();
+    const open = await page.locator('details[name="faq"][open] summary').allInnerTexts();
+    assert.deepEqual(open.map((text) => text.trim()), ['Why crypto?']);
+    assert.ok(await page.getByRole('link', { name: 'Contact us' }).isVisible());
+    await page.context().close();
+  });
 });

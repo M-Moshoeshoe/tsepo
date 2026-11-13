@@ -31,13 +31,13 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           {product !== undefined && (
             <span className="max-sm:hidden">
-              <SiteButton href={product.href} tone="secondary" size="sm">
+              <SiteButton href={product.href} variant="secondary" size="sm">
                 {product.label}
               </SiteButton>
             </span>
           )}
           {tour !== undefined && (
-            <SiteButton href={tour.href} tone="primary" size="sm">
+            <SiteButton href={tour.href} variant="primary" size="sm">
               {tour.label}
             </SiteButton>
           )}

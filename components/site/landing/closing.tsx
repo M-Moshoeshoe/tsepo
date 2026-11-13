@@ -1,6 +1,6 @@
 import { LANDING_ACTIONS } from '../../../src/views/navigation.ts';
 import { JoinPilot } from '../join-pilot.tsx';
-import { OUTLINE_INVERSE, PILL_LG, SiteButton } from '../site-button.tsx';
+import { SiteButton } from '../site-button.tsx';
 import { SITE_WIDTH } from '../site-chrome.tsx';
 
 const [tour] = LANDING_ACTIONS;
@@ -20,14 +20,14 @@ export function InkBand() {
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           {tour !== undefined && (
-            <SiteButton href={tour.href} tone="inverse" size="lg">
+            <SiteButton href={tour.href} variant="primary" size="lg" surface="dark">
               {tour.label}
             </SiteButton>
           )}
-          <SiteButton href="/business/instruct" tone="outline-inverse" size="lg">
+          <SiteButton href="/business/instruct" variant="secondary" size="lg" surface="dark">
             Try to break it
           </SiteButton>
-          <JoinPilot className={`${PILL_LG} ${OUTLINE_INVERSE}`} />
+          <JoinPilot variant="secondary" surface="dark" />
         </div>
       </div>
     </section>

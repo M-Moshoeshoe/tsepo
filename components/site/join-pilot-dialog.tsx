@@ -3,11 +3,11 @@
 import { useState, type SyntheticEvent } from 'react';
 import { z } from 'zod';
 import { Dialog, Modal, ModalOverlay } from '@/components/application/modals/modal';
-import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { RadioButton, RadioGroup } from '@/components/base/radio-buttons/radio-buttons';
 import { PilotRequestSchema } from '../../src/pilot/pilot.ts';
 import { PrivacyNotice, SAVED_MESSAGE } from './privacy-notice.tsx';
+import { SiteButton } from './site-button.tsx';
 
 const ErrorSchema = z.object({ error: z.string() });
 
@@ -55,16 +55,16 @@ export function JoinPilotDialog({ open, setOpen }: { open: boolean; setOpen: (op
             <div className="grid gap-1">
               <h2 className="text-lg font-semibold text-primary">Join the pilot</h2>
               <p className="text-sm text-tertiary">
-                For South African businesses that pay through AI agents, and for exchanges that receive their payments. We will be in
+                For South African businesses that pay through AI agents, and for the platforms that receive their payments. We will be in
                 touch about the pilot. Nothing is signed up or charged.
               </p>
             </div>
             {done ? (
               <div className="grid gap-4" role="status">
                 <p className="text-md text-primary">{SAVED_MESSAGE}</p>
-                <Button color="primary" size="md" onClick={() => { setOpen(false); }} className="justify-self-end">
+                <SiteButton variant="primary" size="md" arrow={false} onClick={() => { setOpen(false); }} className="justify-self-end">
                   Close
-                </Button>
+                </SiteButton>
               </div>
             ) : (
               <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
@@ -72,7 +72,7 @@ export function JoinPilotDialog({ open, setOpen }: { open: boolean; setOpen: (op
                 <Input label="Organisation" autoComplete="organization" value={organisation} onChange={setOrganisation} isRequired />
                 <RadioGroup aria-label="Which describes you?" value={kind} onChange={(value) => { setKind(value === 'exchange' ? 'exchange' : 'business'); }}>
                   <RadioButton value="business" label="A business that pays through an agent" />
-                  <RadioButton value="exchange" label="An exchange that receives agent payments" />
+                  <RadioButton value="exchange" label="A platform that receives agent payments" />
                 </RadioGroup>
                 <Input label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} isRequired />
                 <PrivacyNotice asksForOrganisation />
@@ -82,12 +82,12 @@ export function JoinPilotDialog({ open, setOpen }: { open: boolean; setOpen: (op
                   </p>
                 )}
                 <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                  <Button color="secondary" size="md" onClick={() => { setOpen(false); }}>
+                  <SiteButton variant="secondary" size="md" onClick={() => { setOpen(false); }}>
                     Cancel
-                  </Button>
-                  <Button color="primary" size="md" type="submit" isLoading={sending} showTextWhileLoading>
-                    Send
-                  </Button>
+                  </SiteButton>
+                  <SiteButton variant="primary" size="md" type="submit" arrow={false} busy={sending}>
+                    {sending ? 'Sending…' : 'Send'}
+                  </SiteButton>
                 </div>
               </form>
             )}

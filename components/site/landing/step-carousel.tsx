@@ -3,12 +3,10 @@
 import { ArrowLeft, ArrowRight, PauseCircle, PlayCircle } from '@untitledui/icons';
 import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { cx } from '@/utils/cx';
+import { SiteButton } from '../site-button.tsx';
 
 /** How long each step stays highlighted. */
 const STEP_MS = 3200;
-
-const BUTTON =
-  'flex size-9 items-center justify-center rounded-full text-secondary ring-1 ring-secondary outline-focus-ring hover:bg-secondary hover:text-primary focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 
 /**
  * The steps, all visible at once from 640px: a 2x2 grid on a tablet and a
@@ -79,12 +77,8 @@ export function StepCarousel({ label, labels, children }: { label: string; label
           Step {index + 1} of {slides.length}
         </p>
         <div className="flex gap-2">
-          <button type="button" className={BUTTON} onClick={() => { go(index - 1); }} disabled={index === 0} aria-label="Previous step">
-            <ArrowLeft className="size-4" aria-hidden />
-          </button>
-          <button type="button" className={BUTTON} onClick={() => { go(index + 1); }} disabled={index >= slides.length - 1} aria-label="Next step">
-            <ArrowRight className="size-4" aria-hidden />
-          </button>
+          <SiteButton variant="quiet" size="md" icon={ArrowLeft} iconLabel="Previous step" onClick={() => { go(index - 1); }} disabled={index === 0} />
+          <SiteButton variant="quiet" size="md" icon={ArrowRight} iconLabel="Next step" onClick={() => { go(index + 1); }} disabled={index >= slides.length - 1} />
         </div>
       </div>
       <ol
@@ -110,16 +104,17 @@ export function StepCarousel({ label, labels, children }: { label: string; label
           <p className="text-xs text-tertiary" aria-hidden>
             {active === undefined ? '' : `${String(active + 1)} of ${String(slides.length)}: ${labels[active] ?? ''}`}
           </p>
-          <button
-            type="button"
+          <SiteButton
+            variant="quiet"
+            size="sm"
+            arrow={false}
+            icon={playing ? PauseCircle : PlayCircle}
             onClick={() => {
               setPlaying((current) => !current);
             }}
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-secondary outline-focus-ring hover:bg-secondary hover:text-primary focus-visible:outline-2"
           >
-            {playing ? <PauseCircle className="size-4" aria-hidden /> : <PlayCircle className="size-4" aria-hidden />}
             {playing ? 'Pause the steps' : 'Play the steps'}
-          </button>
+          </SiteButton>
         </div>
       )}
     </div>

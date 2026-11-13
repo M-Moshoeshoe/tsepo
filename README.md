@@ -141,7 +141,7 @@ the business model, the landscape and the roadmap, with sources.
 - **Pilot pricing, to be validated:** 0.25% of each payment, charged to
   each side: the business whose agent sends it, and the platform that
   receives it. Minimum R0.50 and maximum R25 per side, per payment. No
-  monthly fees. Shaped by feedback from mentors at W3Node 2026.
+  monthly fees.
 
   | Payment | Each side pays |
   |---|---|
