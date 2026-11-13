@@ -4,6 +4,12 @@ Identity and authority for AI agents that pay, recorded on the XRP Ledger.
 
 Built for the Node Engine Hackathon 2026, Agentic Finance track.
 
+**Live demo:** https://app-production-9a4c0995.up.railway.app
+
+It runs on the XRP Ledger Testnet with test funds only. Every screen opens
+without sign-up. Live steps, such as the 3-minute tour, need the access
+code given in the submission.
+
 ## The problem
 
 AI agents can now hold a wallet and send money. The party that receives
@@ -107,8 +113,9 @@ flowchart LR
 
 ## Status
 
-Phase 2: the core engine runs end to end from scripts. There is no
-interface yet.
+Deployed on Railway as two services in one project, on the XRP Ledger
+Testnet. Every screen, the guided tour and the exchange integration work
+end to end.
 
 | Part | Where | Job |
 |---|---|---|
@@ -118,6 +125,35 @@ interface yet.
 | Agent | `src/agent` | Reads a plain-language payout list with Claude, sends the Directive 9 package to the exchange first, then pays with the policy co-signature |
 | Exchange verifier | `src/exchange` | Stores packages, watches the agent lane, records each deposit as Cleared or Held, reads refused attempts from the policy log |
 | Storage | `src/storage` | A small interface with a local file adapter (`.data/`) |
+
+## Deployment
+
+The project runs on Railway, deployed with the Railway CLI (`railway up`),
+as two services:
+
+| Service | Holds | Reached |
+|---|---|---|
+| `app` | The web app, the agent and the exchange, with every seed except the policy key | Public domain, HTTPS |
+| `policy` | The approval service: only `POLICY_SEED`, the issuer's address and a shared token | Railway's private network only, with no public domain |
+
+- Each service keeps its records on its own persistent volume at `/data`
+  (`TSEPO_DATA_DIR=/data`).
+- The app reaches the policy service at `POLICY_SERVICE_URL` with a bearer
+  token. With that variable set, the app refuses to start if it holds
+  `POLICY_SEED`, so a compromised app can never co-sign. The agent key has
+  weight 1 and the quorum is 2, which the ledger enforces, so a compromised
+  policy service cannot pay alone either.
+- The policy service starts with `npm run policy:serve`, answers only
+  `/health` without the token, and checks every request body with Zod.
+- Every response carries a content security policy, HSTS and the other
+  standard security headers. The build fails if any secret value reaches
+  the files a browser downloads.
+- On your own machine, leave `POLICY_SERVICE_URL` empty: the app then runs
+  the policy service in-process with `POLICY_SEED`, as before.
+
+After a first deploy to fresh volumes, run Restore once (the guided tour,
+last step, "Restore sample data") so the policy service records the sample
+spending rules.
 
 ## Running the demo
 

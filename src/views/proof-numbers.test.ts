@@ -75,6 +75,18 @@ describe('proof in numbers', () => {
     expect(numbers.revocation).toEqual({ ledgerIndex: proof.ledger.revocation.ledgerIndex, refusedAfterSeconds: 6.6 });
   });
 
+  it('does not pair the committed revocation with a refusal from another run, hours later', () => {
+    const hoursLater = new Date(Date.parse(revokedAt) + 6 * 60 * 60 * 1000).toISOString();
+    const numbers = proofNumbers({
+      proof,
+      policyLog: [review(hoursLater, 'refused', ['CREDENTIAL_MISSING'])],
+      agentEvents: [],
+      ledgerRejections: [],
+      depositInvoices: [],
+    });
+    expect(numbers.revocation.refusedAfterSeconds).toBeUndefined();
+  });
+
   it('leaves out what the records cannot support', () => {
     const numbers = proofNumbers({ proof, policyLog: [], agentEvents: [], ledgerRejections: [], depositInvoices: [] });
     expect(numbers.rulesHeld).toBeUndefined();

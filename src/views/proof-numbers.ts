@@ -75,13 +75,24 @@ function travelRuleFrom(events: readonly PayoutRecord[]): ProofNumbers['travelRu
   return { first, paid: paid.length };
 }
 
-/** Seconds from the revocation ledger closing to the first payment refused for a missing credential, to one decimal. */
+/**
+ * A revoked agent's next payment comes within the same story, seconds later.
+ * A refusal further away belongs to another revocation, so it is not counted.
+ */
+const SAME_STORY_MS = 2 * 60 * 1000;
+
+/**
+ * Seconds from the committed revocation ledger closing to the first payment
+ * refused for a missing credential, to one decimal. Only a refusal within the
+ * same story counts: the records may come from other runs than the committed
+ * transaction, and pairing those would give a false figure.
+ */
 function refusedAfter(log: readonly PolicyLogEntry[], closeTime: string): number | undefined {
   const revokedAt = Date.parse(closeTime);
   const refusals = log
     .filter((entry) => entry.kind === 'review' && entry.decision === 'refused' && entry.reasons.includes(PolicyReason.CredentialMissing))
     .map((entry) => Date.parse(entry.at))
-    .filter((at) => at >= revokedAt);
+    .filter((at) => at >= revokedAt && at - revokedAt <= SAME_STORY_MS);
   if (refusals.length === 0) return undefined;
   return Math.round((Math.min(...refusals) - revokedAt) / 100) / 10;
 }
