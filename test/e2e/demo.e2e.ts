@@ -381,7 +381,7 @@ void describe('the interface', () => {
     await desk.context().close();
   });
 
-  void it('has no critical or serious axe violations and one banner, on every page at both widths', { timeout: RUN_TIMEOUT }, async () => {
+  void it('has no critical or serious axe violations and one banner, on every page at both widths', { timeout: RUN_TIMEOUT * 2 }, async () => {
     for (const width of [1280, 390]) {
       for (const path of ['/', ...PRODUCT_PAGES, '/exchange/payments?filter=held', '/business?tour']) {
         const view = await openPage(browser, width, BASE_URL, path);

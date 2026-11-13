@@ -102,7 +102,7 @@ export function routeOf(href: string): string {
 }
 
 /** The public pages share the site header and footer, not the product shell. */
-export const PUBLIC_PAGES = new Set(['/', '/explore', '/faq', '/about', '/contact']);
+export const PUBLIC_PAGES = new Set(['/', '/explore', '/faq', '/about', '/market', '/contact']);
 
 /**
  * The links on a page and how many clicks each takes. A sidebar or header
