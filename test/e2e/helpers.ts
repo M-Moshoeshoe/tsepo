@@ -6,6 +6,12 @@ import { ACCESS_CODE_HEADER, DemoEventSchema, type DemoEvent, type RunRequest } 
 
 export const BASE_URL = process.env.E2E_URL ?? 'http://localhost:3000';
 
+/**
+ * A remote deployment loads about forty script files across an ocean, so
+ * waiting for a quiet network can take longer than Playwright's default 30 seconds.
+ */
+const NAVIGATION_TIMEOUT_MS = BASE_URL.startsWith('http://localhost') ? 30_000 : 90_000;
+
 /** The demo access code from the environment. Never printed. */
 export function accessCode(): string {
   const code = process.env.DEMO_ACCESS_CODE ?? '';
@@ -48,6 +54,7 @@ export async function openPage(browser: Browser, width: number, base = BASE_URL,
     });
   }
   const page = await context.newPage();
+  page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT_MS);
   await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
   return page;
 }

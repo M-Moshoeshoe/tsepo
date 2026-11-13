@@ -370,10 +370,12 @@ void describe('the interface', () => {
 
   void it('says who decided each payment, and labels refused attempts', async () => {
     const desk = await openPage(browser, 1280, BASE_URL, '/exchange/payments');
-    const table = await desk.getByRole('grid').innerText();
+    const grid = desk.getByRole('grid');
+    const table = await grid.innerText();
     assert.ok(table.includes('The money never moved.'));
     assert.ok(table.includes('The exchange checks'));
-    await desk.getByRole('row').filter({ hasText: 'Accepted' }).first().click();
+    // The outcomes chart has its own hidden table with an Accepted row, under the chart: open a payment from the grid.
+    await grid.getByRole('row').filter({ hasText: 'Accepted' }).first().click();
     const details = desk.getByRole('dialog', { name: 'Payment details' });
     await details.getByText('It needed the approval service to sign, and the exchange checks accepted it.').waitFor();
     await desk.context().close();
