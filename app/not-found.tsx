@@ -21,7 +21,7 @@ export default function NotFound() {
           Business workspace
         </Button>
         <Button href="/exchange/payments" color="secondary" size="md">
-          Exchange workspace
+          Platform workspace
         </Button>
       </div>
     </main>

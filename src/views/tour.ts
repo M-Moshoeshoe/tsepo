@@ -154,9 +154,9 @@ export interface TourRecords {
 
 const LABELS: Record<EvidenceKey, string> = {
   'paid-at-business': 'The payment in Business Payments',
-  'paid-at-exchange': 'The same payment at the Receiving exchange',
+  'paid-at-exchange': 'The same payment at the Receiving platform',
   'split-refused': 'The refused third payment',
-  'unknown-rejected': 'The rejection at the Receiving exchange',
+  'unknown-rejected': 'The rejection at the Receiving platform',
   'agent-revoked': 'The Revoked status on the Agent page',
   'revoked-refused': 'The payment refused after the revocation',
 };

@@ -351,12 +351,12 @@ void describe('the interface', () => {
     await rules.context().close();
   });
 
-  void it('switches between the Business and Exchange workspaces', async () => {
+  void it('switches between the Business and Platform workspaces', async () => {
     const view = await openPage(browser, 1280, BASE_URL, '/business');
     await view.getByRole('button', { name: /^Workspace: Lesedi Design Studio/ }).click();
-    await view.getByRole('menuitemradio', { name: /Receiving exchange/ }).click();
+    await view.getByRole('menuitemradio', { name: /Receiving platform/ }).click();
     await view.waitForURL(/\/exchange\/payments$/);
-    await view.getByRole('navigation', { name: 'Exchange workspace' }).getByRole('link', { name: 'Incoming payments' }).waitFor();
+    await view.getByRole('navigation', { name: 'Platform workspace' }).getByRole('link', { name: 'Incoming payments' }).waitFor();
     await view.context().close();
   });
 

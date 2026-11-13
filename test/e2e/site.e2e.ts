@@ -69,7 +69,7 @@ void describe('the public pages', () => {
     await page.getByRole('main').getByRole('link', { name: 'Open the product' }).first().click();
     await page.waitForURL(/\/explore$/);
     assert.ok(await page.getByText('No sign-up is needed.').isVisible());
-    await page.getByRole('link', { name: /Explore as the Receiving exchange/ }).click();
+    await page.getByRole('link', { name: /Explore as the Receiving platform/ }).click();
     await page.waitForURL(/\/exchange\/payments/);
     await page.context().close();
   });

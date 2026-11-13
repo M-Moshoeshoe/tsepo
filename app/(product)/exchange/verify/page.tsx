@@ -7,7 +7,7 @@ import { NOT_VERIFIED_TEXT, type VerifyStatus } from '../../../../src/views/veri
 import { loadVerify } from '../../../_data/verify.ts';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Verify an agent, Receiving exchange - Tšepo' };
+export const metadata: Metadata = { title: 'Verify an agent, Receiving platform - Tšepo' };
 
 const EVENT_LABELS = {
   CredentialCreate: 'Credential issued by Tšepo',

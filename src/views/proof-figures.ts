@@ -31,7 +31,7 @@ export function proofFigures(numbers: ProofNumbers): Figure[] {
     figures.push({
       value: `${String(first)} of ${String(paid)}`,
       label: 'payments sent the Travel Rule details first.',
-      note: 'The agent sent the sender and receiver details to the exchange before each payment.',
+      note: 'The agent sent the sender and receiver details to the receiving platform before each payment.',
     });
   }
   const { agentWeight, quorum } = numbers.signatures;
@@ -43,7 +43,7 @@ export function proofFigures(numbers: ProofNumbers): Figure[] {
   figures.push({
     value: 'Next ledger',
     label: 'A revocation stops the agent from the next ledger, within seconds.',
-    note: `The business deleted the credential in ledger ${String(numbers.revocation.ledgerIndex)}. From then on, the approval service refuses the agent and the exchange rejects it.`,
+    note: `The business deleted the credential in ledger ${String(numbers.revocation.ledgerIndex)}. From then on, the approval service refuses the agent and the receiving platform rejects it.`,
   });
   return figures;
 }
@@ -53,6 +53,6 @@ export function proofSource(numbers: ProofNumbers): string {
   const ledger = 'The signer list and the revocation are transactions on the XRP Ledger Testnet.';
   if (numbers.period === undefined) return 'The figures count what the agent does on Testnet, and the table is read from the XRP Ledger itself.';
   const when = periodText(formatSastDate(numbers.period.from), formatSastDate(numbers.period.to));
-  return `Counted from the approval service’s log and the agent’s and exchange’s records, ${when}. ${ledger}`;
+  return `Counted from the approval service’s log and the agent’s and the receiving platform’s records, ${when}. ${ledger}`;
 }
 

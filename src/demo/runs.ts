@@ -219,7 +219,7 @@ async function splitPayments(ctx: DemoContext, report: Report): Promise<RunOutco
         'The third would have taken the day to 6 RLUSD, so the approval service refused it and nothing reached the ledger.',
       ],
       decidedBy: 'policy',
-      evidence: { label: 'The refusal in the exchange workspace', path: '/exchange/payments?filter=refused' },
+      evidence: { label: 'The refusal in the platform workspace', path: '/exchange/payments?filter=refused' },
     },
   };
 }
@@ -253,7 +253,7 @@ async function revokeScenario(ctx: DemoContext, report: Report): Promise<RunOutc
       decidedBy: 'policy',
       evidence:
         revoked.hash === undefined
-          ? { label: 'The refusal in the exchange workspace', path: '/exchange/payments?filter=refused' }
+          ? { label: 'The refusal in the platform workspace', path: '/exchange/payments?filter=refused' }
           : { label: 'The revocation on the ledger', hash: revoked.hash },
     },
   };

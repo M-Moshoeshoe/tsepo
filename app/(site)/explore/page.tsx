@@ -6,7 +6,7 @@ import { EXPLORE_AS } from '../../../src/views/navigation.ts';
 
 export const metadata: Metadata = {
   title: 'Open the product - Tšepo',
-  description: 'Explore Tšepo as Lesedi Design Studio or as the Receiving exchange. No sign-up is needed.',
+  description: 'Explore Tšepo as Lesedi Design Studio or as the Receiving platform. No sign-up is needed.',
 };
 
 /** The workspace chooser. There is no sign-in on the Testnet sandbox, so the visitor picks who to explore as. */
@@ -14,7 +14,7 @@ export default function ExplorePage() {
   return (
     <SitePage
       title="Open the product."
-      lead={<p>Explore as Lesedi Design Studio (finance lead) or the Receiving exchange (compliance officer). No sign-up is needed.</p>}
+      lead={<p>Explore as Lesedi Design Studio (finance lead) or the Receiving platform (compliance officer), the crypto platform where the recipient receives the money. No sign-up is needed.</p>}
     >
       <ul className="grid gap-6 md:grid-cols-2">
         {EXPLORE_AS.map((choice) => (

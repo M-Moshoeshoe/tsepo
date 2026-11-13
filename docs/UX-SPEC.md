@@ -245,7 +245,7 @@ with seven changes:
    "Shared by the agent's approval service", which is honest.
 5. **The business sees its payments end at the ledger.** The business side
    shows "Settled on the XRP Ledger", not the exchange's internal checks,
-   which belong to the exchange workspace.
+   which belong to the platform workspace.
 6. **The AI mark means "the AI did this", and never appears on a
    decision.** See "The assistant" below. This is the trust argument.
 7. **The tour works without the code.** Each step can show the most recent
@@ -504,9 +504,9 @@ the shell.
 - **Empty, loading, error:** as Payments.
 - **Mobile:** entries as stacked cards under sticky day headings.
 
-### Exchange workspace
+### Platform workspace
 
-The exchange is a fictional CASP named **Receiving exchange**, always shown
+The exchange is a fictional CASP named **Receiving platform**, always shown
 with the "Sample data" tag.
 
 #### Incoming payments `/exchange/payments`
@@ -693,7 +693,7 @@ The AI is the actor under control, not a help desk.
 | Master key disabled | **The account's original key is switched off** | "Master key disabled". |
 | Registry, issuer, "the Tšepo issuer" | **Tšepo** ("Issued by Tšepo") | Issuer account in detail. |
 | Business console | **Business workspace** | none |
-| Compliance desk | **Exchange workspace**, page **Incoming payments** | none |
+| Compliance desk | **Platform workspace**, page **Incoming payments** | none |
 | Runbook | removed; **Guided tour** | none |
 | Scenario | **Story** (in the tour only) | none |
 | Run scenario | **Run live on Testnet** | none |
@@ -750,7 +750,7 @@ The AI is the actor under control, not a help desk.
 | `app/page.tsx`, `components/loading-skeletons.tsx` | "Demo runbook" | Removed (guided tour). |
 | `app/page.tsx` | "Each scenario prepares the demo first" | Tour: "Each story first sets up the sample workspace it needs." |
 | `components/display.tsx` (`DemoDataTag`) | "Demo data" | "Sample data" (`SampleDataTag`) |
-| `app/compliance/page.tsx`, `components/loading-skeletons.tsx`, `app/_data/registry.ts` | "Demo Exchange" | "Receiving exchange", with the Sample data tag. |
+| `app/compliance/page.tsx`, `components/loading-skeletons.tsx`, `app/_data/registry.ts` | "Demo Exchange" | "Receiving platform", with the Sample data tag. |
 | `components/registry/mandate-actions.tsx` | "From the next ledger, in about 4 seconds" (Revoke dialog) | "From the next ledger, within seconds" |
 | `app/agent/page.tsx` | "Reset the demo to set it up." / "...to disable it." / "...to register the agent." | "Register the agent again to set it up." (with the action) |
 | `src/demo/prepare.ts` | "Preparing the demo" | "Setting up the sample workspace" |
@@ -1000,7 +1000,7 @@ MUST items are finished and the build moves on; SHOULD items wait.
 
 | # | Stage | MUST | SHOULD | Testable result |
 |---|---|---|---|---|
-| 1 | Shell, routes and wording | All of it: route groups for the landing page and the product; workspace switcher (Business, Receiving exchange); Testnet badge; per-workspace nav; Agent moves to `/business/agent` and the desk to `/exchange/payments`, with redirects from `/agent` and `/compliance`; the copy pass from Part 3, including the copy strings in `src/demo` (copy only); the runbook, Restore sample data and the access code move into a provisional tour panel so nothing is lost; sample mandate expiry moves to 31 December 2027 (D17, a config value); `not-found.tsx`. | none | Every old link redirects; no visible "demo"; end-to-end suite updated for the new names. |
+| 1 | Shell, routes and wording | All of it: route groups for the landing page and the product; workspace switcher (Business, Receiving platform); Testnet badge; per-workspace nav; Agent moves to `/business/agent` and the desk to `/exchange/payments`, with redirects from `/agent` and `/compliance`; the copy pass from Part 3, including the copy strings in `src/demo` (copy only); the runbook, Restore sample data and the access code move into a provisional tour panel so nothing is lost; sample mandate expiry moves to 31 December 2027 (D17, a config value); `not-found.tsx`. | none | Every old link redirects; no visible "demo"; end-to-end suite updated for the new names. |
 | 2 | Business workspace, slim | Overview (agent card with the today meter, recent payments); Agent detail (instructions with Thuso's notes, rows opening the details panel, identity, register again); Payments (table, status filter, date presets, details panel, evidence download as JSON); Spending rules (limits, recipients, "Who must approve each payment", danger zone); Thuso's template functions with tests. Fixes D1, D2, D7 (a meter note when sample totals were cleared), D8, D9, D13. | The 14-day chart; the Activity log. | Each CFO question answered on one page; the evidence file validates against a Zod schema; no template states a fact absent from the record. |
 | 3 | Exchange incoming payments | The generalised `DetailsPanel`; plain statuses; "Announced, not sent"; "Received before the payment"; status filter and date presets; the reset window dropped. | The outcomes chart. | Filters live in the address; every row opens details. |
 | 4 | Guided tour | The five steps; live runs; "Show me the evidence" with highlight; the latest-run fallback without the code; the access code in the welcome step; the step in the address; Home and the runbook removed. | Reattach after a refresh (D10); count only valid requests toward the run limit (D11). | A visitor with no instructions completes all four stories; the end-to-end suite drives the tour. |
@@ -1023,7 +1023,7 @@ describe them for later; they are not built before the deadline.
 ### Decisions taken by the project owner
 
 1. The assistant is **Thuso**.
-2. The exchange is **Receiving exchange**, always with the Sample data tag.
+2. The exchange is **Receiving platform**, always with the Sample data tag.
 3. Pilot pricing on the landing page, labelled "Pilot pricing, to be
    validated": businesses R450 per active agent a month; exchanges R1.50
    per verified agent deposit, integration free during the pilot.

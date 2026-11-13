@@ -27,7 +27,7 @@ export default async function MarketPage() {
   return (
     <SitePage
       title="The market."
-      lead={<p>Every licensed crypto exchange in South Africa must know who sent each transfer. AI agents are starting to send them.</p>}
+      lead={<p>AI agents are starting to send money. In South Africa, the crypto platform where the recipient receives it, such as VALR or Luno, must know who sent each transfer.</p>}
     >
       <PagePart title="Who must know the sender">
         <p>

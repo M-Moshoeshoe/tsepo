@@ -8,7 +8,7 @@ import { publicAddresses } from '../../../_data/addresses.ts';
 import { integrationCode } from '../../../_data/integration.ts';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Integrate, Receiving exchange - Tšepo' };
+export const metadata: Metadata = { title: 'Integrate, Receiving platform - Tšepo' };
 
 const EXAMPLE_PATH = 'examples/exchange-integration.ts';
 const SAMPLE_PATH = 'examples/sample-travel-rule-details.json';

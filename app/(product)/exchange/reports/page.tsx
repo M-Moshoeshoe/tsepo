@@ -6,7 +6,7 @@ import { formatSastDate } from '../../../../src/views/status.ts';
 import { loadDecisionRecords } from '../../../_data/reports.ts';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Reports, Receiving exchange - Tšepo' };
+export const metadata: Metadata = { title: 'Reports, Receiving platform - Tšepo' };
 
 function downloadHref(range: ReportRange, format: 'csv' | 'json'): string {
   return `/exchange/reports/download?${new URLSearchParams({ from: range.from, to: range.to, format }).toString()}`;

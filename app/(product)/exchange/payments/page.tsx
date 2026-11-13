@@ -17,7 +17,7 @@ import { CATEGORY_CHIPS, type Category } from '../../../../src/views/status.ts';
 import { loadDesk } from '../../../_data/compliance.ts';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Incoming payments, Receiving exchange - Tšepo' };
+export const metadata: Metadata = { title: 'Incoming payments, Receiving platform - Tšepo' };
 
 /** Theme status colours in a fixed order, validated for colour-blind separation on the white surface. */
 const OUTCOME_COLOURS: Record<Category, Pick<ChartSeries, 'fill' | 'swatch'>> = {
@@ -43,7 +43,7 @@ export default async function IncomingPaymentsPage({ searchParams }: { searchPar
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <div className="grid gap-1">
-        <h2 className="text-lg font-semibold text-primary">Receiving exchange</h2>
+        <h2 className="text-lg font-semibold text-primary">Receiving platform</h2>
         <p className="text-sm text-tertiary">
           The XRP Ledger accepts payments to this <Term term="agent-deposit-address">agent deposit address</Term> only from agents
           with a valid Tšepo credential.

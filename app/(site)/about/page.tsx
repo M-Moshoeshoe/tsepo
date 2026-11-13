@@ -29,7 +29,7 @@ export default function AboutPage() {
         <p>AI agents can now hold a wallet and pay. A business that wants to use one faces a hard choice.</p>
         <p>It can give the agent a key, and with it the whole account, with no limit and no way to stop it. Or it can keep paying by hand.</p>
         <p>
-          The exchange on the other side faces its own problem. FIC Directive 9 requires it to know who sends every crypto transfer, from
+          On the other side, the crypto platform where the recipient receives the money, such as VALR or Luno, faces its own problem. FIC Directive 9 requires it to know who sends every crypto transfer, from
           R0. It cannot accept money from an agent that nobody can identify.
         </p>
       </PagePart>
@@ -37,7 +37,7 @@ export default function AboutPage() {
       <PagePart title="What Tšepo proves on the ledger">
         <p>Tšepo records each agent’s identity and spending rules on the XRP Ledger as a credential that anyone can check.</p>
         <p>
-          Every payment needs two signatures, and the approval service signs only within the rules. The exchange’s deposit address
+          Every payment needs two signatures, and the approval service signs only within the rules. The receiving platform’s deposit address
           accepts payments only from agents with a valid credential, and the Travel Rule details arrive before the money.
         </p>
         <p>When the business revokes the agent, its next payment is refused. Each of these steps is a real transaction on Testnet.</p>

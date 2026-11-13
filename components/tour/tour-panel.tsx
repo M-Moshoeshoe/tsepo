@@ -11,6 +11,7 @@ import { AssistantNote } from '../assistant-note.tsx';
 import { useRun } from '../run-provider.tsx';
 import { AccessCodeForm } from '../shell/access-code-dialog.tsx';
 import { RESTORE_LABEL, useLiveActions } from '../shell/live-actions.tsx';
+import { RECEIVING_PLATFORM_LINE } from '../../src/views/navigation.ts';
 import { useTour } from './tour-provider.tsx';
 import { useTourEvidence, type EvidenceState } from './use-tour-evidence.ts';
 
@@ -33,8 +34,8 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           cannot break.
         </li>
         <li>
-          <span className="font-semibold text-primary">Receiving exchange:</span> where Naledi and other recipients hold their accounts. It
-          accepts payments only from verified agents.
+          <span className="font-semibold text-primary">Receiving platform:</span> {RECEIVING_PLATFORM_LINE} It accepts payments only from
+          verified agents.
         </li>
       </ul>
       {accessCode === undefined ? (

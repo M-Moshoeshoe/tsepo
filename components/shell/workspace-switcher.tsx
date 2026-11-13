@@ -15,7 +15,7 @@ function WorkspaceIcon({ id }: { id: WorkspaceId }) {
   );
 }
 
-/** Switches between the Business and Receiving exchange workspaces, like an account switcher. */
+/** Switches between the Business and Receiving platform workspaces, like an account switcher. */
 export function WorkspaceSwitcher() {
   const pathname = usePathname();
   const current = workspaceFor(pathname);

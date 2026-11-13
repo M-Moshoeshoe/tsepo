@@ -106,7 +106,7 @@ export async function loadRegistry(): Promise<RegistryView> {
 
     const status = agentStatus({ credential, history, mandate, issuer, agent });
 
-    const accountNames = new Map([[wallets.exchange.address, 'Receiving exchange']]);
+    const accountNames = new Map([[wallets.exchange.address, 'Receiving platform']]);
 
     const { instructions, payments, policyLog } = await readBusinessRecords(ctx);
 

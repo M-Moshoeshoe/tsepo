@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const TOPICS: { title: string; text: string }[] = [
-  { title: 'The pilot', text: 'You pay through an AI agent, or your exchange receives payments from agents.' },
+  { title: 'The pilot', text: 'You pay through an AI agent, or you run a crypto platform where recipients receive the money, such as VALR or Luno.' },
   { title: 'An integration', text: 'You want your deposit address to accept payments only from verified agents.' },
   { title: 'A question', text: 'Something about the product, the ledger or the Travel Rule is not clear.' },
 ];

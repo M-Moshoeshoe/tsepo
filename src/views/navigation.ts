@@ -15,6 +15,12 @@ export const WORKSPACE_HOMES: Record<WorkspaceId, string> = {
   exchange: '/exchange/payments',
 };
 
+/**
+ * The Receiving platform in plain words, for its first mention on a page.
+ * VALR and Luno are examples only: Tšepo has no partnership with either.
+ */
+export const RECEIVING_PLATFORM_LINE = 'The crypto platform where the recipient receives the money, such as VALR or Luno.';
+
 /** The Business sidebar, in order. */
 export const BUSINESS_NAV: NavEntry[] = [
   { label: 'Overview', href: '/business' },
@@ -24,7 +30,7 @@ export const BUSINESS_NAV: NavEntry[] = [
   { label: 'Spending rules', href: '/business/rules' },
 ];
 
-/** The Receiving exchange sidebar, in order. */
+/** The Receiving platform sidebar, in order. */
 export const EXCHANGE_NAV: NavEntry[] = [
   { label: 'Incoming payments', href: '/exchange/payments' },
   { label: 'Verify an agent', href: '/exchange/verify' },
@@ -54,7 +60,7 @@ export const SITE_NAV: NavEntry[] = [
 /** The footer of the public pages: the product first. GitHub leaves the site and is added by the footer. */
 export const SITE_FOOTER_PRODUCT: NavEntry[] = [
   { label: 'Business workspace', href: '/business' },
-  { label: 'Receiving exchange', href: '/exchange/payments' },
+  { label: 'Receiving platform', href: '/exchange/payments' },
   { label: 'Give an instruction', href: '/business/instruct' },
   { label: 'Verify an agent', href: '/exchange/verify' },
   { label: 'Integrate', href: '/exchange/integrate' },
@@ -84,10 +90,10 @@ export const EXPLORE_AS: (NavEntry & { name: string; role: string; line: string 
     href: '/business',
   },
   {
-    name: 'Receiving exchange',
+    name: 'Receiving platform',
     role: 'Compliance officer',
-    line: 'See agent payments arrive with their Travel Rule details, and verify any agent.',
-    label: 'Explore as the Receiving exchange',
+    line: `${RECEIVING_PLATFORM_LINE} See agent payments arrive with their Travel Rule details, and verify any agent.`,
+    label: 'Explore as the Receiving platform',
     href: '/exchange/payments',
   },
 ];

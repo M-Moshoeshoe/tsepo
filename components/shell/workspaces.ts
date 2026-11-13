@@ -1,7 +1,7 @@
 import { Building07, CheckVerified01, CodeBrowser, CoinsHand, FileDownload02, Home02, Receipt, Sliders01, User01 } from '@untitledui/icons';
 import type { FC } from 'react';
 import { ThusoAvatar } from '../thuso-avatar.tsx';
-import { BUSINESS_NAV, EXCHANGE_NAV, WORKSPACE_HOMES, workspaceOf, type NavEntry, type WorkspaceId } from '../../src/views/navigation.ts';
+import { BUSINESS_NAV, EXCHANGE_NAV, RECEIVING_PLATFORM_LINE, WORKSPACE_HOMES, workspaceOf, type NavEntry, type WorkspaceId } from '../../src/views/navigation.ts';
 
 export type { WorkspaceId } from '../../src/views/navigation.ts';
 
@@ -48,9 +48,9 @@ export const WORKSPACES: Record<WorkspaceId, Workspace> = {
   },
   exchange: {
     id: 'exchange',
-    name: 'Receiving exchange',
-    type: 'Exchange',
-    forWhom: 'The exchange where Naledi and other recipients hold their accounts. It accepts agent payments only from verified agents.',
+    name: 'Receiving platform',
+    type: 'Platform',
+    forWhom: `${RECEIVING_PLATFORM_LINE} It accepts agent payments only from verified agents.`,
     home: WORKSPACE_HOMES.exchange,
     nav: withIcons(EXCHANGE_NAV),
   },
