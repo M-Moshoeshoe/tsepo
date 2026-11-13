@@ -39,6 +39,50 @@ receivers either accept every agent payment or refuse them all.
 Every agent payment carries a `SourceTag` (default `20260530`) so that
 agent activity can be told apart from human activity on the ledger.
 
+## Integrate as an exchange
+
+The Integrate page in the Receiving exchange workspace shows the three
+steps an exchange takes. Its code comes from a script that runs every step
+on the XRP Ledger Testnet, so the page and the script never differ.
+
+Try it yourself: `npm run example:integration`
+
+It needs no keys of yours and no access code. It creates a test exchange
+account from the Testnet faucet, turns on credential-based Deposit
+Authorization, proves that a sender without a credential is rejected,
+checks two agents' credentials and matches a real payment to its Travel
+Rule details. The output looks like this, with different addresses and
+hashes on every run:
+
+```text
+Tšepo exchange integration on the XRP Ledger Testnet
+
+Step 0. Create a test exchange account
+  funded rBwftNZXYXeUZm41E7dWwthf7nPzdDoi5Z from the Testnet faucet
+
+Step 1. Turn on credential-based Deposit Authorization
+  submitting AccountSet 6BEB0D24...0A69B4
+  tesSUCCESS
+  submitting DepositPreauth 19D47B89...3F57A1
+  tesSUCCESS
+  Check: an account without a Tšepo credential pays 1 XRP to the deposit address
+  submitting Payment 281057EC...58831C
+  rejected with tecNO_PERMISSION, as expected
+
+Step 2. Check an agent’s Tšepo credential
+  rMQqusFUcxkKhbETdS7nMF4ELhJ9QciiPp: Verified. Rules fingerprint sha256:7506c19b...179b52
+  rwAppV9jGbEv5tfmp1Tz1629uzrF5E77a6: Not verified, no Tšepo credential
+
+Step 3. Match the Travel Rule details by fingerprint
+  payment F862AD64...786800: matched. The InvoiceID is the fingerprint of the details, and the sender, the deposit address and the rules agree.
+
+Done. Every step passed.
+```
+
+The script is [examples/exchange-integration.ts](examples/exchange-integration.ts).
+It makes its keys in memory, prints only addresses, hashes and results, and
+stops at any result other than `tesSUCCESS`.
+
 ## Architecture
 
 ```mermaid

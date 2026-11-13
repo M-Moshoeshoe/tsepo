@@ -16,11 +16,11 @@ export default function AboutPage() {
     >
       <PagePart title="What the names mean">
         <p>
-          <span lang="st">Tšepo</span> (say TSEH-poh) means hope, or trust, in Sesotho. It names the trust a business places in an agent
+          <span lang="st">Tšepo</span>, pronounced TSEH-poh, means hope or trust in Sesotho. It names the trust a business places in an agent
           that pays for it.
         </p>
         <p>
-          <span lang="st">Thuso</span> (say TOO-soh) means help in Sesotho and Setswana. Thuso is the agent’s AI, which reads each
+          <span lang="st">Thuso</span>, pronounced TOO-soh, means help in Sesotho and Setswana. Thuso is the agent’s AI, which reads each
           instruction and explains what happened.
         </p>
       </PagePart>

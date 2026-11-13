@@ -97,3 +97,6 @@ accepts deposits only from agents that hold a valid credential.
   production build: no clipped or overflowing text and no sideways scroll at
   1280px and 390px, and no serious axe finding. It runs nothing on the
   ledger, so run it after every change to the public pages.
+- `npm run example:integration`: runs the exchange integration on Testnet,
+  step by step, as the Integrate page shows it. It uses the Testnet faucet
+  and needs no seeds and no access code.

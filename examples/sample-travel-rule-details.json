@@ -1,0 +1,57 @@
+{
+  "note": "The Travel Rule details Lesedi Design Studio's agent sent to the sample Receiving exchange before payment F862AD6451C2A67972A964E79FE3F0E6CD72E2EEBC50F810CFE3FE2D3C786800 on the XRP Ledger Testnet. Sample business data only.",
+  "paymentHash": "F862AD6451C2A67972A964E79FE3F0E6CD72E2EEBC50F810CFE3FE2D3C786800",
+  "details": {
+    "version": 1,
+    "reference": "TSP-TOUR-2001-B",
+    "createdAt": "2026-11-13T00:21:13.926Z",
+    "originator": {
+      "registeredName": "Lesedi Design Studio (Pty) Ltd",
+      "registrationNumber": "2021/482913/07",
+      "address": {
+        "street": "12 Maluti Road",
+        "city": "Bloemfontein",
+        "postalCode": "9301",
+        "country": "ZA"
+      },
+      "ledgerAddress": "rMQqusFUcxkKhbETdS7nMF4ELhJ9QciiPp"
+    },
+    "beneficiary": {
+      "name": "Thabo Nkosi",
+      "ledgerAddress": "rw5QcoNLQM9Zn1GN79GfB6DM5qsX4RxfDZ",
+      "destinationTag": 1002
+    },
+    "transfer": {
+      "amount": "2",
+      "currency": "RLUSD",
+      "purpose": "Website build (invoice TOUR-2001) part 2"
+    },
+    "agent": {
+      "ledgerAddress": "rMQqusFUcxkKhbETdS7nMF4ELhJ9QciiPp",
+      "credentialIssuer": "rpS8npJd8eyU7jr1pn2owuUxd5vnM2J66C",
+      "credentialType": "AGENT_MANDATE",
+      "mandate": {
+        "version": 2,
+        "principal": "rHHwHrjGSd7zWhSgome2GhhEAv42RYJi4M",
+        "agent": "rMQqusFUcxkKhbETdS7nMF4ELhJ9QciiPp",
+        "approvedRecipients": [
+          {
+            "name": "Naledi Mokoena",
+            "address": "rw5QcoNLQM9Zn1GN79GfB6DM5qsX4RxfDZ",
+            "destinationTag": 1001
+          },
+          {
+            "name": "Thabo Nkosi",
+            "address": "rw5QcoNLQM9Zn1GN79GfB6DM5qsX4RxfDZ",
+            "destinationTag": 1002
+          }
+        ],
+        "currency": "RLUSD",
+        "perPaymentLimit": "3",
+        "dailyLimit": "5",
+        "expiresAt": "2027-12-31T21:59:59Z"
+      },
+      "mandateFingerprint": "sha256:7506c19b7e0eb09f4618a27eb1e2053ebd868ac55adc6fa4aa85f754e4179b52"
+    }
+  }
+}

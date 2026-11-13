@@ -134,7 +134,7 @@ export function Hero({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbe
         </div>
         <div className="flex flex-wrap justify-between gap-x-8 gap-y-1 py-5 text-sm text-tertiary">
           <p>
-            <span lang="st">Tšepo</span> (say TSEH-poh) means hope, or trust, in Sesotho.
+            <span lang="st">Tšepo</span>, pronounced TSEH-poh, means hope or trust in Sesotho.
           </p>
           <p>Built on the XRP Ledger. Settles in RLUSD.</p>
         </div>

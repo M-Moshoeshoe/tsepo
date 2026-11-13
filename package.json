@@ -32,7 +32,8 @@
     "demo:screens": "node --env-file-if-exists=.env.local scripts/capture-demo.ts screens",
     "test:e2e": "node --env-file-if-exists=.env.local --test --test-concurrency=1 test/e2e/demo.e2e.ts",
     "test:site": "node --test --test-concurrency=1 test/e2e/site.e2e.ts",
-    "proof:capture": "node --env-file-if-exists=.env.local scripts/capture-proof.ts"
+    "proof:capture": "node --env-file-if-exists=.env.local scripts/capture-proof.ts",
+    "example:integration": "node examples/exchange-integration.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.3.0",

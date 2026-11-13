@@ -7,6 +7,7 @@ import { MeetThuso } from '../../components/site/landing/meet-thuso.tsx';
 import { Proof } from '../../components/site/landing/proof.tsx';
 import { Stakes } from '../../components/site/landing/stakes.tsx';
 import { SiteFooter, SiteHeader } from '../../components/site/site-chrome.tsx';
+import { integrationCode } from '../_data/integration.ts';
 import { loadLandingData } from '../_data/landing.ts';
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default async function LandingPage() {
         <HowItWorks proof={proof} />
         <Proof numbers={numbers} proof={proof} />
         <MeetThuso example={thuso} />
-        <Audiences proof={proof} />
+        <Audiences proof={proof} integrationPreview={integrationCode()['step-1']} />
         <InkBand />
       </main>
       <SiteFooter />

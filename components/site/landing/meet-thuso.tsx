@@ -39,7 +39,7 @@ export function MeetThuso({ example }: { example: ThusoExample | undefined }) {
               <p className="text-lg text-tertiary">Thuso, the agent’s AI, reads each instruction and explains what happened in plain words.</p>
               <p className="text-lg text-tertiary">The spending rules and the XRP Ledger decide every payment, and Thuso never does.</p>
               <p className="text-sm text-tertiary">
-                <span lang="st">Thuso</span> (say TOO-soh) means help in Sesotho and Setswana.
+                <span lang="st">Thuso</span>, pronounced TOO-soh, means help in Sesotho and Setswana.
               </p>
             </div>
             <img

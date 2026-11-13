@@ -45,16 +45,6 @@ const AUDIENCES: Audience[] = [
   },
 ];
 
-/** The first integration step, shortened from the Integrate page. */
-const INTEGRATE_PREVIEW = `await client.submitAndWait({
-  TransactionType: 'DepositPreauth',
-  Account: depositAddress,
-  AuthorizeCredentials: [{ Credential: {
-    Issuer: TSEPO_ISSUER,
-    CredentialType: convertStringToHex('AGENT_MANDATE'),
-  } }],
-}, { wallet, autofill: true });`;
-
 function Plan({ audience, extra }: { audience: Audience; extra?: ReactNode }) {
   return (
     <article id={audience.id} aria-labelledby={`${audience.id}-name`} className="grid scroll-mt-4 content-start gap-6 rounded-2xl p-6 ring-1 ring-secondary md:p-8">
@@ -116,7 +106,7 @@ function ApproversFragment({ proof }: { proof: ProofFile }) {
 }
 
 /** Businesses and exchanges side by side: who each is, what they get, and the pilot price. */
-export function Audiences({ proof }: { proof: ProofFile }) {
+export function Audiences({ proof, integrationPreview }: { proof: ProofFile; integrationPreview: string }) {
   const [business, exchange] = AUDIENCES;
   return (
     <Section id="pricing" title="Built for both sides of the payment." intro="The business that pays and the exchange that receives each get what they need.">
@@ -128,11 +118,11 @@ export function Audiences({ proof }: { proof: ProofFile }) {
             extra={
               <pre
                 role="region"
-                aria-label="The first integration step, in xrpl.js"
+                aria-label="The first integration step, from the runnable example"
                 tabIndex={0}
                 className="overflow-x-auto rounded-lg bg-primary-solid p-4 text-xs leading-relaxed text-white outline-focus-ring focus-visible:outline-2"
               >
-                <code className="font-mono">{INTEGRATE_PREVIEW}</code>
+                <code className="font-mono">{integrationPreview}</code>
               </pre>
             }
           />

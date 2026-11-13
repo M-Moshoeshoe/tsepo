@@ -223,7 +223,7 @@ FAQ stays in the header and the footer.
 | Before | After |
 |---|---|
 | Tšepo records each agent’s identity and spending rules on the XRP Ledger, so its payments stay limited, stoppable and accepted. | Naledi Mokoena finished a logo for Lesedi Design Studio. Within a minute, the studio’s AI agent paid her 2 RLUSD. The exchange knew exactly who sent the money. The agent could never have paid more than its rules allow. |
-| New | Tšepo (say TSEH-poh) means hope, or trust, in Sesotho. |
+| New | Tšepo, pronounced TSEH-poh, means hope or trust in Sesotho. |
 
 The story follows the tour’s first story: the agent receives the instruction
 for invoice TOUR-1042, sends the Travel Rule details to the exchange, and
@@ -253,7 +253,7 @@ pays 2 RLUSD with the approval service’s signature in well under a minute.
 
 | Before | After |
 |---|---|
-| New | Thuso (say TOO-soh) means help in Sesotho and Setswana. |
+| New | Thuso, pronounced TOO-soh, means help in Sesotho and Setswana. |
 
 ## Closing band
 
@@ -269,5 +269,45 @@ pays 2 RLUSD with the approval service’s signature in well under a minute.
 | Before | After |
 |---|---|
 | Tšepo is a Sesotho word for hope and trust. It names the trust a business places in an agent that pays for it. (lead) | Tšepo gives a business’s AI agent a verified identity and spending rules it cannot break. |
-| New: What the names mean | Tšepo (say TSEH-poh) means hope, or trust, in Sesotho. It names the trust a business places in an agent that pays for it. |
-| New | Thuso (say TOO-soh) means help in Sesotho and Setswana. Thuso is the agent’s AI, which reads each instruction and explains what happened. |
+| New: What the names mean | Tšepo, pronounced TSEH-poh, means hope or trust in Sesotho. It names the trust a business places in an agent that pays for it. |
+| New | Thuso, pronounced TOO-soh, means help in Sesotho and Setswana. Thuso is the agent’s AI, which reads each instruction and explains what happened. |
+
+# Copy changes, Stage 6C
+
+## Pronunciation (landing page, Meet Thuso and About)
+
+| Before | After |
+|---|---|
+| Tšepo (say TSEH-poh) means hope, or trust, in Sesotho. | Tšepo, pronounced TSEH-poh, means hope or trust in Sesotho. |
+| Thuso (say TOO-soh) means help in Sesotho and Setswana. | Thuso, pronounced TOO-soh, means help in Sesotho and Setswana. |
+
+The Stage 6B tables above now show the new wording.
+
+## Proof on a fresh deployment
+
+| Before | After |
+|---|---|
+| Counted from the service records. The signer list and the revocation are transactions on the XRP Ledger Testnet. (with no records) | The figures count what the agent does on Testnet, and the table is read from the XRP Ledger itself. |
+| New (shown in place of the figures while the records are empty) | Figures appear as the agent runs. |
+
+## Integrate (Receiving exchange)
+
+The page now follows the runnable example step by step, and its code is cut
+from the example file.
+
+| Before | After |
+|---|---|
+| Accept agent payments only from agents that hold a valid Tšepo credential, and know who each agent works for before the money arrives. | Tšepo lets your exchange accept payments from AI agents and know who each agent works for. Every Tšepo agent holds a credential on the XRP Ledger, issued by Tšepo, that proves its spending rules. |
+| The three steps below run on your own XRP Ledger account. The code comes from Tšepo’s tested implementation, written with xrpl.js. | In three steps on your own XRP Ledger account, you set up a deposit address that accepts only those agents. Each step below shows the code of a script that runs it on Testnet. |
+| New | You need Node.js 24 with the xrpl and zod packages. The script creates a Testnet account for you from the faucet. |
+| This exchange’s agent deposit address | The sample exchange’s agent deposit address |
+| New: Try it yourself. | Clone the repository, run npm install, then run the command below. It needs no keys of yours and no access code. The script is examples/exchange-integration.ts. It makes its keys in memory, prints only addresses, hashes and results, and stops at any result other than tesSUCCESS. Your output looks like this, with different addresses and hashes. |
+| New: Before you start. Name Tšepo, and submit every transaction safely. | The first two lines name the Tšepo issuer and the credential type. Your exchange trusts credentials from this issuer only. Every transaction goes through one function. It signs locally, lets autofill set the fee and sequence, records the hash before it submits, and stops at any result other than tesSUCCESS. Never retry a failed result blindly. |
+| Turn on credential-based Deposit Authorization. | Accept payments only from Tšepo agents. |
+| Make one address your agent deposit address. With Deposit Authorization on, the XRP Ledger itself rejects any payment to it from a sender that does not present an accepted AGENT_MANDATE credential from Tšepo. | Make one address your agent deposit address and turn on Deposit Authorization for it. The XRP Ledger then rejects every payment to it, except from senders that present an accepted AGENT_MANDATE credential from Tšepo. |
+| New | The script then checks it: a new account with no credential sends 1 XRP to the deposit address. The ledger itself rejects the payment with tecNO_PERMISSION, so it never reaches your account. |
+| Check that each result is tesSUCCESS. The code comes from spikes/agent-lane.ts. | Removed. The submit function on the page now does this, and the code comes from the example. |
+| Check the agent’s Tšepo credential. Before you credit a deposit, read the sender’s credential from the validated ledger. It counts only when Tšepo issued it, the agent accepted it and it has not expired. Its URI holds the fingerprint of the agent’s spending rules. | Check the agent’s Tšepo credential. Before you credit a deposit, read the sender’s credential from the validated ledger. It is Verified only when Tšepo issued it, the agent accepted it and it has not expired. Its URI holds the fingerprint of the agent’s spending rules, never personal data. Keep the fingerprint for step 3. In the script, Lesedi’s agent is Verified and a new account is Not verified. You can also check any address on Verify an agent. |
+| Match the Travel Rule details by fingerprint. | Match each payment to its Travel Rule details. |
+| Before each payment, the agent sends you its Travel Rule details under FIC Directive 9: the originator, the beneficiary, the amount, the purpose and its spending rules. The payment’s InvoiceID is the SHA-256 fingerprint of those details, so you can match them exactly. Hold any payment whose details arrived late, never arrived or do not match. | Before each payment, the agent sends you its Travel Rule details off the ledger, as FIC Directive 9 requires: the originator, the beneficiary, the amount, the purpose and the agent’s spending rules. The payment’s InvoiceID is the SHA-256 fingerprint of those details in canonical JSON, so you can match them exactly. In this sandbox, the sample exchange receives the details inside Tšepo, and the script reads a real set from examples/sample-travel-rule-details.json. |
+| New: What to do with each result. | When the agent is Verified and the payment matches its details, credit the deposit. When the agent is Not verified, or any match check fails, hold the deposit for review and do not credit it. When the details arrived after the payment, or never arrived, hold the deposit for review as well. A payment the ledger rejected never reaches your account, so there is nothing to credit or return. |
