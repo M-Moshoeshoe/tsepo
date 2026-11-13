@@ -43,9 +43,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
     scenario: 'scenario-2',
     intro: [
       'Lesedi’s agent receives an instruction to pay Naledi Mokoena 2 RLUSD for a logo.',
-      'It sends the Travel Rule details to the exchange first, then pays with the approval service’s signature.',
+      'It sends the Travel Rule details to the receiving platform first, then pays with the approval service’s signature.',
     ],
-    decidedBy: 'Decided by the exchange checks, after the approval service approved it.',
+    decidedBy: 'Decided by the platform checks, after the approval service approved it.',
     aiActs: true,
     evidence: ['paid-at-business', 'paid-at-exchange'],
   },
@@ -69,7 +69,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     scenario: 'scenario-1',
     intro: [
       'An agent nobody registered asks the approval service to approve 2 RLUSD, and is refused.',
-      'It then pays the exchange directly with its own key.',
+      'It then pays the receiving platform directly with its own key.',
     ],
     decidedBy: 'Decided by the XRP Ledger.',
     aiActs: false,
@@ -222,7 +222,7 @@ export function tryItHref(step: number): string {
 /** What the tour showed: the CFO's four questions, each with the steps that answer it. */
 export const CFO_QUESTIONS: { question: string; answer: string; steps: number[] }[] = [
   { question: 'What may the agent do?', answer: 'Only what its spending rules allow: the split payment was refused at the daily limit.', steps: [2] },
-  { question: 'Who can it pay?', answer: 'Only approved recipients, and only verified agents reach the exchange.', steps: [1, 3] },
+  { question: 'Who can it pay?', answer: 'Only approved recipients, and only verified agents reach the receiving platform.', steps: [1, 3] },
   { question: 'How do I stop it?', answer: 'Revoke it: from the next ledger, within seconds, its payments are refused.', steps: [4] },
   { question: 'How do I prove what it did and why?', answer: 'Every payment has its decision, Travel Rule details and ledger record.', steps: [1, 2, 3, 4] },
 ];

@@ -552,3 +552,16 @@ The product's buttons now share the public pages' button language: a pill,
 medium weight, a flat ink primary and a flat outlined secondary, with the
 same hover, focus and press states. Destructive buttons stay red. No words
 changed.
+
+## Leftover "exchange" wording in the tour and the product
+
+| Before | After |
+|---|---|
+| It sends the Travel Rule details to the exchange first, then pays with the approval service’s signature. | It sends the Travel Rule details to the receiving platform first, then pays with the approval service’s signature. |
+| It then pays the exchange directly with its own key. | It then pays the receiving platform directly with its own key. |
+| Only approved recipients, and only verified agents reach the exchange. | Only approved recipients, and only verified agents reach the receiving platform. |
+| Decided by the exchange checks (and every "the exchange checks") | Decided by the platform checks |
+| It reached the agent deposit address, and the exchange held it for review. | … and the receiving platform held it for review. |
+| The verified agent paid 2 RLUSD, and the exchange accepted it. | The verified agent paid 2 RLUSD, and the receiving platform accepted it. |
+| … sent the Travel Rule details to the exchange first, … / The exchange accepted the payment because … | … to the receiving platform first, … / The receiving platform accepted the payment because … |
+| The exchange reads its agent deposit address | The receiving platform reads its agent deposit address |

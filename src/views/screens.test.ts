@@ -58,15 +58,15 @@ describe('payment events', () => {
 
   it('names who decided each kind of entry, the same way on every page', () => {
     expect([decidedBy('deposit'), decidedBy('refusal'), decidedBy('rejection')].map((actor) => actorName(actor))).toEqual([
-      'the exchange checks',
+      'the platform checks',
       'the approval service',
       'the XRP Ledger',
     ]);
     expect(actorName('ledger', true)).toBe('The XRP Ledger');
   });
 
-  it('says an accepted payment needed the approval service and passed the exchange checks', () => {
-    expect(decisionNote('exchange', 'cleared')).toBe('It needed the approval service to sign, and the exchange checks accepted it.');
+  it('says an accepted payment needed the approval service and passed the platform checks', () => {
+    expect(decisionNote('exchange', 'cleared')).toBe('It needed the approval service to sign, and the platform checks accepted it.');
     expect(decisionNote('exchange', 'held')).toContain('held it for review');
   });
 
@@ -79,7 +79,7 @@ describe('tour stories', () => {
   const decider = (kind: string) => SCENARIOS.find((scenario) => scenario.kind === kind)?.decidedBy;
 
   it('names the actor that clears or stops each story, matching the exchange payments list', () => {
-    // Paying Naledi is an accepted payment, decided by the exchange checks.
+    // Paying Naledi is an accepted payment, decided by the platform checks.
     expect(decider('scenario-2')).toBe(decidedBy('deposit'));
     // The unknown agent ends with the ledger rejection.
     expect(decider('scenario-1')).toBe(decidedBy('rejection'));

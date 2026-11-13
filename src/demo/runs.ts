@@ -64,7 +64,7 @@ function reportRegistrySteps(report: Report, steps: RegistryStep[]): void {
 }
 
 function reportDeposits(report: Report, records: DepositRecord[]): void {
-  report({ type: 'step', text: 'The exchange reads its agent deposit address' });
+  report({ type: 'step', text: 'The receiving platform reads its agent deposit address' });
   if (records.length === 0) report({ type: 'line', text: 'No new payment reached the agent deposit address' });
   for (const record of records) {
     report({ type: 'line', text: `${depositStatus(record).label}: ${record.amount ?? '0'} RLUSD`, hash: record.hash });
@@ -191,11 +191,11 @@ async function verifiedAgent(ctx: DemoContext, report: Report): Promise<RunOutco
   if (results.length !== 1 || paid?.status !== 'paid') throw unexpectedResults(results, ['paid']);
   reportDeposits(report, await ctx.exchange.syncDeposits());
   return {
-    summary: 'The verified agent paid 2 RLUSD, and the exchange accepted it.',
+    summary: 'The verified agent paid 2 RLUSD, and the receiving platform accepted it.',
     explanation: {
       sentences: [
-        'The agent read the instruction, sent the Travel Rule details to the exchange first, and paid 2 RLUSD with the approval service signing too.',
-        'The exchange accepted the payment because its credential, Travel Rule details and amount all matched.',
+        'The agent read the instruction, sent the Travel Rule details to the receiving platform first, and paid 2 RLUSD with the approval service signing too.',
+        'The receiving platform accepted the payment because its credential, Travel Rule details and amount all matched.',
       ],
       decidedBy: 'exchange',
       evidence: { label: 'The cleared payment on the ledger', hash: paid.hash },

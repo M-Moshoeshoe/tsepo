@@ -4,7 +4,7 @@ import type { Tone } from './status.ts';
 const NAMES: Record<Actor, string> = {
   ledger: 'the XRP Ledger',
   policy: 'the approval service',
-  exchange: 'the exchange checks',
+  exchange: 'the platform checks',
 };
 
 /** "the XRP Ledger", or "The XRP Ledger" at the start of a sentence or a table cell. */
@@ -21,8 +21,8 @@ export function decisionNote(actor: Actor, tone: Tone | 'neutral'): string {
   switch (actor) {
     case 'exchange':
       return tone === 'cleared'
-        ? 'It needed the approval service to sign, and the exchange checks accepted it.'
-        : 'It reached the agent deposit address, and the exchange held it for review.';
+        ? 'It needed the approval service to sign, and the platform checks accepted it.'
+        : 'It reached the agent deposit address, and the receiving platform held it for review.';
     case 'policy':
       return "Shared by the agent's approval service. The money never moved.";
     case 'ledger':

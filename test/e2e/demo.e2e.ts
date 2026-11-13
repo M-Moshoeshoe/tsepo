@@ -424,11 +424,11 @@ void describe('the interface', () => {
     const grid = desk.getByRole('grid');
     const table = await grid.innerText();
     assert.ok(table.includes('The money never moved.'));
-    assert.ok(table.includes('The exchange checks'));
+    assert.ok(table.includes('The platform checks'));
     // The outcomes chart has its own hidden table with an Accepted row, under the chart: open a payment from the grid.
     await grid.getByRole('row').filter({ hasText: 'Accepted' }).first().click();
     const details = desk.getByRole('dialog', { name: 'Payment details' });
-    await details.getByText('It needed the approval service to sign, and the exchange checks accepted it.').waitFor();
+    await details.getByText('It needed the approval service to sign, and the platform checks accepted it.').waitFor();
     await desk.context().close();
   });
 
