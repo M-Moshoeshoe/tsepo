@@ -460,12 +460,12 @@ void describe('the interface', () => {
     await desk.context().close();
   });
 
-  void it('serves the Tšepo shield as favicon, app icon and Apple touch icon', async () => {
+  void it('serves the Tšepo shield as favicon, app icon and Apple touch icon, and the wordmark', async () => {
     const files = [
       ['/favicon.ico', 'image/x-icon'],
       ['/icon.png', 'image/png'],
       ['/apple-icon.png', 'image/png'],
-      ['/tsepo-mark.png', 'image/png'],
+      ['/tsepo-wordmark.png', 'image/png'],
     ] as const;
     for (const [path, type] of files) {
       const response = await fetch(`${BASE_URL}${path}`);

@@ -1,28 +1,35 @@
 import Link from 'next/link';
 import { cx } from '@/utils/cx';
 
-/** The Tšepo logo: the shield mark and the name. The mark is a 256px PNG drawn at 24px, so it stays sharp on dense screens. */
-export function BrandMark({ className }: { className?: string }) {
-  // A fixed, tiny decorative image: a plain img, with no optimisation pipeline needed.
-  return <img src="/tsepo-mark.png" alt="" width={24} height={24} className={cx('size-6 shrink-0', className)} />;
+/**
+ * The Tšepo logo: the shield and the name, drawn as one wordmark. The image is
+ * 96px tall and shown at 28px, so it stays sharp on dense screens. Its text
+ * alternative is the name it shows.
+ */
+function Wordmark() {
+  // A fixed, small image: a plain img, with no optimisation pipeline needed.
+  return <img src="/tsepo-wordmark.png" alt="Tšepo" width={348} height={96} className="h-7 w-auto shrink-0" />;
 }
 
 /**
- * The logo and name. With `href` it is a link to the landing page, from the
- * product and from every public page.
+ * The logo. With `href` it is a link to the landing page, from the product and
+ * from every public page.
  */
 export function Brand({ href }: { href?: string }) {
-  const content = (
-    <>
-      <BrandMark />
-      Tšepo
-    </>
-  );
-  const style = 'flex items-center gap-2 text-md font-semibold text-primary';
-  if (href === undefined) return <span className={style}>{content}</span>;
+  if (href === undefined) {
+    return (
+      <span className="flex items-center">
+        <Wordmark />
+      </span>
+    );
+  }
   return (
-    <Link href={href} className={cx(style, 'rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2')} aria-label="Tšepo, home">
-      {content}
+    <Link
+      href={href}
+      className={cx('flex items-center rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2')}
+      aria-label="Tšepo, home"
+    >
+      <Wordmark />
     </Link>
   );
 }
