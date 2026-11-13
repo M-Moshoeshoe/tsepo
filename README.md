@@ -138,9 +138,21 @@ the business model, the landscape and the roadmap, with sources.
   business clients. No partnership exists yet.
 - **The pilot:** three businesses and one exchange on the XRP Ledger
   Testnet, then a supervised pilot.
-- **Pilot pricing, to be validated:** R450 per active agent a month for a
-  business; R1.50 per verified agent deposit for an exchange, with free
-  integration during the pilot.
+- **Pilot pricing, to be validated:** 0.25% of each payment, charged to
+  each side: the business whose agent sends it, and the platform that
+  receives it. Minimum R0.50 and maximum R25 per side, per payment. No
+  monthly fees. Shaped by feedback from mentors at W3Node 2026.
+
+  | Payment | Each side pays |
+  |---|---|
+  | R50 | R0.50, the minimum |
+  | R2,000 | R5 |
+  | R50,000 | R25, the cap |
+
+  Illustration, not a forecast: a business sending 1,000 agent payments a
+  month averaging R2,000 moves R2 million. At 0.25% per side, that is
+  R5,000 from the business and R5,000 from the receiving platforms,
+  R10,000 a month in total.
 
 ## Integrate as an exchange
 

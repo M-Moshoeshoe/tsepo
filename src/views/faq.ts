@@ -106,8 +106,9 @@ export const FAQ: FaqEntry[] = [
   {
     question: 'What will it cost?',
     answer: [
-      'The pilot prices are still to be validated. Businesses pay R450 per active agent a month.',
-      'Exchanges pay R1.50 per verified agent deposit, and integration is free during the pilot.',
+      'Pilot pricing, to be validated: 0.25% of each payment, charged to each side: the business whose agent sends it, and the platform that receives it. Minimum R0.50 and maximum R25 per side, per payment. No monthly fees.',
+      'So a R50 payment costs each side R0.50, the minimum; a R2,000 payment costs each side R5; and a R50,000 payment costs each side R25, the cap.',
+      'The pricing was shaped by feedback from mentors at W3Node 2026.',
     ],
   },
 ];

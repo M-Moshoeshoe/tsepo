@@ -409,3 +409,58 @@ nothing of that kind to remove.
 | Landing, go-to-market | Directive 9 has applied from R0 since 30 April 2025. South Africa’s next FATF evaluation runs to October 2027. A 2026 Treasury draft proposes tighter rules for transfers between exchanges and self-custody wallets. AI agents are starting to pay. | Directive 9 has applied from R0 since 30 April 2025, and AI agents already pay in stablecoins. | The FATF date and the Treasury draft were not cited on the page. Removed. |
 | Landing, exchanges column | 310 licensed providers in South Africa must know who sent every transfer. (no link) | The same line, with its source: FSCA update, 15 April 2026. | Every figure now carries its source. |
 | README | The problem; First customers; Why now | Rewritten to match the landing page, with the same sources. | Same reasons as above. |
+
+# Copy changes, Stage 8B: pricing, sources and positioning
+
+The landing page stays shorter than after Stage 8: 6,271px at 1280px (was
+6,291px) and 10,828px at 390px (was 11,152px).
+
+## Sources, quieter
+
+On the landing page, /market and /about, inline "Source:" lines become
+small superscript footnote numbers. Each links to a short Sources list at
+the bottom of the page: title, publisher, date and link. Every source is
+kept. The FAQ keeps its one inline source line, where a list would be out
+of place.
+
+| Before | After |
+|---|---|
+| Source: Cointelegraph, November 2024 (and seven more inline lines on the landing page) | Footnote numbers 1 to 8, and a Sources list at the bottom of the page. |
+| /market: â€¦ plans 35 anti-money-laundering inspections in 2026/27. Source: the FSCA update of 15 April 2026. | â€¦ plans 35 anti-money-laundering inspections in 2026/27.Â², with a Sources list at the bottom. |
+
+## Pricing
+
+| Before | After |
+|---|---|
+| Built for both sides of the payment. The business that pays and the exchange that receives each get what they need. | Pricing, per payment, for both sides. Pilot pricing, to be validated: 0.25% of each payment, charged to each side: the business whose agent sends it, and the platform that receives it. Minimum R0.50 and maximum R25 per side, per payment. No monthly fees. |
+| New | Shaped by feedback from mentors at W3Node 2026. |
+| For businesses: R450 per active agent a month | For businesses: 0.25% per payment. Minimum R0.50, maximum R25. No monthly fees. |
+| For exchanges: R1.50 per verified agent deposit, with free integration during the pilot | For receiving platforms: 0.25% per payment. Minimum R0.50, maximum R25. No monthly fees. |
+| Four points per side, two large cards, a code sample and "Explore the business workspace" / "See how to integrate" buttons | Three points per side and one button, Join the pilot. The code sample stays on the Integrate page. |
+| Who must approve each payment (three-row card) | Agent (1) + Approval service (1) = 2 signatures needed. The agent can never pay alone. The business recovery key (2) can act alone, for recovery. |
+| New table: What each side pays | R50: R0.50, the minimum. R2,000: R5. R50,000: R25, the cap. Worked out by the pricing rules in src/domain/pricing.ts. |
+| /market illustration: An exchange that receives 10,000 verified agent deposits in a month would pay R15,000 for that month. Twenty businesses that run two agents each would pay R18,000 a month between them. | Illustration, not a forecast: A business that sends 1,000 agent payments a month, averaging R2,000, moves R2 million. At 0.25% per side, that is R5,000 from the business and R5,000 from the receiving platforms, R10,000 a month in total. |
+| FAQ: The pilot prices are still to be validated. Businesses pay R450 per active agent a month. Exchanges pay R1.50 per verified agent deposit, and integration is free during the pilot. | The pilot pricing sentence above. So a R50 payment costs each side R0.50, the minimum; a R2,000 payment costs each side R5; and a R50,000 payment costs each side R25, the cap. The pricing was shaped by feedback from mentors at W3Node 2026. |
+| Header link: For exchanges | For platforms |
+| Go-to-market: â€¦ the Travel Rule providers that exchanges already use â€¦ Each exchange then brings its business clients. / Three businesses and one exchange â€¦ | â€¦ the Travel Rule providers that platforms already use â€¦ Each platform then brings its business clients. / Three businesses and one receiving platform â€¦ |
+
+The brief asked for "R1 per payment" as the largest element. That would
+contradict 0.25% with a R0.50 minimum and a R25 cap, so the largest element
+is "0.25% per payment", with the minimum and cap under it.
+
+## Positioning, restored
+
+| Before | After |
+|---|---|
+| Cut in Stage 8 | Other tools stop an AI agent from paying what it should not. TÅ¡epo also proves who the agent is, so the payments it should make are accepted. (one line at the end of the problem section) |
+
+## Naledi, restored
+
+| Before | After |
+|---|---|
+| Cut in Stage 8 | Naledi was paid within a minute, and her platform knew exactly who sent it. (How it works, step 4) |
+
+## Photographer credit
+
+Not added yet: the name has not been given. It goes on the About page and
+in the README when it is.

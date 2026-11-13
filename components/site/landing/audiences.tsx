@@ -1,157 +1,129 @@
 import { ArrowRight, Check } from '@untitledui/icons';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Button } from '@/components/base/buttons/button';
+import { EXAMPLE_PAYMENTS_CENTS, feeBound, feePerSideCents, formatRand } from '../../../src/domain/pricing.ts';
 import type { ProofFile } from '../../../src/views/proof.ts';
-import { SOURCES, type Source } from '../../../src/views/sources.ts';
-import { Section, UiCard } from '../section.tsx';
-import { SourceLinks } from '../source-links.tsx';
+import { LANDING_NOTES, SOURCES } from '../../../src/views/sources.ts';
+import { Ref } from '../footnotes.tsx';
+import { JoinPilot } from '../join-pilot.tsx';
+import { Section } from '../section.tsx';
 
-interface Audience {
-  id: string;
-  name: string;
-  who: string;
-  /** One fact about the audience's market, when there is one worth a line, with its source. */
-  fact?: { text: string; source: Source };
-  price: string;
-  priceNote: string;
-  gets: string[];
-  action: { label: string; href: string };
+/** The pilot pricing in one sentence, as the business and the platform both read it. */
+export const PRICING_LINE =
+  'Pilot pricing, to be validated: 0.25% of each payment, charged to each side: the business whose agent sends it, and the platform that receives it. Minimum R0.50 and maximum R25 per side, per payment. No monthly fees.';
+
+function Points({ lines }: { lines: string[] }) {
+  return (
+    <ul className="grid gap-2">
+      {lines.map((line) => (
+        <li key={line} className="flex items-start gap-2 text-sm text-secondary">
+          <Check className="mt-0.5 size-4 shrink-0 text-fg-brand-primary" aria-hidden />
+          {line}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
-const AUDIENCES: Audience[] = [
-  {
-    id: 'for-businesses',
-    name: 'For businesses',
-    who: 'You pay contractors, suppliers or payouts through an AI agent.',
-    price: 'R450',
-    priceNote: 'per active agent a month',
-    gets: [
-      'The agent cannot change its limits per payment and per day.',
-      'The agent pays only the recipients you approve.',
-      'One action stops the agent within seconds.',
-      'Every payment keeps its instruction, decision and ledger record.',
-    ],
-    action: { label: 'Explore the business workspace', href: '/business' },
-  },
-  {
-    id: 'for-exchanges',
-    name: 'For exchanges',
-    who: 'You are a crypto asset service provider, and AI agents pay into your accounts.',
-    fact: { text: '310 licensed providers in South Africa must know who sent every transfer.', source: SOURCES.fscaLicences },
-    price: 'R1.50',
-    priceNote: 'per verified agent deposit, with free integration during the pilot',
-    gets: [
-      'The XRP Ledger itself protects your agent deposit address.',
-      'The Travel Rule details arrive before each payment.',
-      'You can check any agent’s credential by its address.',
-      'Each decision is recorded and ready for your reports.',
-    ],
-    action: { label: 'See how to integrate', href: '/exchange/integrate' },
-  },
-];
-
-function Plan({ audience, extra }: { audience: Audience; extra?: ReactNode }) {
+/** One side of the block: the name, the price as the largest element, three points, an extra line and one button. */
+function Column({ id, name, points, extra }: { id: string; name: string; points: string[]; extra: ReactNode }) {
   return (
-    <article id={audience.id} aria-labelledby={`${audience.id}-name`} className="grid scroll-mt-4 content-start gap-6 rounded-2xl p-6 ring-1 ring-secondary md:p-8">
-      <div className="grid gap-2">
-        <h3 id={`${audience.id}-name`} className="text-display-xs font-medium text-primary">
-          {audience.name}
-        </h3>
-        <p className="text-md text-tertiary">{audience.who}</p>
-        {audience.fact !== undefined && (
-          <div className="grid gap-0.5">
-            <p className="text-sm font-medium text-secondary">{audience.fact.text}</p>
-            <SourceLinks sources={[audience.fact.source]} />
-          </div>
-        )}
-      </div>
-      <div className="grid gap-1 border-y border-secondary py-4">
-        <p className="text-xs font-semibold text-tertiary">Pilot pricing, to be validated</p>
-        <p className="flex flex-wrap items-baseline gap-x-2">
-          <span className="font-mono text-display-xs font-medium text-primary">{audience.price}</span>{' '}
-          <span className="text-sm text-tertiary">{audience.priceNote}</span>
-        </p>
-      </div>
-      <ul className="grid gap-2.5">
-        {audience.gets.map((line) => (
-          <li key={line} className="flex items-start gap-2.5 text-md text-secondary">
-            <Check className="mt-0.5 size-5 shrink-0 text-fg-brand-primary" aria-hidden />
-            {line}
-          </li>
-        ))}
-      </ul>
+    <article id={id} aria-labelledby={`${id}-name`} className="grid scroll-mt-4 content-start gap-4 p-5 md:p-6">
+      <h3 id={`${id}-name`} className="text-md font-semibold text-primary">
+        {name}
+      </h3>
+      <p className="grid gap-0.5">
+        <span className="text-display-sm font-medium text-primary tabular-nums">
+          0.25% <span className="text-lg text-tertiary">per payment</span>
+        </span>
+        <span className="text-sm text-tertiary">Minimum R0.50, maximum R25. No monthly fees.</span>
+      </p>
+      <Points lines={points} />
       {extra}
-      <Button href={audience.action.href} color="secondary" size="lg" className="justify-self-start">
-        {audience.action.label}
-      </Button>
+      <JoinPilot size="md" color="primary" className="justify-self-start" />
     </article>
   );
 }
 
-/** Who must approve each payment, read from the agent account's signer list on the ledger. */
-function ApproversFragment({ proof }: { proof: ProofFile }) {
+/** Who must approve each payment, in one line, read from the agent account's signer list on the ledger. */
+function Approvers({ proof }: { proof: ProofFile }) {
   const { quorum, weights } = proof.signerList;
   return (
-    <UiCard label="Who must approve each payment" className="bg-secondary shadow-none ring-0">
-      <p className="text-sm font-semibold text-primary">Who must approve each payment</p>
-      <dl className="grid gap-2 text-sm">
-        <div className="flex justify-between gap-4">
-          <dt className="text-tertiary">Agent key and approval service</dt>
-          <dd className="font-mono text-xs text-primary">
-            {weights.agent} + {weights.approvalService} = {quorum}
-          </dd>
-        </div>
-        <div className="flex justify-between gap-4 border-t border-secondary pt-2">
-          <dt className="text-tertiary">Business key alone</dt>
-          <dd className="font-mono text-xs text-primary">{weights.business}</dd>
-        </div>
-        <div className="flex justify-between gap-4 border-t border-secondary pt-2">
-          <dt className="text-tertiary">Agent key alone</dt>
-          <dd className="font-mono text-xs text-primary">
-            {weights.agent} of {quorum}, refused
-          </dd>
-        </div>
-      </dl>
-    </UiCard>
+    <div className="grid gap-1 rounded-lg bg-secondary px-3 py-2.5 text-sm">
+      <p className="font-medium text-primary">
+        Agent ({weights.agent}) + Approval service ({weights.approvalService}) = {quorum} signatures needed
+      </p>
+      <p className="text-xs text-tertiary">
+        The agent can never pay alone. The business recovery key ({weights.business}) can act alone, for recovery.
+      </p>
+    </div>
   );
 }
 
-/** How the pilot reaches its first customers. Plain facts: the draft is called a draft, and no partnership is claimed. */
+/** Three example payments, worked out by the pricing rules, never typed in. */
+function Examples() {
+  return (
+    <table className="w-full max-w-md text-left text-sm">
+      <caption className="pb-2 text-left text-sm font-semibold text-primary">What each side pays</caption>
+      <thead className="text-xs text-tertiary">
+        <tr>
+          <th scope="col" className="py-1.5 font-medium">
+            Payment
+          </th>
+          <th scope="col" className="py-1.5 font-medium">
+            Each side pays
+          </th>
+        </tr>
+      </thead>
+      <tbody className="tabular-nums">
+        {EXAMPLE_PAYMENTS_CENTS.map((cents) => {
+          const bound = feeBound(cents);
+          return (
+            <tr key={cents} className="border-t border-secondary">
+              <th scope="row" className="py-1.5 font-normal text-secondary">
+                {formatRand(cents)}
+              </th>
+              <td className="py-1.5 text-primary">
+                {formatRand(feePerSideCents(cents))}
+                {bound !== undefined && <span className="text-tertiary">{bound === 'minimum' ? ', the minimum' : ', the cap'}</span>}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+/** How the pilot reaches its first customers. Plain facts: no partnership is claimed. */
 const GO_TO_MARKET: { term: string; text: string }[] = [
   {
     term: 'First customers',
     text: 'South African crypto platforms, which must know who sent every transfer under Directive 9, and businesses that pay contractors through AI agents.',
   },
-  {
-    term: 'Why now',
-    text: 'Directive 9 has applied from R0 since 30 April 2025, and AI agents already pay in stablecoins.',
-  },
+  { term: 'Why now', text: 'Directive 9 has applied from R0 since 30 April 2025, and AI agents already pay in stablecoins.' },
   {
     term: 'How we reach them',
-    text: 'Through the Travel Rule providers that exchanges already use, such as Notabene and Sumsub. Each exchange then brings its business clients.',
+    text: 'Through the Travel Rule providers that platforms already use, such as Notabene and Sumsub. Each platform then brings its business clients.',
   },
-  {
-    term: 'The pilot',
-    text: 'Three businesses and one exchange on the XRP Ledger Testnet, then a supervised pilot.',
-  },
+  { term: 'The pilot', text: 'Three businesses and one receiving platform on the XRP Ledger Testnet, then a supervised pilot.' },
 ];
 
 function GoToMarket() {
   return (
-    <div className="grid gap-6 rounded-2xl bg-secondary p-6 md:p-8">
-      <h3 className="text-lg font-semibold text-primary">How the pilot reaches its first customers</h3>
-      <dl className="grid gap-6 sm:grid-cols-2">
+    <div className="grid gap-4 border-t border-secondary pt-6">
+      <h3 className="text-md font-semibold text-primary">How the pilot reaches its first customers</h3>
+      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {GO_TO_MARKET.map((item) => (
           <div key={item.term} className="grid content-start gap-1">
-            <dt className="text-md font-semibold text-primary">{item.term}</dt>
-            <dd className="text-md text-tertiary">{item.text}</dd>
+            <dt className="text-sm font-semibold text-primary">{item.term}</dt>
+            <dd className="text-sm text-tertiary">{item.text}</dd>
           </div>
         ))}
       </dl>
       <Link
         href="/market"
-        className="inline-flex items-center gap-1.5 justify-self-start rounded-sm text-md font-semibold text-brand-secondary underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2"
+        className="inline-flex items-center gap-1.5 justify-self-start rounded-sm text-sm font-semibold text-brand-secondary underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2"
       >
         Read about the market
         <ArrowRight className="size-4" aria-hidden />
@@ -160,30 +132,42 @@ function GoToMarket() {
   );
 }
 
-/** Businesses and exchanges side by side: who each is, what they get, the pilot price, and how the pilot reaches them. */
-export function Audiences({ proof, integrationPreview }: { proof: ProofFile; integrationPreview: string }) {
-  const [business, exchange] = AUDIENCES;
+/** Pricing for both sides of the payment, one slim block, with the worked examples and how the pilot reaches its customers. */
+export function Audiences({ proof }: { proof: ProofFile }) {
   return (
-    <Section id="pricing" title="Built for both sides of the payment." intro="The business that pays and the platform that receives each get what they need.">
-      <div className="grid gap-6 lg:grid-cols-2">
-        {business !== undefined && <Plan audience={business} extra={<ApproversFragment proof={proof} />} />}
-        {exchange !== undefined && (
-          <Plan
-            audience={exchange}
+    <Section id="pricing" title="Pricing, per payment, for both sides." intro={PRICING_LINE}>
+      <div className="grid gap-6">
+        <p className="-mt-6 text-sm text-tertiary">Shaped by feedback from mentors at W3Node 2026.</p>
+        <div className="grid divide-y divide-secondary rounded-2xl ring-1 ring-secondary md:grid-cols-2 md:divide-x md:divide-y-0">
+          <Column
+            id="for-businesses"
+            name="For businesses"
+            points={[
+              'Your agent pays only approved recipients, within its limits.',
+              'One action stops the agent within seconds.',
+              'Every payment keeps its instruction, decision and ledger record.',
+            ]}
+            extra={<Approvers proof={proof} />}
+          />
+          <Column
+            id="for-exchanges"
+            name="For receiving platforms"
+            points={[
+              'The XRP Ledger itself refuses agents without a credential.',
+              'The Travel Rule details arrive before each payment.',
+              'Decision records download for your own goAML reporting.',
+            ]}
             extra={
-              <pre
-                role="region"
-                aria-label="The first integration step, from the runnable example"
-                tabIndex={0}
-                className="overflow-x-auto rounded-lg bg-primary-solid p-4 text-xs leading-relaxed text-white outline-focus-ring focus-visible:outline-2"
-              >
-                <code className="font-mono">{integrationPreview}</code>
-              </pre>
+              <p className="text-sm font-medium text-secondary">
+                310 licensed providers in South Africa must know who sent every transfer.
+                <Ref notes={LANDING_NOTES} sources={[SOURCES.fscaLicences]} />
+              </p>
             }
           />
-        )}
+        </div>
+        <Examples />
+        <GoToMarket />
       </div>
-      <GoToMarket />
     </Section>
   );
 }

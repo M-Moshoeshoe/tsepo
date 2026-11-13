@@ -324,7 +324,7 @@ void describe('the interface', () => {
 
   void it('takes a pilot request from the landing page, and refuses a bad one with a plain message', async () => {
     const landing = await openPage(browser, 1280, BASE_URL, '/');
-    await landing.getByRole('button', { name: 'Join the pilot' }).click();
+    await landing.getByRole('button', { name: 'Join the pilot' }).first().click();
     const dialog = landing.getByRole('dialog', { name: 'Join the pilot' });
     await dialog.getByLabel('Your name').fill('Test Person');
     await dialog.getByLabel('Organisation').fill('Example Organisation');

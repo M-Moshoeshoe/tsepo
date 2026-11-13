@@ -139,6 +139,8 @@ interface Step {
   title: string;
   question: string;
   answer: string;
+  /** One line of Naledi's story, at the step where it happens. */
+  story?: string;
   proof: { label: string; href: string };
   fragment: ReactNode;
 }
@@ -169,6 +171,7 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
     },
     {
       title: '4. The receiving platform accepts verified agents.',
+      story: 'Naledi was paid within a minute, and her platform knew exactly who sent it.',
       question: 'How do I prove what it did and why?',
       answer: 'Every payment keeps its instruction, its decision, its Travel Rule details and its ledger record.',
       proof: { label: 'See the payments and their evidence', href: '/business/payments' },
@@ -187,6 +190,7 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
             <FragmentPanel className="min-h-[15rem] p-2.5 md:p-3">{step.fragment}</FragmentPanel>
             <div className="grid gap-3 px-1.5 pb-2">
               <h3 className="text-md font-semibold text-primary">{step.title}</h3>
+              {step.story !== undefined && <p className="text-sm font-medium text-brand-secondary">{step.story}</p>}
               <div className="grid gap-1 border-t border-secondary pt-3">
                 <p className="text-sm font-semibold text-secondary">{step.question}</p>
                 <p className="text-sm text-tertiary">{step.answer}</p>

@@ -53,7 +53,7 @@ export const REPOSITORY = 'https://github.com/M-Moshoeshoe/tsepo';
 export const SITE_NAV: NavEntry[] = [
   { label: 'How it works', href: '/#how-it-works' },
   { label: 'For businesses', href: '/#for-businesses' },
-  { label: 'For exchanges', href: '/#for-exchanges' },
+  { label: 'For platforms', href: '/#for-exchanges' },
   { label: 'FAQ', href: '/faq' },
 ];
 

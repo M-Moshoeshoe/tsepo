@@ -8,14 +8,14 @@ import { Button } from '@/components/base/buttons/button';
 const JoinPilotDialog = dynamic(() => import('./join-pilot-dialog.tsx').then((module) => module.JoinPilotDialog));
 
 /** "Join the pilot": a button that opens a short form in a dialog. */
-export function JoinPilot({ className }: { className?: string }) {
+export function JoinPilot({ className, size = 'xl', color = 'secondary' }: { className?: string; size?: 'md' | 'lg' | 'xl'; color?: 'primary' | 'secondary' }) {
   const [open, setOpen] = useState(false);
   const [requested, setRequested] = useState(false);
   return (
     <>
       <Button
-        color="secondary"
-        size="xl"
+        color={color}
+        size={size}
         className={className}
         onClick={() => {
           setRequested(true);
