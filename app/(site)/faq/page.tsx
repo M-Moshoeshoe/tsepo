@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { SourceLinks } from '../../../components/site/source-links.tsx';
 import { INLINE_LINK, SitePage } from '../../../components/site/site-page.tsx';
 import { FAQ } from '../../../src/views/faq.ts';
 
@@ -38,6 +39,7 @@ export default function FaqPage() {
                   </Link>
                 </p>
               )}
+              {entry.source !== undefined && <SourceLinks sources={[entry.source]} className="text-sm text-tertiary" />}
             </dd>
           </div>
         ))}

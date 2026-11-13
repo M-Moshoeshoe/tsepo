@@ -3,14 +3,16 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import type { ProofFile } from '../../../src/views/proof.ts';
+import { SOURCES, type Source } from '../../../src/views/sources.ts';
 import { Section, UiCard } from '../section.tsx';
+import { SourceLinks } from '../source-links.tsx';
 
 interface Audience {
   id: string;
   name: string;
   who: string;
-  /** One fact about the audience's market, when there is one worth a line. */
-  fact?: string;
+  /** One fact about the audience's market, when there is one worth a line, with its source. */
+  fact?: { text: string; source: Source };
   price: string;
   priceNote: string;
   gets: string[];
@@ -36,7 +38,7 @@ const AUDIENCES: Audience[] = [
     id: 'for-exchanges',
     name: 'For exchanges',
     who: 'You are a crypto asset service provider, and AI agents pay into your accounts.',
-    fact: '310 licensed providers in South Africa must know who sent every transfer.',
+    fact: { text: '310 licensed providers in South Africa must know who sent every transfer.', source: SOURCES.fscaLicences },
     price: 'R1.50',
     priceNote: 'per verified agent deposit, with free integration during the pilot',
     gets: [
@@ -57,7 +59,12 @@ function Plan({ audience, extra }: { audience: Audience; extra?: ReactNode }) {
           {audience.name}
         </h3>
         <p className="text-md text-tertiary">{audience.who}</p>
-        {audience.fact !== undefined && <p className="text-sm font-medium text-secondary">{audience.fact}</p>}
+        {audience.fact !== undefined && (
+          <div className="grid gap-0.5">
+            <p className="text-sm font-medium text-secondary">{audience.fact.text}</p>
+            <SourceLinks sources={[audience.fact.source]} />
+          </div>
+        )}
       </div>
       <div className="grid gap-1 border-y border-secondary py-4">
         <p className="text-xs font-semibold text-tertiary">Pilot pricing, to be validated</p>
@@ -114,11 +121,11 @@ function ApproversFragment({ proof }: { proof: ProofFile }) {
 const GO_TO_MARKET: { term: string; text: string }[] = [
   {
     term: 'First customers',
-    text: 'South African crypto exchanges, which must accept agent payments under Directive 9, and businesses that pay contractors through AI agents.',
+    text: 'South African crypto platforms, which must know who sent every transfer under Directive 9, and businesses that pay contractors through AI agents.',
   },
   {
     term: 'Why now',
-    text: 'Directive 9 has applied from R0 since 30 April 2025. South Africa’s next FATF evaluation runs to October 2027. A 2026 Treasury draft proposes tighter rules for transfers between exchanges and self-custody wallets. AI agents are starting to pay.',
+    text: 'Directive 9 has applied from R0 since 30 April 2025, and AI agents already pay in stablecoins.',
   },
   {
     term: 'How we reach them',
@@ -157,7 +164,7 @@ function GoToMarket() {
 export function Audiences({ proof, integrationPreview }: { proof: ProofFile; integrationPreview: string }) {
   const [business, exchange] = AUDIENCES;
   return (
-    <Section id="pricing" title="Built for both sides of the payment." intro="The business that pays and the exchange that receives each get what they need.">
+    <Section id="pricing" title="Built for both sides of the payment." intro="The business that pays and the platform that receives each get what they need.">
       <div className="grid gap-6 lg:grid-cols-2">
         {business !== undefined && <Plan audience={business} extra={<ApproversFragment proof={proof} />} />}
         {exchange !== undefined && (

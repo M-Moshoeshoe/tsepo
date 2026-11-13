@@ -55,12 +55,33 @@ Each line is a validated transaction on the XRP Ledger Testnet.
 
 ## The problem
 
-AI agents can now hold a wallet and send money. The party that receives
-the money cannot tell who the agent works for, what it is allowed to pay,
-or whether that permission still stands. A business that gives an agent a
-key gives it full control of the account, with no limit and no way to
-withdraw the authority short of moving the funds. Exchanges and other
-receivers either accept every agent payment or refuse them all.
+**AI agents have already sent money they should not have.**
+
+- Freysa, November 2024: a player talked an AI agent built to guard a prize
+  pool into sending all of it, about $47,000
+  ([Cointelegraph](https://cointelegraph.com/news/crypto-user-convinced-ai-bot-transfer-47k)).
+- AIXBT, March 2025: an attacker broke into an AI agent's dashboard and had
+  it send 55.5 ETH, about $106,000
+  ([Cointelegraph](https://cointelegraph.com/news/hacker-breaches-ai-crypto-bot-aixbt-steals-55-eth)).
+- Grok and Bankrbot, May 2026: a hidden instruction made one AI tell a
+  trading bot to send tokens worth $150,000 to $200,000
+  ([OECD AI incident monitor](https://oecd.ai/en/incidents/2026-05-04-4a73)).
+  The attacker returned them minutes later
+  ([MetaMask security report](https://metamask.com/news/crypto-security-report-may-2026)).
+
+In each case, nothing stood between the agent and the money.
+
+**People do not trust AI with money yet.** Only 23% of US consumers trust AI
+to handle payments for them, yet 61% would trust Visa to handle the same
+payments ([Visa Trust Index, 9 September 2026](https://investor.visa.com/news/news-details/2026/New-Visa-Research-Finds-Consumer-Trust-is-Accelerating-the-Path-to-Agentic-Commerce/default.aspx)).
+Tšepo is built to be the layer that stands behind an agent's payment.
+
+**And the law needs to know who paid.** In South Africa, the crypto platform
+where the recipient receives the money, such as VALR or Luno, must know who
+sent every transfer, from R0
+([FIC Directive 9](https://www.fic.gov.za/wp-content/uploads/2024/11/Directive-9-Travel-rule-relating-to-crypto-asset-transfers.pdf)).
+In the product, this is the **Receiving platform**. VALR and Luno are
+examples only; Tšepo has no partnership with either.
 
 ## How it works
 
@@ -104,13 +125,14 @@ agent activity can be told apart from human activity on the ledger.
 The [market page](https://tsepo.up.railway.app/market) sets out the market,
 the business model, the landscape and the roadmap, with sources.
 
-- **First customers:** South African crypto exchanges, which must accept
-  agent payments under FIC Directive 9, and businesses that pay
-  contractors through AI agents.
-- **Why now:** Directive 9 has applied from R0 since 30 April 2025. South
-  Africa's next FATF evaluation runs to October 2027. A 2026 Treasury draft
-  proposes tighter rules for transfers between exchanges and self-custody
-  wallets. AI agents are starting to pay.
+- **First customers:** South African crypto platforms, which must know who
+  sent every transfer under
+  [FIC Directive 9](https://www.fic.gov.za/wp-content/uploads/2024/11/Directive-9-Travel-rule-relating-to-crypto-asset-transfers.pdf),
+  and businesses that pay contractors through AI agents.
+- **Why now:** Directive 9 has applied from R0 since 30 April 2025, and AI
+  agents already pay in stablecoins: about $73 million across about 176
+  million agent transactions from May 2025 to April 2026
+  ([Keyrock, reported by Cointelegraph](https://cointelegraph.com/news/ai-agents-using-stablecoins-as-default-settlement-layer-keyrock)).
 - **How we reach them:** through the Travel Rule providers that exchanges
   already use, such as Notabene and Sumsub. Each exchange then brings its
   business clients. No partnership exists yet.
@@ -122,7 +144,7 @@ the business model, the landscape and the roadmap, with sources.
 
 ## Integrate as an exchange
 
-The Integrate page in the Receiving exchange workspace shows the three
+The Integrate page in the Receiving platform workspace shows the three
 steps an exchange takes. Its code comes from a script that runs every step
 on the XRP Ledger Testnet, so the page and the script never differ.
 

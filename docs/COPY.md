@@ -311,3 +311,101 @@ from the example file.
 | Match the Travel Rule details by fingerprint. | Match each payment to its Travel Rule details. |
 | Before each payment, the agent sends you its Travel Rule details under FIC Directive 9: the originator, the beneficiary, the amount, the purpose and its spending rules. The payment’s InvoiceID is the SHA-256 fingerprint of those details, so you can match them exactly. Hold any payment whose details arrived late, never arrived or do not match. | Before each payment, the agent sends you its Travel Rule details off the ledger, as FIC Directive 9 requires: the originator, the beneficiary, the amount, the purpose and the agent’s spending rules. The payment’s InvoiceID is the SHA-256 fingerprint of those details in canonical JSON, so you can match them exactly. In this sandbox, the sample exchange receives the details inside Tšepo, and the script reads a real set from examples/sample-travel-rule-details.json. |
 | New: What to do with each result. | When the agent is Verified and the payment matches its details, credit the deposit. When the agent is Not verified, or any match check fails, hold the deposit for review and do not credit it. When the details arrived after the payment, or never arrived, hold the deposit for review as well. A payment the ledger rejected never reaches your account, so there is nothing to credit or return. |
+
+# Copy changes, Stage 8: make the problem obvious
+
+Mentors liked the idea but could not see the problem without an
+explanation. This stage replaces, and adds no length: the landing page is
+6,291px tall at 1280px (was 6,304px) and 11,152px at 390px (was 11,559px).
+Every outside figure was read in its source before it was used, and every
+source lives in `src/views/sources.ts`.
+
+## Hero
+
+| Before | After |
+|---|---|
+| Your AI agent pays within its rules. Exchanges know exactly who it is. (headline) | Would you hand an AI your company’s money? |
+| Naledi Mokoena finished a logo for Lesedi Design Studio. Within a minute, the studio’s AI agent paid her 2 RLUSD. The exchange knew exactly who sent the money. The agent could never have paid more than its rules allowed. | Tšepo gives AI agents rules they cannot break, and an ID that proves who they work for. |
+| Four ledger cards: A payment approved and accepted; A split payment refused; An unknown agent rejected; An agent revoked. | Cut. One card over the photo: Paid 2 RLUSD. Verified agent, within its rules. |
+| New | Photo alt text: A worried man rests his head in his hand behind a piggy bank and loose coins on a glass table. |
+| Tšepo, pronounced TSEH-poh, means hope or trust in Sesotho. Built on the XRP Ledger. Settles in RLUSD. | Kept. |
+
+## The problem (replaces the stakes section)
+
+| Before | After |
+|---|---|
+| Other tools stop an AI agent from paying what it should not. Tšepo also proves who the agent is, so the payments it should make are accepted. (section title) | The problem. |
+| Without Tšepo: Frozen, Unchecked, Unstoppable, Unproven. With Tšepo: Verified, Limited, Accepted, Stoppable. | Cut. |
+| New | AI agents have already sent money they should not have. |
+| New card | $47,000. November 2024. Freysa. A player talked Freysa, an AI agent built to guard a prize pool, into sending all of it. Source: Cointelegraph, November 2024. |
+| New card | About $106,000. March 2025. AIXBT. An attacker broke into the dashboard of AIXBT, an AI agent, and had it send 55.5 ETH from its wallet. Source: Cointelegraph, March 2025. |
+| New card | $150,000 to $200,000. May 2026. Grok and Bankrbot. A hidden instruction made Grok tell Bankrbot, a trading bot, to send tokens from its wallet. The attacker returned them minutes later. Sources: OECD AI incident monitor, May 2026; MetaMask security report, May 2026. |
+| New | In each case, nothing stood between the agent and the money. |
+| New | People do not trust AI with money yet. Only 23% of US consumers trust AI to handle payments for them, yet 61% would trust Visa to handle the same payments. Trust follows a known party that stands behind the payment. Tšepo is built to be that layer for AI agents. Source: Visa Trust Index, 9 September 2026. |
+| New | And the law needs to know who paid. In South Africa, the crypto platform where the recipient receives the money, such as VALR or Luno, must know who sent every transfer, from R0. A payment from an agent nobody can identify cannot simply be accepted. Source: FIC Directive 9. |
+| New | Why digital dollars? AI agents already pay in stablecoins: about $73 million across about 176 million agent transactions from May 2025 to April 2026, more than 98% of it in USDC. On the XRP Ledger, a stablecoin payment settles in seconds, at any hour. The ledger itself checks the agent’s identity and both signatures, so an unknown agent is refused without any server of ours. Source: Keyrock, reported by Cointelegraph, May 2026. |
+
+Wording kept to what the sources say, where the brief went further:
+
+- "AI agents have already lost real money" became "have already sent money
+  they should not have": the Grok and Bankrbot tokens were returned five
+  minutes later, and Freysa was a challenge built to be won.
+- AIXBT: the source puts it at 55.5 ETH, about $106,200, and says the
+  attacker broke into the dashboard; the AI itself was not talked into it.
+- Visa: the 61% is people who would trust Visa to handle agentic payments,
+  not "when a trusted party secures the transaction". "Tšepo is that
+  trusted layer" became "Tšepo is built to be that layer for AI agents".
+- Why digital dollars: no claim about banks. "Settles in seconds, at any
+  hour" is said of the XRP Ledger, not of every stablecoin.
+
+## How it works
+
+The hero's auto-play moves here: each step is highlighted in turn, with a
+"Pause the steps" button. It never starts under reduced motion, and on
+phones, where the steps are a row you swipe, nothing moves by itself.
+
+| Before | After |
+|---|---|
+| 4. The exchange accepts verified agents. | 4. The receiving platform accepts verified agents. |
+| An incoming payment at the exchange (card label) | An incoming payment at the receiving platform |
+
+## Plain words for "exchange"
+
+The workspace is renamed "Receiving platform" in the navigation, the
+switcher, headings, page titles, the tour, the 404 page, the README, the
+specification and the tests. Addresses stay under `/exchange/...`. The one
+description, in `src/views/navigation.ts`: "The crypto platform where the
+recipient receives the money, such as VALR or Luno." VALR and Luno are
+examples only; Tšepo has no partnership with either.
+
+| Page | Before | After |
+|---|---|---|
+| Product | Receiving exchange | Receiving platform |
+| Product | Exchange workspace (sidebar and 404 button) | Platform workspace |
+| Product | The refusal in the exchange workspace | The refusal in the platform workspace |
+| Switcher | The exchange where Naledi and other recipients hold their accounts. It accepts agent payments only from verified agents. | The crypto platform where the recipient receives the money, such as VALR or Luno. It accepts agent payments only from verified agents. |
+| Tour welcome | Receiving exchange: where Naledi and other recipients hold their accounts. It accepts payments only from verified agents. | Receiving platform: The crypto platform where the recipient receives the money, such as VALR or Luno. It accepts payments only from verified agents. |
+| Explore card | See agent payments arrive with their Travel Rule details, and verify any agent. | The crypto platform where the recipient receives the money, such as VALR or Luno. See agent payments arrive with their Travel Rule details, and verify any agent. |
+| Explore lead | … or the Receiving exchange (compliance officer). No sign-up is needed. | … or the Receiving platform (compliance officer), the crypto platform where the recipient receives the money. No sign-up is needed. |
+| About | The exchange on the other side faces its own problem. | On the other side, the crypto platform where the recipient receives the money, such as VALR or Luno, faces its own problem. |
+| About | The exchange’s deposit address … | The receiving platform’s deposit address … |
+| The market | Every licensed crypto exchange in South Africa must know who sent each transfer. AI agents are starting to send them. | AI agents are starting to send money. In South Africa, the crypto platform where the recipient receives it, such as VALR or Luno, must know who sent each transfer. |
+| Contact | You pay through an AI agent, or your exchange receives payments from agents. | You pay through an AI agent, or you run a crypto platform where recipients receive the money, such as VALR or Luno. |
+| Landing (pricing intro) | The business that pays and the exchange that receives each get what they need. | The business that pays and the platform that receives each get what they need. |
+| Proof figures | … to the exchange before each payment. / … and the exchange rejects it. / … the agent’s and exchange’s records … | … to the receiving platform before each payment. / … and the receiving platform rejects it. / … the agent’s and the receiving platform’s records … |
+| FAQ | … and exchanges accept payments only from verified agents. | … and the receiving platform, the crypto platform where the recipient receives the money, accepts payments only from verified agents. |
+| FAQ | … the exchange’s deposit address … / each business and exchange … / … and the exchange rejects it. / Tšepo sends those details to the exchange before each payment, so the exchange knows who the agent works for. | … the receiving platform’s deposit address … / each business and receiving platform … / … and the receiving platform rejects it. / Tšepo sends those details to the receiving platform before each payment, so it knows who the agent works for. |
+| FAQ, new | What is a receiving platform? The crypto platform where the recipient receives the money, such as VALR or Luno. In the sample, it is where Naledi Mokoena receives her payment, and it accepts payments only from verified agents. VALR and Luno are examples only. Tšepo has no partnership with either. | |
+| FAQ, new | Why crypto? AI agents already pay in digital dollars, called stablecoins: Keyrock counted about $73 million across about 176 million agent transactions from May 2025 to April 2026. On the XRP Ledger, the agent’s identity is a public credential that any platform can check, and the ledger itself refuses a payment without both required signatures. So an unknown agent is refused without any server of ours. Payments settle in RLUSD, a stablecoin designed to keep a steady value against the US dollar. Source: Keyrock, reported by Cointelegraph. | |
+
+## Copy audit: claims removed or corrected
+
+No page said that banks do not allow software or agents, so there was
+nothing of that kind to remove.
+
+| Where | Before | After | Why |
+|---|---|---|---|
+| Landing, go-to-market | South African crypto exchanges, which must accept agent payments under Directive 9, … | South African crypto platforms, which must know who sent every transfer under Directive 9, … | Directive 9 requires the sender’s details; it does not require anyone to accept agent payments. |
+| Landing, go-to-market | Directive 9 has applied from R0 since 30 April 2025. South Africa’s next FATF evaluation runs to October 2027. A 2026 Treasury draft proposes tighter rules for transfers between exchanges and self-custody wallets. AI agents are starting to pay. | Directive 9 has applied from R0 since 30 April 2025, and AI agents already pay in stablecoins. | The FATF date and the Treasury draft were not cited on the page. Removed. |
+| Landing, exchanges column | 310 licensed providers in South Africa must know who sent every transfer. (no link) | The same line, with its source: FSCA update, 15 April 2026. | Every figure now carries its source. |
+| README | The problem; First customers; Why now | Rewritten to match the landing page, with the same sources. | Same reasons as above. |
