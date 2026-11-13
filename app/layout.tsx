@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { RunProvider } from '../components/run-provider.tsx';
-import { ToastProvider } from '../components/toast-provider.tsx';
 import './globals.css';
 
 const plexSans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex-sans' });
@@ -13,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Identity and spending rules for AI agents that pay, recorded on the XRP Ledger.',
 };
 
-/** The document for every page: fonts, the skip link, toasts and live runs. The product shell is added by the (product) layout. */
+/** The document for every page: fonts and the skip link. Live runs, toasts and the product shell are added by the (product) layout. */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable}`}>
@@ -24,9 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           Skip to content
         </a>
-        <ToastProvider>
-          <RunProvider>{children}</RunProvider>
-        </ToastProvider>
+        {children}
       </body>
     </html>
   );

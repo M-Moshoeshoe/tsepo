@@ -28,6 +28,15 @@ export function markTourSeen(): void {
   }
 }
 
+/** Whether this visitor has opened the tour or dismissed its offer before. */
+export function seenTourBefore(): boolean {
+  try {
+    return localStorage.getItem(TOUR_SEEN_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** The page address as it is now, path and query. */
 function currentHref(): string {
   return `${window.location.pathname}${window.location.search}`;

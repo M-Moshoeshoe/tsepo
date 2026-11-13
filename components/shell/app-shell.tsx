@@ -1,19 +1,37 @@
 'use client';
 
-import { useCallback, useState, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { MobileNavigationHeader } from '@/components/application/app-navigation/base-components/mobile-header';
 import { RouteProvider } from '@/providers/router-provider';
 import { useRun } from '../run-provider.tsx';
 import { TourHighlight } from '../tour/tour-highlight.tsx';
-import { TourPanel } from '../tour/tour-panel.tsx';
-import { TourPrompt } from '../tour/tour-prompt.tsx';
-import { TourProvider } from '../tour/tour-provider.tsx';
-import { AccessCodeDialog } from './access-code-dialog.tsx';
+import { seenTourBefore, TourProvider, useTour } from '../tour/tour-provider.tsx';
 import { AppFooter } from './app-footer.tsx';
 import { AppHeader } from './app-header.tsx';
 import { LiveActionsProvider } from './live-actions.tsx';
 import { RunResult } from './run-result.tsx';
 import { SidebarContent, WorkspaceBrand } from './sidebar.tsx';
+
+// Loaded only when a visitor opens them, so a first page load carries none of their code.
+const TourPanel = dynamic(() => import('../tour/tour-panel.tsx').then((module) => module.TourPanel));
+const TourPrompt = dynamic(() => import('../tour/tour-prompt.tsx').then((module) => module.TourPrompt));
+const AccessCodeDialog = dynamic(() => import('./access-code-dialog.tsx').then((module) => module.AccessCodeDialog));
+
+/** The tour panel while it is open, and the first-visit offer for a visitor who has never seen the tour. */
+function TourLayer() {
+  const { open } = useTour();
+  const [firstVisit, setFirstVisit] = useState(false);
+  useEffect(() => {
+    setFirstVisit(!seenTourBefore());
+  }, []);
+  return (
+    <>
+      {open && <TourPanel />}
+      {firstVisit && !open && <TourPrompt />}
+    </>
+  );
+}
 
 /** Sidebar width in pixels, shared by the fixed sidebar and the space it leaves. */
 const SIDEBAR_WIDTH = 248;
@@ -63,10 +81,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <PageColumn>{children}</PageColumn>
 
-            <TourPanel />
-            <TourPrompt />
+            <TourLayer />
             <TourHighlight />
-            <AccessCodeDialog isOpen={askingForCode} onOpenChange={setAskingForCode} onSave={saveAccessCode} />
+            {askingForCode && <AccessCodeDialog isOpen onOpenChange={setAskingForCode} onSave={saveAccessCode} />}
           </div>
         </LiveActionsProvider>
       </TourProvider>

@@ -1,26 +1,18 @@
 'use client';
 
 import { Compass03, X } from '@untitledui/icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/base/buttons/button';
-import { markTourSeen, TOUR_SEEN_KEY, useTour } from './tour-provider.tsx';
+import { markTourSeen, useTour } from './tour-provider.tsx';
 
-function seenBefore(): boolean {
-  try {
-    return localStorage.getItem(TOUR_SEEN_KEY) !== null;
-  } catch {
-    return false;
-  }
-}
-
-/** A small first-visit offer of the tour. Once dismissed, or once the tour is opened, it never shows again. */
+/**
+ * A small first-visit offer of the tour. The shell renders it only for a
+ * visitor who has not seen the tour. Once dismissed, or once the tour is
+ * opened, it never shows again.
+ */
 export function TourPrompt() {
   const { open, show } = useTour();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(!seenBefore());
-  }, []);
+  const [visible, setVisible] = useState(true);
 
   if (!visible || open) return null;
 

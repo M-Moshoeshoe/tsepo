@@ -1,53 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
-import { SlideoutMenu } from '@/components/application/slideout-menus/slideout-menu';
+import dynamic from 'next/dynamic';
 
 /**
- * The details panel used by every list: a side sheet on desktop, full width on
- * phones. It opens when the address names an item, so a link can open it;
- * closing it returns to the list with the same filters.
+ * The details panel used by every list. The slide-out sheet loads only on a
+ * page that opens it, so a list without an open item carries none of its code.
  */
-export function DetailsPanel({
-  label,
-  closeHref,
-  header,
-  footer,
-  children,
-}: {
-  /** The accessible name of the panel, such as "Payment details". */
-  label: string;
-  closeHref: string;
-  header: ReactNode;
-  footer?: ReactNode;
-  children: ReactNode;
-}) {
-  const router = useRouter();
-  const [open, setOpen] = useState(true);
-
-  return (
-    <SlideoutMenu
-      isOpen={open}
-      isDismissable
-      dialogLabel={label}
-      // Applies to the overlay and the panel: keeps both above the sticky tabs and table headers.
-      className="z-50"
-      onOpenChange={(next) => {
-        if (next) return;
-        setOpen(false);
-        router.replace(closeHref, { scroll: false });
-      }}
-    >
-      {({ close }) => (
-        <>
-          <SlideoutMenu.Header onClose={close}>{header}</SlideoutMenu.Header>
-          <SlideoutMenu.Content role="document" className="pb-6">
-            {children}
-          </SlideoutMenu.Content>
-          {footer !== undefined && <SlideoutMenu.Footer>{footer}</SlideoutMenu.Footer>}
-        </>
-      )}
-    </SlideoutMenu>
-  );
-}
+export const DetailsPanel = dynamic(() => import('./details-sheet.tsx').then((module) => module.DetailsSheet));
