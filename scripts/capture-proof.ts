@@ -20,7 +20,7 @@ const AccountTxSchema = z.object({
       z.object({
         hash: z.string(),
         validated: z.boolean().optional(),
-        tx_json: z.object({ TransactionType: z.string() }).loose(),
+        tx_json: z.object({ TransactionType: z.string(), Account: z.string().optional(), Destination: z.string().optional() }).loose(),
         meta: z.object({ TransactionResult: z.string() }).loose(),
       }),
     ),
@@ -48,8 +48,20 @@ async function readTx(client: Client, hash: string): Promise<z.infer<typeof TxSc
   return TxSchema.parse(await client.request({ command: 'tx', transaction: hash })).result;
 }
 
-/** The newest successful transaction of a type on an account, searching back up to a few pages. */
-async function newestOfType(client: Client, account: string, type: string): Promise<string | undefined> {
+interface TxMatch {
+  type: string;
+  result: string;
+  from?: string;
+  to?: string;
+}
+
+/**
+ * The newest validated transaction on an account that matches the type, the
+ * result and, when given, the sender and destination, searching back up to a
+ * few pages. Every hash comes from the ledger itself, never from local
+ * records, so the proof holds whichever machine ran the stories.
+ */
+async function newestMatching(client: Client, account: string, match: TxMatch): Promise<string | undefined> {
   let marker: unknown = undefined;
   for (let page = 0; page < 10; page += 1) {
     const response = await client.request({
@@ -63,7 +75,12 @@ async function newestOfType(client: Client, account: string, type: string): Prom
     });
     const parsed = AccountTxSchema.parse(response).result;
     const found = parsed.transactions.find(
-      (item) => item.validated === true && item.tx_json.TransactionType === type && item.meta.TransactionResult === 'tesSUCCESS',
+      (item) =>
+        item.validated === true &&
+        item.tx_json.TransactionType === match.type &&
+        item.meta.TransactionResult === match.result &&
+        (match.from === undefined || item.tx_json.Account === match.from) &&
+        (match.to === undefined || item.tx_json.Destination === match.to),
     );
     if (found !== undefined) return found.hash;
     marker = parsed.marker;
@@ -76,19 +93,22 @@ const client = new Client(TESTNET_URL);
 await client.connect();
 try {
   const ctx = createDemoContext(client, () => undefined);
-  const { agent, issuer, exchange } = ctx.wallets;
+  const { agent, issuer, exchange, unknownAgent } = ctx.wallets;
   const history = await getCredentialHistory(client, agentCredentialQuery(agent.address, issuer.address));
   const newest = (type: string): string | undefined => history.find((event) => event.type === type)?.hash;
-  const deposits = (await ctx.exchange.deposits()).filter((deposit) => deposit.status === 'Cleared').sort((a, b) => b.ledgerIndex - a.ledgerIndex);
-  const rejections = (await ctx.exchange.ledgerRejections()).sort((a, b) => b.ledgerIndex - a.ledgerIndex);
 
   const found: Record<ProofKey, string | undefined> = {
     'credential-issued': newest('CredentialCreate'),
     'credential-accepted': newest('CredentialAccept'),
-    'deposit-authorization': await newestOfType(client, exchange.address, 'DepositPreauth'),
-    'signer-list': await newestOfType(client, agent.address, 'SignerListSet'),
-    'approved-payment': deposits[0]?.hash,
-    'ledger-rejection': rejections[0]?.hash,
+    'deposit-authorization': await newestMatching(client, exchange.address, { type: 'DepositPreauth', result: 'tesSUCCESS' }),
+    'signer-list': await newestMatching(client, agent.address, { type: 'SignerListSet', result: 'tesSUCCESS' }),
+    'approved-payment': await newestMatching(client, agent.address, { type: 'Payment', result: 'tesSUCCESS', from: agent.address, to: exchange.address }),
+    'ledger-rejection': await newestMatching(client, unknownAgent.address, {
+      type: 'Payment',
+      result: 'tecNO_PERMISSION',
+      from: unknownAgent.address,
+      to: exchange.address,
+    }),
     revocation: newest('CredentialDelete'),
   };
   const missing = Object.entries(found).filter(([, hash]) => hash === undefined).map(([key]) => key);

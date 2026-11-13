@@ -45,13 +45,13 @@ Each line is a validated transaction on the XRP Ledger Testnet.
 
 | What it proves | Transaction | Result |
 |---|---|---|
-| The credential is issued | [CredentialCreate](https://testnet.xrpl.org/transactions/89D200039F4043D3C2803A689EC24A7AB27B95E0D4D623D7B3093696E9CBE0C7) | `tesSUCCESS` |
-| The agent accepts it | [CredentialAccept](https://testnet.xrpl.org/transactions/DEDFA29E1EE75543E5154DB665F820294106E1F9EE97CCA39B0DF973ABE79ED4) | `tesSUCCESS` |
+| The credential is issued | [CredentialCreate](https://testnet.xrpl.org/transactions/CF7A7A068FB08EA098058A87A2EAC0681295EBF82F3D2508C4A1EE71C09A3166) | `tesSUCCESS` |
+| The agent accepts it | [CredentialAccept](https://testnet.xrpl.org/transactions/B87A30A4544AFE77C6E64111DE0FD1138BD1390B4C28BAA3E37D5139E7BA359B) | `tesSUCCESS` |
 | The deposit address accepts only credential holders | [DepositPreauth](https://testnet.xrpl.org/transactions/73251B3F32D9F9E3E38633FF7DB7E3558CB49E42D5473DE08A4C51B3895E2D27) | `tesSUCCESS` |
 | Every payment needs two signatures | [SignerListSet](https://testnet.xrpl.org/transactions/313D923606165CF8F7B5A8996EDBADD598F571FEBFB40D12216E055A45550EE6) | `tesSUCCESS` |
-| The agent pays in RLUSD, co-signed | [Payment](https://testnet.xrpl.org/transactions/F862AD6451C2A67972A964E79FE3F0E6CD72E2EEBC50F810CFE3FE2D3C786800) | `tesSUCCESS` |
-| The ledger rejects an agent without a credential | [Payment](https://testnet.xrpl.org/transactions/4A42CA4C874C9E1D4299E32D8CC96BEF2D6FE014ED0998EECC9F7C61C702D3FA) | `tecNO_PERMISSION` |
-| The business revokes the agent | [CredentialDelete](https://testnet.xrpl.org/transactions/08E599116FBF552133C34464E38D3382D0D4DD3B1792A141E02BCE13066794E9) | `tesSUCCESS` |
+| The agent pays in RLUSD, co-signed | [Payment](https://testnet.xrpl.org/transactions/384D2A4CC47C0BAD6B44693AE6C20A7DF9A9BE25F7B66B353D1E014AF7B11CAD) | `tesSUCCESS` |
+| The ledger rejects an agent without a credential | [Payment](https://testnet.xrpl.org/transactions/AE4D5DB1C0DE0DCBFBA0996F208BD9E234143E0A5DAE015412E6C3367B87F20F) | `tecNO_PERMISSION` |
+| The business revokes the agent | [CredentialDelete](https://testnet.xrpl.org/transactions/A4380ABB658FAFD8624A968217E89A675F95A5C02AE8C67F4570D77DFF3CB15B) | `tesSUCCESS` |
 
 ## The problem
 

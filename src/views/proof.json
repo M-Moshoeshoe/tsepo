@@ -1,25 +1,25 @@
 {
-  "capturedAt": "2026-11-13T04:44:00.738Z",
+  "capturedAt": "2026-11-13T13:01:12.948Z",
   "network": "XRP Ledger Testnet",
   "transactions": {
-    "credential-issued": "89D200039F4043D3C2803A689EC24A7AB27B95E0D4D623D7B3093696E9CBE0C7",
-    "credential-accepted": "DEDFA29E1EE75543E5154DB665F820294106E1F9EE97CCA39B0DF973ABE79ED4",
+    "credential-issued": "CF7A7A068FB08EA098058A87A2EAC0681295EBF82F3D2508C4A1EE71C09A3166",
+    "credential-accepted": "B87A30A4544AFE77C6E64111DE0FD1138BD1390B4C28BAA3E37D5139E7BA359B",
     "deposit-authorization": "73251B3F32D9F9E3E38633FF7DB7E3558CB49E42D5473DE08A4C51B3895E2D27",
     "signer-list": "313D923606165CF8F7B5A8996EDBADD598F571FEBFB40D12216E055A45550EE6",
-    "approved-payment": "F862AD6451C2A67972A964E79FE3F0E6CD72E2EEBC50F810CFE3FE2D3C786800",
-    "ledger-rejection": "4A42CA4C874C9E1D4299E32D8CC96BEF2D6FE014ED0998EECC9F7C61C702D3FA",
-    "revocation": "08E599116FBF552133C34464E38D3382D0D4DD3B1792A141E02BCE13066794E9"
+    "approved-payment": "384D2A4CC47C0BAD6B44693AE6C20A7DF9A9BE25F7B66B353D1E014AF7B11CAD",
+    "ledger-rejection": "AE4D5DB1C0DE0DCBFBA0996F208BD9E234143E0A5DAE015412E6C3367B87F20F",
+    "revocation": "A4380ABB658FAFD8624A968217E89A675F95A5C02AE8C67F4570D77DFF3CB15B"
   },
   "ledger": {
     "credential-issued": {
       "result": "tesSUCCESS",
-      "ledgerIndex": 22280024,
-      "closeTime": "2026-11-13T00:20:31Z"
+      "ledgerIndex": 22288347,
+      "closeTime": "2026-11-13T08:10:30Z"
     },
     "credential-accepted": {
       "result": "tesSUCCESS",
-      "ledgerIndex": 22280026,
-      "closeTime": "2026-11-13T00:20:40Z"
+      "ledgerIndex": 22288348,
+      "closeTime": "2026-11-13T08:10:31Z"
     },
     "deposit-authorization": {
       "result": "tesSUCCESS",
@@ -33,18 +33,18 @@
     },
     "approved-payment": {
       "result": "tesSUCCESS",
-      "ledgerIndex": 22280038,
-      "closeTime": "2026-11-13T00:21:20Z"
+      "ledgerIndex": 22293483,
+      "closeTime": "2026-11-13T13:00:22Z"
     },
     "ledger-rejection": {
       "result": "tecNO_PERMISSION",
-      "ledgerIndex": 22280042,
-      "closeTime": "2026-11-13T00:21:31Z"
+      "ledgerIndex": 22293486,
+      "closeTime": "2026-11-13T13:00:32Z"
     },
     "revocation": {
       "result": "tesSUCCESS",
-      "ledgerIndex": 22280046,
-      "closeTime": "2026-11-13T00:21:42Z"
+      "ledgerIndex": 22293489,
+      "closeTime": "2026-11-13T13:00:42Z"
     }
   },
   "signerList": {
