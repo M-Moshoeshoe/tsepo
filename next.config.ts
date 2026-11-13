@@ -1,6 +1,13 @@
 import type { NextConfig } from 'next';
 
 /**
+ * React's development build uses eval() to rebuild call stacks for its error
+ * overlay, so `npm run dev` allows it. A production build never uses eval(),
+ * and its policy never allows it.
+ */
+const DEVELOPMENT = process.env.NODE_ENV === 'development';
+
+/**
  * Security headers on every response. The content policy keeps every
  * resource on this origin. Next.js streams pages with small inline scripts,
  * so scripts and styles allow 'unsafe-inline'; a nonce would force every
@@ -8,7 +15,7 @@ import type { NextConfig } from 'next';
  */
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  DEVELOPMENT ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
