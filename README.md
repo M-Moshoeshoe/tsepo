@@ -4,7 +4,7 @@ Identity and authority for AI agents that pay, recorded on the XRP Ledger.
 
 Built for the Node Engine Hackathon 2026, Agentic Finance track.
 
-**Live demo:** https://app-production-9a4c0995.up.railway.app
+**Live demo:** https://tsepo.up.railway.app
 
 **Demo video:** see the link in the BuilderBase submission.
 

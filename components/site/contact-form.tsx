@@ -80,7 +80,7 @@ export function ContactForm() {
           {error}
         </p>
       )}
-      <PrivacyNotice />
+      <PrivacyNotice asksForOrganisation={false} />
       <Button type="submit" color="primary" size="md" isLoading={sending} showTextWhileLoading className="justify-self-start">
         Send the message
       </Button>

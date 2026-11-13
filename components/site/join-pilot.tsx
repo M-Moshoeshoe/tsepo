@@ -80,7 +80,7 @@ export function JoinPilot({ className }: { className?: string }) {
                     <RadioButton value="exchange" label="An exchange that receives agent payments" />
                   </RadioGroup>
                   <Input label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} isRequired />
-                  <PrivacyNotice />
+                  <PrivacyNotice asksForOrganisation />
                   {error !== undefined && (
                     <p role="alert" className="text-sm text-error-primary">
                       {error}
