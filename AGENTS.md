@@ -93,3 +93,7 @@ accepts deposits only from agents that hold a valid credential.
   (`npm run build && npm start`) and the XRP Ledger Testnet. They make
   about nine demo runs and five Claude calls, so run them before a release,
   not on every commit.
+- `npm run test:site`: browser checks of the public pages against a running
+  production build: no clipped or overflowing text and no sideways scroll at
+  1280px and 390px, and no serious axe finding. It runs nothing on the
+  ledger, so run it after every change to the public pages.

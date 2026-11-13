@@ -105,7 +105,9 @@ npm run check
 ```
 
 End-to-end tests drive the running app against Testnet: start it with
-`npm run build && npm start`, then run `npm run test:e2e`.
+`npm run build && npm start`, then run `npm run test:e2e`. The public page
+checks (`npm run test:site`) use the same running build and touch nothing on
+the ledger.
 
 Copy `.env.example` to `.env.local` and fill in the values there.
 `.env.local` is gitignored and is the only place seeds are kept. This
