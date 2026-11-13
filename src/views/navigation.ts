@@ -24,26 +24,42 @@ export const BUSINESS_NAV: NavEntry[] = [
   { label: 'Spending rules', href: '/business/rules' },
 ];
 
-/** The Receiving exchange sidebar, in order. Verify an agent and Integrate join it once they are built. */
-export const EXCHANGE_NAV: NavEntry[] = [{ label: 'Incoming payments', href: '/exchange/payments' }];
+/** The Receiving exchange sidebar, in order. */
+export const EXCHANGE_NAV: NavEntry[] = [
+  { label: 'Incoming payments', href: '/exchange/payments' },
+  { label: 'Verify an agent', href: '/exchange/verify' },
+  { label: 'Integrate', href: '/exchange/integrate' },
+];
 
 /** The primary action in the Business header. */
 export const BUSINESS_ACTION: NavEntry = { label: 'Give an instruction', href: '/business/instruct' };
 
 /** The foot of the sidebar, in both workspaces. GitHub is the third link and leaves the site. */
 export const SHELL_FOOT: NavEntry[] = [
-  { label: 'About Tšepo', href: '/' },
+  { label: 'About Tšepo', href: '/about' },
   { label: 'FAQ', href: '/faq' },
 ];
 
 export const REPOSITORY = 'https://github.com/M-Moshoeshoe/tsepo';
 
-/** The header of the public pages: the landing page and the FAQ. */
+/** The header of the public pages: the landing page, About, FAQ and Contact. */
 export const SITE_NAV: NavEntry[] = [
   { label: 'Business workspace', href: '/business' },
   { label: 'Receiving exchange', href: '/exchange/payments' },
   { label: 'Give an instruction', href: '/business/instruct' },
   { label: 'FAQ', href: '/faq' },
+];
+
+/** The footer of the public pages: the product, then the site. GitHub leaves the site and is added by the footer. */
+export const SITE_FOOTER: NavEntry[] = [
+  { label: 'Business workspace', href: '/business' },
+  { label: 'Receiving exchange', href: '/exchange/payments' },
+  { label: 'Give an instruction', href: '/business/instruct' },
+  { label: 'Verify an agent', href: '/exchange/verify' },
+  { label: 'Integrate', href: '/exchange/integrate' },
+  { label: 'About', href: '/about' },
+  { label: 'FAQ', href: '/faq' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 /** The landing page's calls to action, beyond its header. */
@@ -61,21 +77,23 @@ export function routeOf(href: string): string {
   return href.split('?')[0] ?? href;
 }
 
-const PUBLIC_PAGES = new Set(['/', '/faq']);
+/** The public pages share the site header and footer, not the product shell. */
+export const PUBLIC_PAGES = new Set(['/', '/faq', '/about', '/contact']);
 
 /**
  * The links on a page and how many clicks each takes. A sidebar or header
- * link is one click. Every page of the other workspace is two: the switcher
- * lists each workspace's pages, so it is open the switcher, then choose.
+ * link is one click. The other workspace is two: open the switcher, choose it.
  */
 export function linksFrom(route: string): { href: string; clicks: number }[] {
-  if (PUBLIC_PAGES.has(route)) return [...SITE_NAV, ...LANDING_ACTIONS, { label: 'Home', href: '/' }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 }));
+  if (PUBLIC_PAGES.has(route)) {
+    return [...SITE_NAV, ...SITE_FOOTER, ...LANDING_ACTIONS, { label: 'Home', href: '/' }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 }));
+  }
   const workspace = workspaceOf(route);
   const own = workspace === 'business' ? [...BUSINESS_NAV, BUSINESS_ACTION] : EXCHANGE_NAV;
-  const other = workspace === 'business' ? EXCHANGE_NAV : BUSINESS_NAV;
+  const other: WorkspaceId = workspace === 'business' ? 'exchange' : 'business';
   return [
     ...[...own, ...SHELL_FOOT, { label: 'Logo', href: WORKSPACE_HOMES[workspace] }].map((entry) => ({ href: routeOf(entry.href), clicks: 1 })),
-    ...other.map((entry) => ({ href: routeOf(entry.href), clicks: 2 })),
+    { href: WORKSPACE_HOMES[other], clicks: 2 },
   ];
 }
 

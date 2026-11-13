@@ -184,6 +184,20 @@ describe("a visitor's instruction, through the full run path", () => {
     expect(done?.type === 'done' ? done.explanation?.sentences[1] : undefined).toContain('1 paid and 1 stopped');
   });
 
+  it('refuses a reference kept for the guided tour, before Claude reads anything', async () => {
+    const context = fakeContext({ credentialPresent: true });
+    let read = false;
+    (context.ctx as { createAgent: unknown }).createAgent = () => ({
+      run: () => {
+        read = true;
+        return Promise.resolve([]);
+      },
+    });
+    const { error } = await run(context, RunRequestSchema.parse({ kind: 'instruction', text: 'Pay Naledi 2 RLUSD, reference tour-1042' }));
+    expect((error as Error).message).toBe('References that start with TOUR- are kept for the guided tour. Use another reference, or none.');
+    expect(read).toBe(false);
+  });
+
   it('refuses an instruction that is too short or too long at the boundary', () => {
     expect(RunRequestSchema.safeParse({ kind: 'instruction', text: 'hi' }).success).toBe(false);
     expect(RunRequestSchema.safeParse({ kind: 'instruction', text: 'x'.repeat(401) }).success).toBe(false);

@@ -118,7 +118,7 @@ export function withTourParam(href: string, step: number | undefined): string {
 }
 
 /** The references the stories pay, from the payout lists the agent reads. */
-export const STORY_REFERENCES = { paid: 'INV-1042', split: 'INV-2001-C', revoked: 'INV-1043' } as const;
+export const STORY_REFERENCES = { paid: 'TOUR-1042', split: 'TOUR-2001-C', revoked: 'TOUR-1043' } as const;
 
 export interface DeskItemSummary {
   id: string;

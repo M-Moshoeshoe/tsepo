@@ -11,6 +11,17 @@ const POLL_MS = 150;
 const TARGETS = new Set(['decision', 'travel-rule', 'explorer', 'agent-status', 'allowance']);
 
 /**
+ * The tour panel lays over the page. If it would cover the highlighted record,
+ * the page column makes room for it, only for as long as the highlight lasts.
+ */
+function makeRoom(element: HTMLElement): void {
+  const panel = document.getElementById('guided-tour');
+  if (panel === null || panel.hidden || element.closest('[role="dialog"]') !== null) return;
+  const covered = element.getBoundingClientRect().right > panel.getBoundingClientRect().left;
+  if (covered && window.matchMedia('(min-width: 1024px)').matches) document.body.setAttribute('data-tour-room', '');
+}
+
+/**
  * When the address says ?highlight=<target>, finds that element, scrolls it
  * into view, rings it in the brand colour (a ring, so it stays visible with
  * reduced motion) and moves focus to it, so the evidence is the first thing
@@ -38,6 +49,7 @@ export function TourHighlight() {
         if (!found.isConnected) return;
         if (!found.hasAttribute('tabindex')) found.setAttribute('tabindex', '-1');
         found.classList.add('tour-highlight');
+        makeRoom(found);
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         found.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
         found.focus({ preventScroll: true });
@@ -46,6 +58,7 @@ export function TourHighlight() {
     return () => {
       clearInterval(timer);
       marked?.classList.remove('tour-highlight');
+      document.body.removeAttribute('data-tour-room');
     };
   }, [pathname, target]);
 

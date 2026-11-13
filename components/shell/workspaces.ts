@@ -1,4 +1,4 @@
-import { Building07, CoinsHand, Home02, MessageChatSquare, Receipt, Sliders01, User01 } from '@untitledui/icons';
+import { Building07, CheckVerified01, CodeBrowser, CoinsHand, Home02, MessageChatSquare, Receipt, Sliders01, User01 } from '@untitledui/icons';
 import type { FC } from 'react';
 import { BUSINESS_NAV, EXCHANGE_NAV, WORKSPACE_HOMES, workspaceOf, type NavEntry, type WorkspaceId } from '../../src/views/navigation.ts';
 
@@ -27,6 +27,8 @@ const ICONS: Record<string, FC<{ className?: string }>> = {
   '/business/payments': Receipt,
   '/business/rules': Sliders01,
   '/exchange/payments': CoinsHand,
+  '/exchange/verify': CheckVerified01,
+  '/exchange/integrate': CodeBrowser,
 };
 
 const withIcons = (entries: NavEntry[]): NavLink[] => entries.map((entry) => ({ ...entry, icon: ICONS[entry.href] ?? Home02 }));

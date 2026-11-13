@@ -91,9 +91,9 @@ describe('tour evidence', () => {
   const paidRun = '2026-11-12T10:00:00.000Z';
   const records: TourRecords = {
     payments: [
-      payment('1-INV-1042', 'INV-1042', 'paid', paidRun, 'F1'),
-      payment('2-INV-1042', 'INV-1042', 'paid', '2026-11-12T12:00:00.000Z', 'F2'),
-      payment('3-INV-2001-C', 'INV-2001-C', 'not-approved', '2026-11-12T11:00:00.000Z', 'F3'),
+      payment('1-TOUR-1042', 'TOUR-1042', 'paid', paidRun, 'F1'),
+      payment('2-TOUR-1042', 'TOUR-1042', 'paid', '2026-11-12T12:00:00.000Z', 'F2'),
+      payment('3-TOUR-2001-C', 'TOUR-2001-C', 'not-approved', '2026-11-12T11:00:00.000Z', 'F3'),
     ],
     instructions: [] as Instruction[],
     desk: [
@@ -109,14 +109,14 @@ describe('tour evidence', () => {
   it('opens the newest matching payment, and the same payment at the exchange, with their highlights', () => {
     const evidence = pays === undefined ? undefined : stepEvidence(pays, records);
     expect(evidence?.links.map((link) => link.href)).toEqual([
-      '/business/payments?range=all&payment=2-INV-1042&highlight=decision&tour=1',
+      '/business/payments?range=all&payment=2-TOUR-1042&highlight=decision&tour=1',
       '/exchange/payments?range=all&entry=d-NEW&highlight=travel-rule&tour=1',
     ]);
     expect(evidence?.latestRun).toMatchObject({ outcome: 'finished', when: '12 November 2026, 14:00 SAST' });
   });
 
   it('points each story at its own record', () => {
-    expect(splits === undefined ? undefined : stepEvidence(splits, records).links[0]?.href).toContain('payment=3-INV-2001-C&highlight=decision');
+    expect(splits === undefined ? undefined : stepEvidence(splits, records).links[0]?.href).toContain('payment=3-TOUR-2001-C&highlight=decision');
     expect(unknown === undefined ? undefined : stepEvidence(unknown, records).links[0]?.href).toContain('entry=x-B&highlight=explorer');
     const revokedLinks = revokes === undefined ? [] : stepEvidence(revokes, records).links;
     expect(revokedLinks[0]?.href).toBe('/business/agent?highlight=agent-status&tour=4');

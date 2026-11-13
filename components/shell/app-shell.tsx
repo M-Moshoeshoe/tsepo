@@ -3,12 +3,11 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { MobileNavigationHeader } from '@/components/application/app-navigation/base-components/mobile-header';
 import { RouteProvider } from '@/providers/router-provider';
-import { cx } from '@/utils/cx';
 import { useRun } from '../run-provider.tsx';
 import { TourHighlight } from '../tour/tour-highlight.tsx';
 import { TourPanel } from '../tour/tour-panel.tsx';
 import { TourPrompt } from '../tour/tour-prompt.tsx';
-import { TourProvider, useTour } from '../tour/tour-provider.tsx';
+import { TourProvider } from '../tour/tour-provider.tsx';
 import { AccessCodeDialog } from './access-code-dialog.tsx';
 import { AppFooter } from './app-footer.tsx';
 import { AppHeader } from './app-header.tsx';
@@ -19,11 +18,14 @@ import { SidebarContent, WorkspaceBrand } from './sidebar.tsx';
 /** Sidebar width in pixels, shared by the fixed sidebar and the space it leaves. */
 const SIDEBAR_WIDTH = 248;
 
-/** The page column. On wide screens it leaves room for the open tour panel, so the panel never covers the page. */
+/**
+ * The page column. The tour panel lays over it rather than narrowing it, so
+ * headers and charts keep their layout; when the tour highlights a record the
+ * panel would cover, the highlight makes room (see TourHighlight).
+ */
 function PageColumn({ children }: { children: ReactNode }) {
-  const { open } = useTour();
   return (
-    <div className={cx('flex min-w-0 flex-col lg:pl-62', open && 'xl:pr-100')}>
+    <div data-page-column className="flex min-w-0 flex-col lg:pl-62">
       <AppHeader />
       <RunResult />
       <main id="main" className="min-w-0 px-4 pt-4 lg:px-8">

@@ -15,10 +15,7 @@ function WorkspaceIcon({ id }: { id: WorkspaceId }) {
   );
 }
 
-/**
- * Switches between the Business and Receiving exchange workspaces, like an
- * account switcher. Each workspace lists its pages, so any page is two clicks away.
- */
+/** Switches between the Business and Receiving exchange workspaces, like an account switcher. */
 export function WorkspaceSwitcher() {
   const pathname = usePathname();
   const current = workspaceFor(pathname);
@@ -36,19 +33,14 @@ export function WorkspaceSwitcher() {
         <ChevronSelectorVertical className="size-4 shrink-0 text-fg-quaternary" aria-hidden />
       </AriaButton>
       <Dropdown.Popover placement="bottom start" className="w-80">
-        <Dropdown.Menu aria-label="Workspaces and their pages" selectionMode="single" selectedKeys={[pathname]}>
+        <Dropdown.Menu aria-label="Workspaces" selectionMode="single" selectedKeys={[current.id]}>
           {Object.values(WORKSPACES).map((workspace) => (
-            <Dropdown.Section key={workspace.id} aria-label={`${workspace.name} pages`} className="border-t border-secondary first:border-t-0">
-              <Dropdown.SectionHeader className="grid gap-0.5 px-4 pt-3 pb-1">
-                <span className="text-sm font-semibold text-primary">
-                  {workspace.name} <span className="font-normal text-tertiary">({workspace.type})</span>
-                </span>
-                <span className="text-xs text-tertiary">{workspace.forWhom}</span>
-              </Dropdown.SectionHeader>
-              {workspace.nav.map((link) => (
-                <Dropdown.Item key={link.href} id={link.href} href={link.href} icon={link.icon} label={link.label} textValue={`${workspace.name}: ${link.label}`} />
-              ))}
-            </Dropdown.Section>
+            <Dropdown.Item key={workspace.id} id={workspace.id} href={workspace.home} textValue={workspace.name}>
+              <span className="grid gap-0.5 whitespace-normal">
+                <span>{workspace.name}</span>
+                <span className="text-xs font-normal text-tertiary">{workspace.forWhom}</span>
+              </span>
+            </Dropdown.Item>
           ))}
         </Dropdown.Menu>
       </Dropdown.Popover>

@@ -51,7 +51,7 @@ export function TourPrompt() {
             show(0);
           }}
         >
-          Take the 3-minute tour
+          Start the tour
         </Button>
         <Button color="secondary" size="sm" onClick={dismiss}>
           Not now

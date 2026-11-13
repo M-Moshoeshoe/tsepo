@@ -15,7 +15,7 @@ import { depositStatus, reasonText, refusalStatus } from '../views/status.ts';
 import { createDemoContext, type DemoContext } from './context.ts';
 import { DemoError, ledgerResultSentence, plainRunError } from './errors.ts';
 import type { Explanation, Report, RunRequest } from './events.ts';
-import { AFTER_REVOCATION_PAYOUT, SPLIT_PAYOUTS, VERIFIED_PAYOUT } from './payout-lists.ts';
+import { AFTER_REVOCATION_PAYOUT, RESERVED_REFERENCE_PREFIX, SPLIT_PAYOUTS, usesReservedReference, VERIFIED_PAYOUT } from './payout-lists.ts';
 import { applyDemoMandate, prepareScenario, returnRlusdToAgent } from './prepare.ts';
 
 interface RunOutcome {
@@ -264,6 +264,9 @@ async function revokeScenario(ctx: DemoContext, report: Report): Promise<RunOutc
  * signatures. Nothing is prepared first, so it meets the workspace as it is.
  */
 async function visitorInstruction(ctx: DemoContext, report: Report, text: string): Promise<RunOutcome> {
+  if (usesReservedReference(text)) {
+    throw new DemoError(`References that start with ${RESERVED_REFERENCE_PREFIX} are kept for the guided tour. Use another reference, or none.`);
+  }
   report({ type: 'step', text: 'The agent reads your instruction and asks the approval service to approve each payment' });
   const results = await ctx.createAgent(agentReporter(report)).run(text);
   reportDeposits(report, await ctx.exchange.syncDeposits());
