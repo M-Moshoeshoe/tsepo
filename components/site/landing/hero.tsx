@@ -1,11 +1,11 @@
 import { Check, XClose } from '@untitledui/icons';
 import type { ReactNode } from 'react';
-import { Button } from '@/components/base/buttons/button';
 import { DEMO_LIMITS } from '../../../src/config/demo.ts';
 import { LANDING_ACTIONS } from '../../../src/views/navigation.ts';
 import type { ProofNumbers } from '../../../src/views/proof-numbers.ts';
 import { shortHash, type ProofFile } from '../../../src/views/proof.ts';
 import { StatusBadge } from '../../display.tsx';
+import { SiteButton } from '../site-button.tsx';
 import { SITE_WIDTH } from '../site-chrome.tsx';
 import { UiCard } from '../section.tsx';
 import { MomentSequence } from './moment-sequence.tsx';
@@ -17,14 +17,14 @@ export function LandingActions() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       {tour !== undefined && (
-        <Button href={tour.href} color="primary" size="xl">
+        <SiteButton href={tour.href} tone="primary" size="lg">
           {tour.label}
-        </Button>
+        </SiteButton>
       )}
       {product !== undefined && (
-        <Button href={product.href} color="secondary" size="xl">
+        <SiteButton href={product.href} tone="secondary" size="lg">
           {product.label}
-        </Button>
+        </SiteButton>
       )}
     </div>
   );

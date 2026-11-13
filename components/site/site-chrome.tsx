@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { Button } from '@/components/base/buttons/button';
 import { LANDING_ACTIONS, REPOSITORY, SITE_FOOTER_COMPANY, SITE_FOOTER_PRODUCT, SITE_NAV, type NavEntry } from '../../src/views/navigation.ts';
 import { Brand } from '../shell/brand.tsx';
+import { SiteButton } from './site-button.tsx';
 
 /** The width every public section shares: 1200px of content, with a 16px gutter on a phone. */
 export const SITE_WIDTH = 'mx-auto w-full max-w-[1264px] px-4 md:px-8';
@@ -30,14 +30,16 @@ export function SiteHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-2">
           {product !== undefined && (
-            <Button href={product.href} color="secondary" size="sm" className="max-sm:hidden">
-              {product.label}
-            </Button>
+            <span className="max-sm:hidden">
+              <SiteButton href={product.href} tone="secondary" size="sm">
+                {product.label}
+              </SiteButton>
+            </span>
           )}
           {tour !== undefined && (
-            <Button href={tour.href} color="primary" size="sm">
+            <SiteButton href={tour.href} tone="primary" size="sm">
               {tour.label}
-            </Button>
+            </SiteButton>
           )}
         </div>
       </div>

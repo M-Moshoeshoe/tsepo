@@ -13,7 +13,7 @@ const ErrorSchema = z.object({ error: z.string() });
 type Kind = 'business' | 'exchange';
 
 /** "Join the pilot": a short form in a dialog. It stores the details for follow-up; nothing is signed up or charged. */
-export function JoinPilot() {
+export function JoinPilot({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [organisation, setOrganisation] = useState('');
@@ -49,7 +49,7 @@ export function JoinPilot() {
 
   return (
     <>
-      <Button color="secondary" size="xl" onClick={() => { setOpen(true); }}>
+      <Button color="secondary" size="xl" className={className} onClick={() => { setOpen(true); }}>
         Join the pilot
       </Button>
       <ModalOverlay isOpen={open} onOpenChange={setOpen} isDismissable>
