@@ -17,11 +17,25 @@ export type ProofKey = (typeof PROOF_KEYS)[number];
 
 const HashSchema = z.string().regex(/^[0-9A-F]{64}$/);
 
+/** What the validated ledger recorded for one transaction. */
+const LedgerFactsSchema = z.strictObject({
+  result: z.string().regex(/^(tes|tec)[A-Z_]+$/),
+  ledgerIndex: z.number().int().positive(),
+  closeTime: z.iso.datetime({ offset: true }),
+});
+
 /** The committed evidence file, written by scripts/capture-proof.ts and checked here before the page uses it. */
 export const ProofFileSchema = z.strictObject({
   capturedAt: z.iso.datetime(),
   network: z.literal('XRP Ledger Testnet'),
   transactions: z.record(z.enum(PROOF_KEYS), HashSchema),
+  /** The result code, ledger and close time of each transaction above, read from the validated ledger. */
+  ledger: z.record(z.enum(PROOF_KEYS), LedgerFactsSchema),
+  /** The agent account's signer list, as the signer-list transaction set it. */
+  signerList: z.strictObject({
+    quorum: z.number().int().positive(),
+    weights: z.strictObject({ business: z.number().int(), agent: z.number().int(), approvalService: z.number().int() }),
+  }),
 });
 
 export type ProofFile = z.infer<typeof ProofFileSchema>;
@@ -49,4 +63,9 @@ export function loadProof(): ProofFile {
 
 export function explorerUrl(hash: string): string {
   return `${TESTNET_EXPLORER}/transactions/${hash}`;
+}
+
+/** "F862AD...6800": enough of a transaction hash to recognise it; the explorer link carries the full value. */
+export function shortHash(hash: string): string {
+  return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
 }

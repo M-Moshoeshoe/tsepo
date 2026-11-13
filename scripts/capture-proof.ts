@@ -28,6 +28,26 @@ const AccountTxSchema = z.object({
   }),
 });
 
+const TxSchema = z.object({
+  result: z.object({
+    validated: z.literal(true),
+    ledger_index: z.number().int(),
+    close_time_iso: z.string(),
+    meta: z.object({ TransactionResult: z.string() }).loose(),
+    tx_json: z
+      .object({
+        SignerQuorum: z.number().int().optional(),
+        SignerEntries: z.array(z.object({ SignerEntry: z.object({ Account: z.string(), SignerWeight: z.number().int() }) })).optional(),
+      })
+      .loose(),
+  }),
+});
+
+/** One validated transaction, as the ledger recorded it. */
+async function readTx(client: Client, hash: string): Promise<z.infer<typeof TxSchema>['result']> {
+  return TxSchema.parse(await client.request({ command: 'tx', transaction: hash })).result;
+}
+
 /** The newest successful transaction of a type on an account, searching back up to a few pages. */
 async function newestOfType(client: Client, account: string, type: string): Promise<string | undefined> {
   let marker: unknown = undefined;
@@ -74,7 +94,25 @@ try {
   const missing = Object.entries(found).filter(([, hash]) => hash === undefined).map(([key]) => key);
   if (missing.length > 0) throw new Error(`No transaction found for: ${missing.join(', ')}. Run the four tour stories first.`);
 
-  const file = ProofFileSchema.parse({ capturedAt: new Date().toISOString(), network: 'XRP Ledger Testnet', transactions: found });
+  const transactions = found as Record<ProofKey, string>;
+  const ledger: Partial<Record<ProofKey, { result: string; ledgerIndex: number; closeTime: string }>> = {};
+  for (const [key, hash] of Object.entries(transactions) as [ProofKey, string][]) {
+    const tx = await readTx(client, hash);
+    ledger[key] = { result: tx.meta.TransactionResult, ledgerIndex: tx.ledger_index, closeTime: tx.close_time_iso };
+  }
+  const signerTx = await readTx(client, transactions['signer-list']);
+  const weightOf = (address: string): number =>
+    signerTx.tx_json.SignerEntries?.find((entry) => entry.SignerEntry.Account === address)?.SignerEntry.SignerWeight ?? 0;
+  const file = ProofFileSchema.parse({
+    capturedAt: new Date().toISOString(),
+    network: 'XRP Ledger Testnet',
+    transactions,
+    ledger,
+    signerList: {
+      quorum: signerTx.tx_json.SignerQuorum,
+      weights: { business: weightOf(ctx.wallets.business.address), agent: weightOf(ctx.wallets.agentSigner.address), approvalService: weightOf(ctx.wallets.policy.address) },
+    },
+  });
   await writeFile(OUT, `${JSON.stringify(file, null, 2)}\n`);
   console.log(`saved ${OUT}`);
 } finally {
