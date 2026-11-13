@@ -27,13 +27,27 @@ export function MeetThuso({ example }: { example: ThusoExample | undefined }) {
     <section id="thuso" aria-labelledby="thuso-title" className="scroll-mt-4">
       <div className={`${SITE_WIDTH} grid gap-10 py-10 md:py-12`}>
         <div className="grid gap-10 border-t border-secondary pt-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
-          <div className="grid content-start gap-5">
-            <ThusoAvatar className="size-12" />
-            <h2 id="thuso-title" className="text-display-xs font-medium text-primary md:text-display-md">
-              Meet {ASSISTANT_NAME}.
-            </h2>
-            <p className="text-lg text-tertiary">Thuso, the agent’s AI, reads each instruction and explains what happened in plain words.</p>
-            <p className="text-lg text-tertiary">The spending rules and the XRP Ledger decide every payment, and Thuso never does.</p>
+          {/*
+            The mascot stands behind the text: the drawing's empty sky slides up under the last lines, so the
+            words sit on it and Thuso shakes hands below them. The panel matches the drawing's paper colour.
+          */}
+          <div className="grid content-start overflow-hidden rounded-2xl bg-[#fdfdfd] ring-1 ring-secondary">
+            <div className="relative z-10 grid gap-4 p-6 md:p-8">
+              <h2 id="thuso-title" className="text-display-xs font-medium text-primary md:text-display-md">
+                Meet {ASSISTANT_NAME}.
+              </h2>
+              <p className="text-lg text-tertiary">Thuso, the agent’s AI, reads each instruction and explains what happened in plain words.</p>
+              <p className="text-lg text-tertiary">The spending rules and the XRP Ledger decide every payment, and Thuso never does.</p>
+            </div>
+            <img
+              src="/thuso-handshake.webp"
+              alt="Thuso, the mascot, shaking hands with a business owner."
+              width={1000}
+              height={794}
+              loading="lazy"
+              decoding="async"
+              className="-mt-[20%] block h-auto w-full"
+            />
           </div>
           {example === undefined ? (
             <FragmentPanel>

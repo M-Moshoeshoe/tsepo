@@ -1,25 +1,14 @@
 import { cx } from '@/utils/cx';
 
 /**
- * Thuso's avatar: an ink ring that opens into a speech tail, around a solid
- * core, on a disc in the accent colour. The ring is the reading and the tail
- * the explaining. It is round where the Tšepo shield is pointed, so the two
- * never read as one, and it is drawn on a 24-unit grid with heavy strokes, so
- * it stays legible from 20px to 48px. Decorative: Thuso's name is always next
- * to it.
+ * Thuso's avatar: the mascot's head on black, in a circle. It is sized by
+ * the caller (20px by default, up to 48px) and is decorative, because
+ * Thuso's name always appears next to it. The image is a 160px WebP made
+ * from the mascot artwork, so it stays sharp at every size used.
  */
 export function ThusoAvatar({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={cx('size-5 shrink-0', className)} aria-hidden>
-      <circle cx="12" cy="12" r="12" className="fill-accent" />
-      <path
-        d="M7.02 14.32A5.5 5.5 0 1 1 9.68 16.98L5.9 18.1Z"
-        fill="none"
-        stroke="#0B1F2E"
-        strokeWidth="2.2"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="1.9" fill="#0B1F2E" />
-    </svg>
+    // A fixed, tiny decorative image: a plain img, with no optimisation pipeline needed.
+    <img src="/thuso-head.webp" alt="" width={160} height={160} className={cx('size-5 shrink-0 rounded-full bg-black', className)} />
   );
 }

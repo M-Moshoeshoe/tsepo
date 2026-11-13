@@ -1,10 +1,11 @@
 'use client';
 
-import { Compass03, MessageChatSquare } from '@untitledui/icons';
+import { Compass03 } from '@untitledui/icons';
 import { usePathname } from 'next/navigation';
 import { BadgeWithDot } from '@/components/base/badges/badges';
 import { Button } from '@/components/base/buttons/button';
 import { Term } from '../term.tsx';
+import { ThusoAvatar } from '../thuso-avatar.tsx';
 import { useTour } from '../tour/tour-provider.tsx';
 import { BUSINESS_ACTION, workspaceOf } from '../../src/views/navigation.ts';
 import { currentLink } from './workspaces.ts';
@@ -39,7 +40,7 @@ export function AppHeader() {
           Take the 3-minute tour
         </Button>
         {workspaceOf(pathname) === 'business' && pathname !== BUSINESS_ACTION.href && (
-          <Button href={BUSINESS_ACTION.href} color="primary" size="md" iconLeading={MessageChatSquare}>
+          <Button href={BUSINESS_ACTION.href} color="primary" size="md" iconLeading={ThusoAvatar}>
             {BUSINESS_ACTION.label}
           </Button>
         )}

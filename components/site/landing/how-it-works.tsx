@@ -4,6 +4,7 @@ import { DEMO_LIMITS, DEMO_PAYEES } from '../../../src/config/demo.ts';
 import { shortHash, type ProofFile } from '../../../src/views/proof.ts';
 import { StatusBadge } from '../../display.tsx';
 import { FragmentPanel, Section, UiCard } from '../section.tsx';
+import { StepCarousel } from './step-carousel.tsx';
 
 function Tick() {
   return (
@@ -159,19 +160,17 @@ export function HowItWorks({ proof }: { proof: ProofFile }) {
   ];
   return (
     <Section id="how-it-works" title="How it works." intro="Each step is enforced by the XRP Ledger or by tested rules in code, never by a promise.">
-      <ol className="grid gap-x-8 gap-y-12 md:grid-cols-2">
+      <StepCarousel label="How it works, in four steps">
         {steps.map((step) => (
-          <li key={step.title} className="grid content-start gap-5">
-            <FragmentPanel className="min-h-64">
-              <div className="mx-auto w-full max-w-sm">{step.fragment}</div>
-            </FragmentPanel>
-            <div className="grid gap-1.5">
-              <h3 className="text-lg font-semibold text-primary">{step.title}</h3>
-              <p className="text-md text-tertiary">{step.text}</p>
+          <article key={step.title} className="grid h-full content-start gap-4 rounded-2xl p-3 ring-1 ring-secondary">
+            <FragmentPanel className="min-h-[16.5rem] p-3 md:p-4">{step.fragment}</FragmentPanel>
+            <div className="grid gap-1.5 px-1 pb-2">
+              <h3 className="text-md font-semibold text-primary">{step.title}</h3>
+              <p className="text-sm text-tertiary">{step.text}</p>
             </div>
-          </li>
+          </article>
         ))}
-      </ol>
+      </StepCarousel>
     </Section>
   );
 }

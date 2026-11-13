@@ -1,5 +1,6 @@
-import { Building07, CheckVerified01, CodeBrowser, CoinsHand, Home02, MessageChatSquare, Receipt, Sliders01, User01 } from '@untitledui/icons';
+import { Building07, CheckVerified01, CodeBrowser, CoinsHand, Home02, Receipt, Sliders01, User01 } from '@untitledui/icons';
 import type { FC } from 'react';
+import { ThusoAvatar } from '../thuso-avatar.tsx';
 import { BUSINESS_NAV, EXCHANGE_NAV, WORKSPACE_HOMES, workspaceOf, type NavEntry, type WorkspaceId } from '../../src/views/navigation.ts';
 
 export type { WorkspaceId } from '../../src/views/navigation.ts';
@@ -23,7 +24,8 @@ export interface Workspace {
 const ICONS: Record<string, FC<{ className?: string }>> = {
   '/business': Home02,
   '/business/agent': User01,
-  '/business/instruct': MessageChatSquare,
+  // Give an instruction is where you talk to Thuso, so it carries Thuso's head, not a chat icon.
+  '/business/instruct': ThusoAvatar,
   '/business/payments': Receipt,
   '/business/rules': Sliders01,
   '/exchange/payments': CoinsHand,
