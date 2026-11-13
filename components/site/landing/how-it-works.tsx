@@ -1,4 +1,5 @@
-import { Check } from '@untitledui/icons';
+import { ArrowRight, Check } from '@untitledui/icons';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { DEMO_LIMITS, DEMO_PAYEES } from '../../../src/config/demo.ts';
 import { shortHash, type ProofFile } from '../../../src/views/proof.ts';
@@ -134,39 +135,66 @@ function ExchangeFragment() {
   );
 }
 
-/** Four steps, each shown with a fragment of the real interface. */
+interface Step {
+  title: string;
+  question: string;
+  answer: string;
+  proof: { label: string; href: string };
+  fragment: ReactNode;
+}
+
+/** Four steps, each shown with a fragment of the real interface, and each answering one of the four questions a CFO asks. */
 export function HowItWorks({ proof }: { proof: ProofFile }) {
-  const steps: { title: string; text: string; fragment: ReactNode }[] = [
+  const steps: Step[] = [
     {
       title: '1. The business sets the spending rules.',
-      text: 'It chooses who the agent may pay, how much per payment and per day, and until when.',
+      question: 'What may the agent do?',
+      answer: 'Only what its rules allow: a limit per payment, a limit per day and an end date. It cannot change them.',
+      proof: { label: 'See the spending rules', href: '/business/rules' },
       fragment: <RulesFragment />,
     },
     {
       title: '2. Tšepo records them on the XRP Ledger.',
-      text: 'The agent holds a credential that carries a fingerprint of its rules, and anyone can check it.',
+      question: 'How do I stop it?',
+      answer: 'Revoke it. Your business key deletes its credential, and its next payment is refused within seconds.',
+      proof: { label: 'Watch a revocation live', href: '/business?tour=4' },
       fragment: <CredentialFragment proof={proof} />,
     },
     {
       title: '3. Every payment needs two signatures.',
-      text: 'The approval service adds the second signature only when the payment is within the rules.',
+      question: 'Who can it pay?',
+      answer: 'Only approved recipients. The approval service signs nothing else, and the agent cannot pay alone.',
+      proof: { label: 'See the approved recipients', href: '/business/rules' },
       fragment: <SignaturesFragment proof={proof} />,
     },
     {
       title: '4. The exchange accepts verified agents.',
-      text: 'The Travel Rule details arrive first, and the ledger accepts the payment only from a credentialed agent.',
+      question: 'How do I prove what it did and why?',
+      answer: 'Every payment keeps its instruction, its decision, its Travel Rule details and its ledger record.',
+      proof: { label: 'See the payments and their evidence', href: '/business/payments' },
       fragment: <ExchangeFragment />,
     },
   ];
   return (
-    <Section id="how-it-works" title="How it works." intro="Each step is enforced by the XRP Ledger or by tested rules in code, never by a promise.">
+    <Section
+      id="how-it-works"
+      title="How it works."
+      intro="Four steps, each enforced by the XRP Ledger or by tested rules in code. Each one answers a question your CFO will ask."
+    >
       <StepCarousel label="How it works, in four steps">
         {steps.map((step) => (
-          <article key={step.title} className="grid h-full content-start gap-4 rounded-2xl p-3 ring-1 ring-secondary">
-            <FragmentPanel className="min-h-[16.5rem] p-3 md:p-4">{step.fragment}</FragmentPanel>
-            <div className="grid gap-1.5 px-1 pb-2">
+          <article key={step.title} className="grid h-full content-start gap-4 rounded-2xl p-2.5 ring-1 ring-secondary">
+            <FragmentPanel className="min-h-[15rem] p-2.5 md:p-3">{step.fragment}</FragmentPanel>
+            <div className="grid gap-3 px-1.5 pb-2">
               <h3 className="text-md font-semibold text-primary">{step.title}</h3>
-              <p className="text-sm text-tertiary">{step.text}</p>
+              <div className="grid gap-1 border-t border-secondary pt-3">
+                <p className="text-sm font-semibold text-secondary">{step.question}</p>
+                <p className="text-sm text-tertiary">{step.answer}</p>
+              </div>
+              <Link href={step.proof.href} className="inline-flex items-center gap-1 justify-self-start rounded-sm text-sm font-semibold text-brand-secondary outline-focus-ring hover:text-brand-secondary_hover focus-visible:outline-2">
+                {step.proof.label}
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
             </div>
           </article>
         ))}

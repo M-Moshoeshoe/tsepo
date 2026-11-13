@@ -52,7 +52,3 @@ export function UiCard({ children, className, label }: { children: ReactNode; cl
     </div>
   );
 }
-
-/** A text link for "see the proof" style links. */
-export const TEXT_LINK =
-  'inline-flex items-center gap-1 justify-self-start rounded-sm text-md font-semibold text-brand-secondary outline-focus-ring hover:text-brand-secondary_hover focus-visible:outline-2 focus-visible:outline-offset-2';

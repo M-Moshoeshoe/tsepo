@@ -1,13 +1,8 @@
-/**
- * The FAQ, in one place: the FAQ page shows every question, and the landing
- * page previews the ones marked `preview`. Each answer is a list of complete
- * sentences, with an optional link at the end.
- */
+/** The FAQ. Each answer is a list of complete sentences, with an optional link at the end. */
 export interface FaqEntry {
   question: string;
   answer: string[];
   link?: { label: string; href: string };
-  preview?: boolean;
 }
 
 export const FAQ: FaqEntry[] = [
@@ -22,7 +17,6 @@ export const FAQ: FaqEntry[] = [
       'Tšepo gives a business’s AI agent a verified identity and spending rules it cannot break.',
       'The rules are recorded on the XRP Ledger as a credential. An independent approval service signs each payment only within them, and exchanges accept payments only from verified agents.',
     ],
-    preview: true,
   },
   {
     question: 'Who decides whether a payment goes through?',
@@ -30,7 +24,6 @@ export const FAQ: FaqEntry[] = [
       'The AI never decides. Thuso, the agent’s AI, only reads the instruction and explains what happened.',
       'The approval service checks each payment against the spending rules and adds the second signature only when the payment is within them. The XRP Ledger requires both signatures, and the exchange’s deposit address accepts only agents with a valid credential.',
     ],
-    preview: true,
   },
   {
     question: 'Does real money move?',
@@ -38,14 +31,12 @@ export const FAQ: FaqEntry[] = [
       'No. Everything runs on the XRP Ledger Testnet with test RLUSD, which has no value.',
       'The businesses and people, such as Lesedi Design Studio, Naledi Mokoena and Thabo Nkosi, are samples. The payments and credentials are real Testnet transactions that you can open on the explorer.',
     ],
-    preview: true,
   },
   {
     question: 'Why is there no sign-in?',
     answer: [
       'This is an open Testnet sandbox, so anyone can explore. In production, each business and exchange has its own verified organisation account.',
     ],
-    preview: true,
   },
   {
     question: 'Can the agent raise its own limits or pay someone new?',

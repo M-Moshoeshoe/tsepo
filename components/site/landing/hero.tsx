@@ -12,8 +12,8 @@ import { MomentSequence } from './moment-sequence.tsx';
 
 const [tour, product] = LANDING_ACTIONS;
 
-/** The two ways in, the tour first. Used in the hero and in the closing band. */
-export function LandingActions({ onDark = false }: { onDark?: boolean }) {
+/** The two ways in, the tour first. */
+export function LandingActions() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       {tour !== undefined && (
@@ -22,7 +22,7 @@ export function LandingActions({ onDark = false }: { onDark?: boolean }) {
         </Button>
       )}
       {product !== undefined && (
-        <Button href={product.href} color="secondary" size="xl" className={onDark ? 'ring-0' : undefined}>
+        <Button href={product.href} color="secondary" size="xl">
           {product.label}
         </Button>
       )}
@@ -122,8 +122,8 @@ export function Hero({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbe
         </h1>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-12">
           <p className="max-w-2xl text-lg text-tertiary md:text-xl">
-            Tšepo records each agent’s identity and spending rules on the XRP Ledger, so its payments stay limited, stoppable and
-            accepted.
+            Naledi Mokoena finished a logo for Lesedi Design Studio. Within a minute, the studio’s AI agent paid her 2 RLUSD. The
+            exchange knew exactly who sent the money. The agent could never have paid more than its rules allow.
           </p>
           <LandingActions />
         </div>
@@ -132,7 +132,12 @@ export function Hero({ proof, numbers }: { proof: ProofFile; numbers: ProofNumbe
         <div className="rounded-2xl bg-secondary p-3 md:p-4">
           <Moments proof={proof} numbers={numbers} />
         </div>
-        <p className="py-5 text-sm text-tertiary">Built on the XRP Ledger. Settles in RLUSD.</p>
+        <div className="flex flex-wrap justify-between gap-x-8 gap-y-1 py-5 text-sm text-tertiary">
+          <p>
+            <span lang="st">Tšepo</span> (say TSEH-poh) means hope, or trust, in Sesotho.
+          </p>
+          <p>Built on the XRP Ledger. Settles in RLUSD.</p>
+        </div>
       </div>
     </section>
   );

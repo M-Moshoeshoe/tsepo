@@ -1,59 +1,11 @@
-import { ArrowRight } from '@untitledui/icons';
-import Link from 'next/link';
 import { Button } from '@/components/base/buttons/button';
-import { FAQ } from '../../../src/views/faq.ts';
+import { LANDING_ACTIONS } from '../../../src/views/navigation.ts';
 import { JoinPilot } from '../join-pilot.tsx';
 import { SITE_WIDTH } from '../site-chrome.tsx';
-import { Section, TEXT_LINK } from '../section.tsx';
-import { LandingActions } from './hero.tsx';
 
-/** One short band that sends the visitor to try to break the rules. */
-export function TryToBreakIt() {
-  return (
-    <section id="try" aria-labelledby="try-title" className="scroll-mt-4">
-      <div className={`${SITE_WIDTH} py-10 md:py-12`}>
-        <div className="grid gap-6 rounded-2xl bg-secondary p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-10">
-          <div className="grid gap-2">
-            <h2 id="try-title" className="text-display-xs font-medium text-primary">
-              Try to break it.
-            </h2>
-            <p className="text-lg text-tertiary">Tell the agent to pay someone new, to pay too much or to ignore its rules. Then watch the rules stop it.</p>
-          </div>
-          <Button href="/business/instruct" color="primary" size="xl" className="justify-self-start">
-            Give an instruction
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
+const [tour] = LANDING_ACTIONS;
 
-/** A preview of the FAQ, with a link to every answer. */
-export function FaqPreview() {
-  const preview = FAQ.filter((entry) => entry.preview === true);
-  return (
-    <Section id="faq-preview" title="Questions, answered.">
-      <dl className="grid gap-x-12 gap-y-8 md:grid-cols-2">
-        {preview.map((entry) => (
-          <div key={entry.question} className="grid content-start gap-2">
-            <dt className="text-lg font-semibold text-primary">{entry.question}</dt>
-            <dd className="grid gap-2 text-md text-tertiary">
-              {entry.answer.map((sentence) => (
-                <p key={sentence}>{sentence}</p>
-              ))}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <Link href="/faq" className={TEXT_LINK}>
-        Read every answer
-        <ArrowRight className="size-4" aria-hidden />
-      </Link>
-    </Section>
-  );
-}
-
-/** The one dark band: the final call to action, with both ways in and the pilot. */
+/** The one dark band: the tour, a dare to break the rules, and the pilot. */
 export function InkBand() {
   return (
     <section aria-labelledby="cta-title" className="bg-primary-solid">
@@ -63,11 +15,18 @@ export function InkBand() {
             See every check work, live, in three minutes.
           </h2>
           <p className="text-lg text-white">
-            The tour runs four real stories on the XRP Ledger Testnet. To use Tšepo for real, join the pilot.
+            Take the tour, then try to break the rules yourself: tell the agent to pay someone new or to ignore its limits.
           </p>
         </div>
-        <div className="grid gap-3 sm:flex sm:flex-wrap">
-          <LandingActions onDark />
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          {tour !== undefined && (
+            <Button href={tour.href} color="primary" size="xl">
+              {tour.label}
+            </Button>
+          )}
+          <Button href="/business/instruct" color="secondary" size="xl">
+            Try to break it
+          </Button>
           <JoinPilot />
         </div>
       </div>

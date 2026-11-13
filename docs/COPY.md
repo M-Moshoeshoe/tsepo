@@ -210,3 +210,64 @@ Instructions.
   ellipsis on narrow screens. It now wraps in full.
 - `npm run test:site` fails on any clipped, clamped or overflowing text, and
   on sideways scrolling, on every public page at 1280px and 390px.
+
+# Copy changes, Stage 6B
+
+The landing page now has seven sections: the hero, the stakes, how it works,
+the proof, Meet Thuso, both sides of the payment, and one closing band. The
+separate CFO questions, Try to break it band and FAQ preview are gone; the
+FAQ stays in the header and the footer.
+
+## Hero
+
+| Before | After |
+|---|---|
+| Tšepo records each agent’s identity and spending rules on the XRP Ledger, so its payments stay limited, stoppable and accepted. | Naledi Mokoena finished a logo for Lesedi Design Studio. Within a minute, the studio’s AI agent paid her 2 RLUSD. The exchange knew exactly who sent the money. The agent could never have paid more than its rules allow. |
+| New | Tšepo (say TSEH-poh) means hope, or trust, in Sesotho. |
+
+The story follows the tour’s first story: the agent receives the instruction
+for invoice TOUR-1042, sends the Travel Rule details to the exchange, and
+pays 2 RLUSD with the approval service’s signature in well under a minute.
+
+## How it works (the CFO’s questions folded into the steps)
+
+| Before | After |
+|---|---|
+| Each step is enforced by the XRP Ledger or by tested rules in code, never by a promise. | Four steps, each enforced by the XRP Ledger or by tested rules in code. Each one answers a question your CFO will ask. |
+| It chooses who the agent may pay, how much per payment and per day, and until when. | What may the agent do? Only what its rules allow: a limit per payment, a limit per day and an end date. It cannot change them. |
+| The agent holds a credential that carries a fingerprint of its rules, and anyone can check it. | How do I stop it? Revoke it. Your business key deletes its credential, and its next payment is refused within seconds. |
+| The approval service adds the second signature only when the payment is within the rules. | Who can it pay? Only approved recipients. The approval service signs nothing else, and the agent cannot pay alone. |
+| The Travel Rule details arrive first, and the ledger accepts the payment only from a credentialed agent. | How do I prove what it did and why? Every payment keeps its instruction, its decision, its Travel Rule details and its ledger record. |
+| The four questions your CFO will ask. Each answer links to its proof in the product. (separate section) | Removed. Each step now carries its question, its answer and its proof link. |
+
+## Proof (the numbers and the ledger table in one section)
+
+| Before | After |
+|---|---|
+| Proof in numbers. | Proof. |
+| 55% of payment attempts were blocked. The approval service refused or the XRP Ledger rejected 41 of 75 attempts. | 41 of 41. Every attempt that broke the rules was blocked. The approval service refused them, the XRP Ledger rejected them or the agent stopped them. None of them was paid. |
+| 1 of 2 signatures can come from the agent. The signer list gives the agent key a weight of 1 against a quorum of 2, so the agent cannot pay alone. | 1 of 2. The agent alone can never pay: it holds 1 of the 2 required signatures. The agent account’s signer list on the ledger sets a quorum of 2 and gives the agent key a weight of 1. |
+| Proven on Testnet. (separate section) | Proven on Testnet, inside the Proof section. |
+
+## Meet Thuso
+
+| Before | After |
+|---|---|
+| New | Thuso (say TOO-soh) means help in Sesotho and Setswana. |
+
+## Closing band
+
+| Before | After |
+|---|---|
+| The tour runs four real stories on the XRP Ledger Testnet. To use Tšepo for real, join the pilot. | Take the tour, then try to break the rules yourself: tell the agent to pay someone new or to ignore its limits. |
+| Buttons: Take the 3-minute tour, Open the product, Join the pilot | Buttons: Take the 3-minute tour, Try to break it, Join the pilot |
+| Try to break it. Tell the agent to pay someone new, to pay too much or to ignore its rules. Then watch the rules stop it. (separate band) | Removed. The closing band carries it. |
+| Questions, answered. (FAQ preview) | Removed. The FAQ stays in the header and the footer. |
+
+## About
+
+| Before | After |
+|---|---|
+| Tšepo is a Sesotho word for hope and trust. It names the trust a business places in an agent that pays for it. (lead) | Tšepo gives a business’s AI agent a verified identity and spending rules it cannot break. |
+| New: What the names mean | Tšepo (say TSEH-poh) means hope, or trust, in Sesotho. It names the trust a business places in an agent that pays for it. |
+| New | Thuso (say TOO-soh) means help in Sesotho and Setswana. Thuso is the agent’s AI, which reads each instruction and explains what happened. |

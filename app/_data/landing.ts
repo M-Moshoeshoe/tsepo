@@ -4,7 +4,7 @@ import type { PayoutIntent } from '../../src/agent/payout-parser.ts';
 import { agentRecords } from '../../src/agent/records.ts';
 import { dataDir } from '../../src/config/env.ts';
 import { SPLIT_PAYOUTS } from '../../src/demo/payout-lists.ts';
-import { LedgerRejectionSchema } from '../../src/exchange/exchange-verifier.ts';
+import { DepositRecordSchema, LedgerRejectionSchema } from '../../src/exchange/exchange-verifier.ts';
 import { PolicyLogEntrySchema } from '../../src/policy/records.ts';
 import { createFileStore } from '../../src/storage/file-store.ts';
 import { appendOnlyLog, collection } from '../../src/storage/store.ts';
@@ -37,8 +37,16 @@ export async function loadLandingData(): Promise<LandingData> {
   const root = dataDir();
   const agent = agentRecords(createFileStore(join(root, 'agent')));
   const policyLog = appendOnlyLog(createFileStore(join(root, 'policy')), 'decisions', PolicyLogEntrySchema);
-  const rejections = collection(createFileStore(join(root, 'exchange')), 'ledger-rejections', LedgerRejectionSchema);
-  const [log, events, runs, rejected] = await Promise.all([policyLog.readAll(), agent.events.readAll(), agent.runs.list(), rejections.list()]);
+  const exchangeStore = createFileStore(join(root, 'exchange'));
+  const rejections = collection(exchangeStore, 'ledger-rejections', LedgerRejectionSchema);
+  const deposits = collection(exchangeStore, 'deposits', DepositRecordSchema);
+  const [log, events, runs, rejected, received] = await Promise.all([
+    policyLog.readAll(),
+    agent.events.readAll(),
+    agent.runs.list(),
+    rejections.list(),
+    deposits.list(),
+  ]);
 
   const proof = loadProof();
   const split = instructionsFrom(runs, events).find((instruction) => instruction.text === SPLIT_PAYOUTS && instruction.intents.length > 0);
@@ -49,6 +57,7 @@ export async function loadLandingData(): Promise<LandingData> {
       policyLog: log,
       agentEvents: events,
       ledgerRejections: rejected.map((item) => ({ hash: item.hash, at: item.closeTimeIso ?? item.recordedAt })),
+      depositInvoices: received.map((deposit) => deposit.invoiceId),
     }),
     thuso: split === undefined ? undefined : { instruction: split.text, intents: split.intents, note: readNote(split.intents) },
   };

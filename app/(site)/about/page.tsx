@@ -12,8 +12,19 @@ export default function AboutPage() {
   return (
     <SitePage
       title="Why Tšepo exists."
-      lead={<p>Tšepo is a Sesotho word for hope and trust. It names the trust a business places in an agent that pays for it.</p>}
+      lead={<p>Tšepo gives a business’s AI agent a verified identity and spending rules it cannot break.</p>}
     >
+      <PagePart title="What the names mean">
+        <p>
+          <span lang="st">Tšepo</span> (say TSEH-poh) means hope, or trust, in Sesotho. It names the trust a business places in an agent
+          that pays for it.
+        </p>
+        <p>
+          <span lang="st">Thuso</span> (say TOO-soh) means help in Sesotho and Setswana. Thuso is the agent’s AI, which reads each
+          instruction and explains what happened.
+        </p>
+      </PagePart>
+
       <PagePart title="The problem we saw">
         <p>AI agents can now hold a wallet and pay. A business that wants to use one faces a hard choice.</p>
         <p>It can give the agent a key, and with it the whole account, with no limit and no way to stop it. Or it can keep paying by hand.</p>

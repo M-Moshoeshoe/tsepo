@@ -7,10 +7,11 @@ const BUTTON =
   'flex size-9 items-center justify-center rounded-full text-secondary ring-1 ring-secondary outline-focus-ring hover:bg-secondary hover:text-primary focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 
 /**
- * A sliding row of steps. Each slide snaps into place; the arrows move one
- * slide at a time, and a visitor can also swipe, scroll or use the keyboard
- * on the row. Smooth sliding switches off for reduced motion. Nothing moves
- * by itself.
+ * The steps, all visible at once from 640px: a 2x2 grid on a tablet and a
+ * row on a desktop. Below 640px they become a sliding row: each slide snaps
+ * into place, the arrows move one slide at a time, and a visitor can also
+ * swipe or scroll. Smooth sliding switches off for reduced motion. Nothing
+ * moves by itself.
  */
 export function StepCarousel({ label, children }: { label: string; children: ReactNode }) {
   const slides = Children.toArray(children);
@@ -48,7 +49,7 @@ export function StepCarousel({ label, children }: { label: string; children: Rea
 
   return (
     <div className="grid gap-5">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 sm:hidden">
         <p className="font-mono text-xs text-tertiary" aria-live="polite">
           Step {index + 1} of {slides.length}
         </p>
@@ -65,15 +66,10 @@ export function StepCarousel({ label, children }: { label: string; children: Rea
         ref={track}
         tabIndex={0}
         aria-label={label}
-        className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto rounded-2xl p-1 outline-focus-ring focus-visible:outline-2"
+        className="scrollbar-hide -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto rounded-2xl p-1 outline-focus-ring focus-visible:outline-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4"
       >
         {slides.map((slide, position) => (
-          <li
-            key={position}
-            aria-roledescription="slide"
-            aria-label={`Step ${String(position + 1)} of ${String(slides.length)}`}
-            className="w-[85%] shrink-0 snap-start sm:w-[21rem]"
-          >
+          <li key={position} className="w-[85%] shrink-0 snap-start sm:w-auto">
             {slide}
           </li>
         ))}
