@@ -26,6 +26,10 @@ Tšepo are listed below.
   copied unchanged.
 - `base/avatar/utils.ts` and `base/buttons/button.tsx`: two one-line fixes so
   they pass our strict TypeScript settings.
+- `base/buttons/button.tsx`: the product buttons wear the public pages'
+  button language: a pill shape, medium weight, a flat ink primary, a flat
+  outlined secondary and the same hover, focus and press states, with no
+  inner gradient or raised shadow. Destructive buttons stay red, made flat.
 - Unused variants (OTP, tag, payment and integration inputs and dropdowns,
   app store and social buttons) were not copied.
 
