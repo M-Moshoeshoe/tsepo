@@ -22,7 +22,7 @@ export const DEMO_LIMITS = { perPaymentLimit: '3', dailyLimit: '5' } as const;
 /** 23:59:59 SAST on 31 December 2027. Fixed so that the mandate fingerprint stays the same across runs. */
 const DEMO_MANDATE_EXPIRY = '2027-12-31T21:59:59Z';
 
-export function demoMandate(wallets: Wallets): Mandate {
+export function demoMandate(wallets: Pick<Wallets, 'business' | 'agent' | 'exchange'>): Mandate {
   return MandateSchema.parse({
     version: 2,
     principal: wallets.business.address,

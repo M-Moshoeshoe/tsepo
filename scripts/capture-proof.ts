@@ -110,7 +110,7 @@ try {
     ledger,
     signerList: {
       quorum: signerTx.tx_json.SignerQuorum,
-      weights: { business: weightOf(ctx.wallets.business.address), agent: weightOf(ctx.wallets.agentSigner.address), approvalService: weightOf(ctx.wallets.policy.address) },
+      weights: { business: weightOf(ctx.wallets.business.address), agent: weightOf(ctx.wallets.agentSigner.address), approvalService: weightOf(ctx.policyAddress) },
     },
   });
   await writeFile(OUT, `${JSON.stringify(file, null, 2)}\n`);

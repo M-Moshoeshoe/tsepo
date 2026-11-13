@@ -5,7 +5,9 @@ import { agentRecords } from '../../src/agent/records.ts';
 import { dataDir } from '../../src/config/env.ts';
 import { SPLIT_PAYOUTS } from '../../src/demo/payout-lists.ts';
 import { DepositRecordSchema, LedgerRejectionSchema } from '../../src/exchange/exchange-verifier.ts';
-import { PolicyLogEntrySchema } from '../../src/policy/records.ts';
+import { loadAppEnv } from '../../src/config/app-env.ts';
+import { createPolicyClient } from '../../src/policy/http-client.ts';
+import { PolicyLogEntrySchema, type PolicyLogEntry } from '../../src/policy/records.ts';
 import { createFileStore } from '../../src/storage/file-store.ts';
 import { appendOnlyLog, collection } from '../../src/storage/store.ts';
 import { readNote } from '../../src/views/assistant.ts';
@@ -33,15 +35,34 @@ export interface LandingData {
  * example is only ever the tour's own fixed instruction, so text a visitor
  * typed never appears on the public page.
  */
+/**
+ * The approval service's log: from its own deployment when it runs on its
+ * own, otherwise from its folder on this machine. The page is also built
+ * ahead of time, when the private network is not reachable yet; then it
+ * shows the ledger table without figures until the next refresh.
+ */
+async function readPolicyLog(root: string): Promise<PolicyLogEntry[]> {
+  if (process.env.POLICY_SERVICE_URL === undefined || process.env.POLICY_SERVICE_URL === '') {
+    return appendOnlyLog(createFileStore(join(root, 'policy')), 'decisions', PolicyLogEntrySchema).readAll();
+  }
+  try {
+    const env = loadAppEnv();
+    if (env.policy.mode !== 'service') return [];
+    return await createPolicyClient({ url: env.policy.url, token: env.policy.token }).readLog();
+  } catch (error: unknown) {
+    console.error('[landing] the approval service log could not be read', error instanceof Error ? error.message : 'unknown error');
+    return [];
+  }
+}
+
 export async function loadLandingData(): Promise<LandingData> {
   const root = dataDir();
   const agent = agentRecords(createFileStore(join(root, 'agent')));
-  const policyLog = appendOnlyLog(createFileStore(join(root, 'policy')), 'decisions', PolicyLogEntrySchema);
   const exchangeStore = createFileStore(join(root, 'exchange'));
   const rejections = collection(exchangeStore, 'ledger-rejections', LedgerRejectionSchema);
   const deposits = collection(exchangeStore, 'deposits', DepositRecordSchema);
   const [log, events, runs, rejected, received] = await Promise.all([
-    policyLog.readAll(),
+    readPolicyLog(root),
     agent.events.readAll(),
     agent.runs.list(),
     rejections.list(),

@@ -101,7 +101,7 @@ export async function loadRegistry(): Promise<RegistryView> {
     const signerRoles = new Map([
       [wallets.business.address, 'Business key (recovery)'],
       [wallets.agentSigner.address, 'Agent key'],
-      [wallets.policy.address, 'Approval service'],
+      [ctx.policyAddress, 'Approval service'],
     ]);
 
     const status = agentStatus({ credential, history, mandate, issuer, agent });
