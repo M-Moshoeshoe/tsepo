@@ -84,12 +84,25 @@ receivers either accept every agent payment or refuse them all.
    rejects the agent's payments.
 6. **Review.** A compliance desk reads the credential, the mandate
    fingerprint and the tagged payment history to see which agent paid,
-   for whom, and under which mandate.
+   for whom, and under which mandate. The Reports page downloads every
+   decision for a date range as CSV or JSON, for the exchange's own goAML
+   reporting. Tšepo files nothing with the FIC.
+
+The agent can also work on its own. On Spending rules the business turns
+on a payout schedule (every 10 minutes by default). Instructions added to
+the inbox on Give an instruction are then paid at the next scheduled run,
+with no click, through the same approval service and limits. A scheduled
+run never starts while another run holds the ledger, while the inbox is
+empty or while the agent is revoked, and it counts against the hourly run
+limit and the daily Claude limit.
 
 Every agent payment carries a `SourceTag` (default `20260530`) so that
 agent activity can be told apart from human activity on the ledger.
 
 ## Who it is for, and how we reach them
+
+The [market page](https://tsepo.up.railway.app/market) sets out the market,
+the business model, the landscape and the roadmap, with sources.
 
 - **First customers:** South African crypto exchanges, which must accept
   agent payments under FIC Directive 9, and businesses that pay

@@ -35,3 +35,11 @@ export function pilotList(store: DocumentStore): PilotList {
     list: () => log.readAll(),
   };
 }
+
+/** Domains kept for examples and tests (RFC 2606 and RFC 6761). A request from one is never counted as real interest. */
+const TEST_EMAIL = /@(?:[a-z0-9-]+.)*(?:example.(?:com|net|org)|example|test|invalid|localhost)$/i;
+
+/** How many real people asked to join the pilot: test entries are left out, and no name or email leaves this function. */
+export function realPilotRequestCount(requests: readonly StoredPilotRequest[]): number {
+  return requests.filter((request) => !TEST_EMAIL.test(request.email)).length;
+}

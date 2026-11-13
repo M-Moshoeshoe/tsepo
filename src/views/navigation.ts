@@ -28,6 +28,7 @@ export const BUSINESS_NAV: NavEntry[] = [
 export const EXCHANGE_NAV: NavEntry[] = [
   { label: 'Incoming payments', href: '/exchange/payments' },
   { label: 'Verify an agent', href: '/exchange/verify' },
+  { label: 'Reports', href: '/exchange/reports' },
   { label: 'Integrate', href: '/exchange/integrate' },
 ];
 
@@ -62,6 +63,7 @@ export const SITE_FOOTER_PRODUCT: NavEntry[] = [
 /** The footer of the public pages: the company pages. */
 export const SITE_FOOTER_COMPANY: NavEntry[] = [
   { label: 'About', href: '/about' },
+  { label: 'The market', href: '/market' },
   { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' },
 ];

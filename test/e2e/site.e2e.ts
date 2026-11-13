@@ -8,7 +8,7 @@ import { axeViolations, openBrowser, openPage } from './helpers.ts';
  * build. Nothing here runs a payment or calls Claude, so it is cheap to run
  * on every change to the public pages: npm run test:site.
  */
-const PAGES = ['/', '/explore', '/about', '/faq', '/contact', '/exchange/integrate'];
+const PAGES = ['/', '/explore', '/about', '/market', '/faq', '/contact', '/exchange/integrate'];
 const WIDTHS = [1280, 390];
 const TIMEOUT = 120_000;
 

@@ -1,4 +1,5 @@
-import { Check } from '@untitledui/icons';
+import { ArrowRight, Check } from '@untitledui/icons';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import type { ProofFile } from '../../../src/views/proof.ts';
@@ -8,6 +9,8 @@ interface Audience {
   id: string;
   name: string;
   who: string;
+  /** One fact about the audience's market, when there is one worth a line. */
+  fact?: string;
   price: string;
   priceNote: string;
   gets: string[];
@@ -33,6 +36,7 @@ const AUDIENCES: Audience[] = [
     id: 'for-exchanges',
     name: 'For exchanges',
     who: 'You are a crypto asset service provider, and AI agents pay into your accounts.',
+    fact: '310 licensed providers in South Africa must know who sent every transfer.',
     price: 'R1.50',
     priceNote: 'per verified agent deposit, with free integration during the pilot',
     gets: [
@@ -53,6 +57,7 @@ function Plan({ audience, extra }: { audience: Audience; extra?: ReactNode }) {
           {audience.name}
         </h3>
         <p className="text-md text-tertiary">{audience.who}</p>
+        {audience.fact !== undefined && <p className="text-sm font-medium text-secondary">{audience.fact}</p>}
       </div>
       <div className="grid gap-1 border-y border-secondary py-4">
         <p className="text-xs font-semibold text-tertiary">Pilot pricing, to be validated</p>
@@ -137,6 +142,13 @@ function GoToMarket() {
           </div>
         ))}
       </dl>
+      <Link
+        href="/market"
+        className="inline-flex items-center gap-1.5 justify-self-start rounded-sm text-md font-semibold text-brand-secondary underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2"
+      >
+        Read about the market
+        <ArrowRight className="size-4" aria-hidden />
+      </Link>
     </div>
   );
 }

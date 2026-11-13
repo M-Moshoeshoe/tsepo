@@ -1,4 +1,4 @@
-import { Building07, CheckVerified01, CodeBrowser, CoinsHand, Home02, Receipt, Sliders01, User01 } from '@untitledui/icons';
+import { Building07, CheckVerified01, CodeBrowser, CoinsHand, FileDownload02, Home02, Receipt, Sliders01, User01 } from '@untitledui/icons';
 import type { FC } from 'react';
 import { ThusoAvatar } from '../thuso-avatar.tsx';
 import { BUSINESS_NAV, EXCHANGE_NAV, WORKSPACE_HOMES, workspaceOf, type NavEntry, type WorkspaceId } from '../../src/views/navigation.ts';
@@ -30,6 +30,7 @@ const ICONS: Record<string, FC<{ className?: string }>> = {
   '/business/rules': Sliders01,
   '/exchange/payments': CoinsHand,
   '/exchange/verify': CheckVerified01,
+  '/exchange/reports': FileDownload02,
   '/exchange/integrate': CodeBrowser,
 };
 
