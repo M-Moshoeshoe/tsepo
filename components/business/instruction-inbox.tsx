@@ -14,6 +14,8 @@ export interface InboxRow {
   id: string;
   /** When the instruction arrived, already formatted in SAST. */
   time: string;
+  /** "Started by the schedule" or "Started by a person". */
+  startedBy: string;
   /** Thuso's one-line reading. */
   summary: string;
   outcome: { label: string; tone: 'cleared' | 'held' | 'refused' | 'neutral' };
@@ -55,7 +57,10 @@ export function InstructionInbox({ rows }: { rows: InboxRow[] }) {
                 }}
                 className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 px-4 py-3 text-left outline-focus-ring hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 sm:grid-cols-[9rem_minmax(0,1fr)_auto_auto] lg:px-5"
               >
-                <span className="text-xs text-tertiary tabular-nums sm:text-sm">{row.time}</span>
+                <span className="grid text-xs text-tertiary sm:text-sm">
+                  <span className="tabular-nums">{row.time}</span>
+                  <span className="text-xs">{row.startedBy}</span>
+                </span>
                 <span className="col-span-2 row-start-2 flex min-w-0 items-start gap-2 text-sm text-primary sm:col-span-1 sm:row-start-auto">
                   <ThusoAvatar />
                   <span>{row.summary}</span>

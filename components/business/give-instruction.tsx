@@ -1,11 +1,13 @@
 'use client';
 
-import { Send01 } from '@untitledui/icons';
+import { Inbox01, Send01 } from '@untitledui/icons';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, type SyntheticEvent } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { INSTRUCTION_MAX_LENGTH, RunRequestSchema } from '../../src/demo/events.ts';
 import { DecisionBox } from '../assistant-note.tsx';
+import { postWithCode } from '../coded-request.ts';
 import { StatusBadge } from '../display.tsx';
 import { useRun } from '../run-provider.tsx';
 import type { LatestInstruction } from '../../src/views/instruct.ts';
@@ -25,13 +27,40 @@ const EXAMPLES = ['Pay Naledi 2 RLUSD for the logo', 'Pay Thabo 2 RLUSD three ti
  * both signatures. It moves test funds, so it needs the access code.
  */
 export function GiveInstruction({ latest, allowance }: { latest: LatestInstruction | undefined; allowance: string }) {
-  const { busy, locked, run } = useLiveActions();
-  const { state } = useRun();
+  const { busy, locked, run, unlock } = useLiveActions();
+  const { state, accessCode } = useRun();
+  const router = useRouter();
+  const [queued, setQueued] = useState<string | undefined>(undefined);
+  const [queueing, setQueueing] = useState(false);
   const [text, setText] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [sentAt, setSentAt] = useState<string | undefined>(undefined);
   const mine = state.status !== 'idle' && state.label === LABEL;
   const result = sentAt !== undefined && latest !== undefined && latest.at >= sentAt && !busy ? latest : undefined;
+
+  /** Adds the instruction to the inbox. The agent pays it by itself at the next scheduled run. */
+  async function addToInbox(): Promise<void> {
+    const request = RunRequestSchema.safeParse({ kind: 'instruction', text });
+    if (!request.success) {
+      setError(request.error.issues[0]?.message ?? 'Write an instruction for the agent.');
+      return;
+    }
+    if (accessCode === undefined) {
+      unlock();
+      return;
+    }
+    setError(undefined);
+    setQueueing(true);
+    const refused = await postWithCode('/api/inbox', request.data, accessCode);
+    setQueueing(false);
+    if (refused !== undefined) {
+      setError(refused);
+      return;
+    }
+    setQueued('Added to the inbox. The agent pays it by itself at the next scheduled run, within the rules.');
+    setText('');
+    router.refresh();
+  }
 
   function submit(event: SyntheticEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -80,11 +109,30 @@ export function GiveInstruction({ latest, allowance }: { latest: LatestInstructi
             {error}
           </p>
         )}
-        <div>
+        <div className="flex flex-wrap gap-3">
           <Button type="submit" color="primary" size="md" iconLeading={Send01} isDisabled={busy} isLoading={mine && busy} showTextWhileLoading>
-            {locked ? 'Enter the access code to send' : 'Send to the agent'}
+            {locked ? 'Enter the access code to send' : 'Send now'}
+          </Button>
+          <Button
+            type="button"
+            color="secondary"
+            size="md"
+            iconLeading={Inbox01}
+            isLoading={queueing}
+            showTextWhileLoading
+            onClick={() => {
+              setQueued(undefined);
+              void addToInbox();
+            }}
+          >
+            Add to the inbox
           </Button>
         </div>
+        {queued !== undefined && (
+          <p role="status" className="text-sm text-success-primary">
+            {queued}
+          </p>
+        )}
         <div className="grid gap-2 border-t border-secondary pt-4">
           <p id="examples-label" className="text-sm font-medium text-secondary">
             Or try an example

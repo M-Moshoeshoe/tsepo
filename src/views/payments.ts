@@ -1,3 +1,4 @@
+import type { StartedBy } from '../agent/records.ts';
 import type { PayoutIntent } from '../agent/payout-parser.ts';
 import type { PayoutRecord, RunRecord } from '../agent/records.ts';
 import { formatUnits, toUnits } from '../domain/amount.ts';
@@ -29,6 +30,8 @@ export interface BusinessPayment {
 export interface Instruction {
   runId: string;
   at: string;
+  /** A person sent it, or the payout schedule picked it up from the inbox by itself. */
+  startedBy: StartedBy;
   text: string;
   intents: PayoutIntent[];
   payments: BusinessPayment[];
@@ -79,7 +82,7 @@ export function instructionsFrom(runs: readonly RunRecord[], events: readonly Pa
         invoiceId: own.find((event) => event.invoiceId !== undefined)?.invoiceId,
       };
     });
-    return { runId: run.id, at: run.startedAt, text: run.instruction, intents: run.intents, payments };
+    return { runId: run.id, at: run.startedAt, startedBy: run.startedBy ?? 'person', text: run.instruction, intents: run.intents, payments };
   });
   return byNewest(instructions);
 }

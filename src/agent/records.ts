@@ -14,12 +14,18 @@ export const PayoutRecordSchema = z.strictObject({
 
 export type PayoutRecord = z.infer<typeof PayoutRecordSchema>;
 
-/** One agent run: the plain-language instruction and the payouts read from it. */
+/** Who started an agent run: a person, on Give an instruction or in the tour, or the payout schedule by itself. */
+export const StartedBySchema = z.enum(['person', 'schedule']);
+
+export type StartedBy = z.infer<typeof StartedBySchema>;
+
+/** One agent run: the plain-language instruction, the payouts read from it, and who started it. Older records have no starter: a person started them. */
 export const RunRecordSchema = z.strictObject({
   id: z.string(),
   startedAt: z.iso.datetime(),
   instruction: z.string().max(MAX_LIST_LENGTH),
   intents: z.array(PayoutIntentSchema),
+  startedBy: StartedBySchema.optional(),
 });
 
 export type RunRecord = z.infer<typeof RunRecordSchema>;

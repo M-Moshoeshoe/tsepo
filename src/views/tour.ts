@@ -90,6 +90,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
 
 export const LAST_STEP = TOUR_STEPS.length - 1;
 
+/** The last step's note on the payout schedule: the agent also pays with no click. */
+export const SCHEDULE_NOTE = 'The agent also works on its own: add an instruction to the inbox, and it pays at the next scheduled run.';
+
 /** "Step 2 of 6": steps are numbered from 1 for people, from 0 in the address. */
 export function stepLabel(index: number): string {
   return `Step ${String(index + 1)} of ${String(TOUR_STEPS.length)}`;

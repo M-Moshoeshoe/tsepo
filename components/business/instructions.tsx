@@ -19,6 +19,7 @@ export function Instructions({ instructions, hrefFor }: { instructions: Instruct
       rows={instructions.map((instruction) => ({
         id: instruction.runId.replace(/[^0-9A-Za-z]/g, ''),
         time: formatSast(instruction.at),
+        startedBy: instruction.startedBy === 'schedule' ? 'Started by the schedule' : 'Started by a person',
         summary: readSummary(instruction.intents),
         outcome: instructionOutcome(instruction.payments),
         text: instruction.text,

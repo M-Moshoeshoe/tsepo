@@ -1,3 +1,4 @@
+import type { StartedBy } from '../agent/records.ts';
 import { randomBytes } from 'node:crypto';
 import type { Client } from 'xrpl';
 import type { AgentEvent, PayoutResult } from '../agent/payout-agent.ts';
@@ -263,12 +264,12 @@ async function revokeScenario(ctx: DemoContext, report: Report): Promise<RunOutc
  * the approval service decides each payment, and the ledger enforces the
  * signatures. Nothing is prepared first, so it meets the workspace as it is.
  */
-async function visitorInstruction(ctx: DemoContext, report: Report, text: string): Promise<RunOutcome> {
+async function visitorInstruction(ctx: DemoContext, report: Report, text: string, startedBy: StartedBy): Promise<RunOutcome> {
   if (usesReservedReference(text)) {
     throw new DemoError(`References that start with ${RESERVED_REFERENCE_PREFIX} are kept for the guided tour. Use another reference, or none.`);
   }
   report({ type: 'step', text: 'The agent reads your instruction and asks the approval service to approve each payment' });
-  const results = await ctx.createAgent(agentReporter(report)).run(text);
+  const results = await ctx.createAgent(agentReporter(report)).run(text, { startedBy });
   reportDeposits(report, await ctx.exchange.syncDeposits());
   const paid = results.filter((result) => result.status === 'paid').length;
   const stopped = results.length - paid;
@@ -325,20 +326,23 @@ async function syncAfterRun(ctx: DemoContext): Promise<void> {
 
 /**
  * Runs one demo action against Testnet, reporting progress. Throws on any
- * failure; nothing is retried. `createContext` is replaced only in tests.
+ * failure; nothing is retried. `startedBy` records whether a person or the
+ * payout schedule started an instruction. `createContext` is replaced only
+ * in tests.
  */
 export async function runDemo(
   request: RunRequest,
   client: Client,
   report: Report,
   createContext: (client: Client, report: Report) => DemoContext = createDemoContext,
+  startedBy: StartedBy = 'person',
 ): Promise<void> {
   const ctx = createContext(client, report);
   const startedAt = new Date().toISOString();
   const isScenario = request.kind.startsWith('scenario-');
   let outcome: RunOutcome;
   try {
-    outcome = await dispatch(ctx, request, report);
+    outcome = await dispatch(ctx, request, report, startedBy);
   } catch (error: unknown) {
     if (isScenario) await ctx.demo.recordRun({ kind: request.kind, at: startedAt, outcome: 'stopped', summary: plainRunError(error) });
     throw error;
@@ -349,7 +353,7 @@ export async function runDemo(
   report({ type: 'done', text: outcome.summary, explanation: outcome.explanation });
 }
 
-async function dispatch(ctx: DemoContext, request: RunRequest, report: Report): Promise<RunOutcome> {
+async function dispatch(ctx: DemoContext, request: RunRequest, report: Report, startedBy: StartedBy): Promise<RunOutcome> {
   let outcome: RunOutcome;
   switch (request.kind) {
     case 'reset':
@@ -374,7 +378,7 @@ async function dispatch(ctx: DemoContext, request: RunRequest, report: Report): 
       outcome = await changeLimits(ctx, report, { perPaymentLimit: request.perPaymentLimit, dailyLimit: request.dailyLimit });
       break;
     case 'instruction':
-      outcome = await visitorInstruction(ctx, report, request.text);
+      outcome = await visitorInstruction(ctx, report, request.text, startedBy);
       break;
   }
   return outcome;

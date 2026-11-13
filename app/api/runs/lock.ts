@@ -12,3 +12,8 @@ export function acquireRunLock(): boolean {
 export function releaseRunLock(): void {
   state.tsepoRunActive = false;
 }
+
+/** True while a run, by a person or the schedule, holds the ledger. */
+export function isRunLocked(): boolean {
+  return state.tsepoRunActive === true;
+}

@@ -14,7 +14,7 @@ import type { PolicyService } from '../policy/policy-service.ts';
 import type { DocumentStore } from '../storage/store.ts';
 import type { Payee, PayeeDirectory } from './payee-directory.ts';
 import type { PayoutIntent, PayoutParser } from './payout-parser.ts';
-import { agentRecords, type PayoutRecord } from './records.ts';
+import { agentRecords, type PayoutRecord, type StartedBy } from './records.ts';
 
 export type PayoutResult =
   | { reference: string; status: 'paid'; hash: string; ledgerIndex: number }
@@ -49,7 +49,7 @@ export interface PayoutAgentDeps {
 
 export interface PayoutAgent {
   /** Reads a plain-language payout list and pays each payout it can, in order. Stops at the first error. */
-  run(payoutList: string): Promise<PayoutResult[]>;
+  run(payoutList: string, options?: { startedBy?: StartedBy }): Promise<PayoutResult[]>;
 }
 
 /** Each multisigned agent payment carries two signatures: the agent key and the policy key. */
@@ -162,10 +162,10 @@ export function createPayoutAgent(deps: PayoutAgentDeps): PayoutAgent {
   }
 
   return {
-    async run(payoutList) {
+    async run(payoutList, options = {}) {
       const intents = await deps.parser.parse(payoutList);
       const startedAt = clock().toISOString();
-      await runs.put(startedAt, { id: startedAt, startedAt, instruction: payoutList, intents });
+      await runs.put(startedAt, { id: startedAt, startedAt, instruction: payoutList, intents, startedBy: options.startedBy ?? 'person' });
       deps.onEvent?.({ type: 'parsed', intents });
       const results: PayoutResult[] = [];
       for (const intent of intents) {

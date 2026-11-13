@@ -2,11 +2,13 @@ import type { Metadata } from 'next';
 import { ChangeLimitsButton, RevokeButton } from '../../../../components/business/agent-actions.tsx';
 import { AgentStatusBadge } from '../../../../components/business/agent-status.tsx';
 import { RecipientsTable } from '../../../../components/business/recipients-table.tsx';
+import { ScheduleSettingsForm } from '../../../../components/business/schedule-settings.tsx';
 import { WhoMustApprove } from '../../../../components/business/who-must-approve.tsx';
 import { Amount, CopyableMono, SectionTitle } from '../../../../components/display.tsx';
 import { Term } from '../../../../components/term.tsx';
 import { formatSastDate } from '../../../../src/views/status.ts';
 import { loadRegistry, type RegistryView } from '../../../_data/registry.ts';
+import { loadSchedule } from '../../../_data/schedule.ts';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Spending rules, Lesedi Design Studio - Tšepo' };
@@ -64,6 +66,7 @@ export default async function SpendingRulesPage() {
   const view = await loadRegistry();
   const { agent, mandate } = view;
   const active = agent.status.state === 'active';
+  const schedule = await loadSchedule(active);
 
   return (
     <div className="grid max-w-5xl gap-10">
@@ -82,6 +85,15 @@ export default async function SpendingRulesPage() {
           <p className="text-sm text-tertiary">Recipients are part of the signed rules. Any payment to anyone else is refused.</p>
         </section>
       )}
+
+      <section id="schedule" aria-labelledby="schedule-title" className="grid scroll-mt-8 gap-4">
+        <SectionTitle id="schedule-title" title="Payout schedule" />
+        <p className="max-w-3xl text-sm text-secondary">
+          The agent can also work on its own. Instructions added to its inbox on Give an instruction are paid at the next scheduled
+          run, with no click, and every payment still needs the approval service.
+        </p>
+        <ScheduleSettingsForm key={JSON.stringify(schedule.settings)} settings={schedule.settings} line={schedule.line} />
+      </section>
 
       <section id="who-must-approve" aria-labelledby="approve-title" className="grid scroll-mt-8 gap-4">
         <SectionTitle id="approve-title" title="Who must approve each payment" />

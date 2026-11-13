@@ -6,7 +6,7 @@ import { ProgressBarBase } from '@/components/base/progress-indicators/progress-
 import { Button } from '@/components/base/buttons/button';
 import { cx } from '@/utils/cx';
 import type { DemoEvent } from '../../src/demo/events.ts';
-import { CFO_QUESTIONS, LAST_STEP, stepLabel, TOUR_PURPOSE, TOUR_STEPS, tryItHref, type LiveStep } from '../../src/views/tour.ts';
+import { CFO_QUESTIONS, LAST_STEP, SCHEDULE_NOTE, stepLabel, TOUR_PURPOSE, TOUR_STEPS, tryItHref, type LiveStep } from '../../src/views/tour.ts';
 import { AssistantNote } from '../assistant-note.tsx';
 import { useRun } from '../run-provider.tsx';
 import { AccessCodeForm } from '../shell/access-code-dialog.tsx';
@@ -217,6 +217,7 @@ function TryStep() {
       <Button href={tryItHref(LAST_STEP)} color="primary" size="md" className="justify-self-start">
         Open Give an instruction
       </Button>
+      <p className="text-sm text-secondary">{SCHEDULE_NOTE}</p>
 
       <div className="grid gap-3 border-t border-secondary pt-4">
         <p className="text-sm font-semibold text-primary">What the tour showed</p>
