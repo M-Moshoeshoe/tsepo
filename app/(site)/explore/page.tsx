@@ -21,7 +21,7 @@ export default function ExplorePage() {
           <li key={choice.href}>
             <Link
               href={choice.href}
-              className="group grid h-full content-start gap-3 rounded-2xl p-6 ring-1 ring-secondary outline-focus-ring hover:bg-secondary focus-visible:outline-2 md:p-8"
+              className="group grid h-full content-start gap-3 rounded-2xl bg-primary p-6 shadow-md ring-1 ring-secondary outline-focus-ring transition-shadow duration-150 hover:bg-secondary hover:shadow-lg focus-visible:outline-2 motion-reduce:transition-none md:p-8"
             >
               <span className="text-xs font-semibold text-tertiary">{choice.role}</span>
               <span className="text-display-xs font-medium text-primary">{choice.name}</span>
